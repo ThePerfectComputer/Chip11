@@ -60,7 +60,7 @@ class EmptyBundle extends Bundle {
   val bit = out Bool
 }
 abstract class PipeStage[A <: Data, B <: Data](inp:A, outp: B) extends PipeStageIO(inp, outp, new EmptyBundle){
-  io.asBits := 0
+  io := io.getZero
 }
 
 
