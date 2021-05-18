@@ -1,0 +1,7 @@
+out/
+*~
+*.v
+simWorkspace/
+project/*
+target/*
+waves/*
