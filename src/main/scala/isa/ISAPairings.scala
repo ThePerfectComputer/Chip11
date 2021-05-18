@@ -1,7 +1,6 @@
 //generated 2021-05-18 09:34:13.626381
 
 package isa
-import scala.collection._
 import spinal.core.SpinalEnum
 import spinal.core.Spinal
 import spinal.core.SpinalEnumElement
