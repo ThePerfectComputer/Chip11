@@ -10,7 +10,7 @@ import isa.{MnemonicEnums, FormEnums, SPREnums, Forms}
 import isa.{ISAPairings, InstructionInfo}
 
 import spinal.core._
-import spinal.lib._
+import spinal.lib.{MuxOH}
 
 /* Merely translates from FetchOutput to DecoderData
  * Reccommend connecting this combinatorially to the second decoder stage
@@ -59,49 +59,48 @@ class uOpAndFormDecoderBySeq(val instructions: Seq[InstructionInfo]) extends Pip
 }
 
 
-// class uOpAndFormDecoder extends PipeStage(new FetchOutput, new DecoderData){
+class uOpAndFormDecoder extends PipeStage(new FetchOutput, new DecoderData){
 
-//   val numstages = 6
-//   val numitems = (ISAPairings.pairings.size + numstages - 1) / numstages
-//   val groups = ISAPairings.pairings.grouped(numitems)
-
-
-
-//   val di = Module(new DecodeInit)
-//   val stages = groups.map( g =>
-//     Module(new RegisteredPipeStage(new uOpAndFormDecoderBySeq(g)))).toSeq
+  val numstages = 6
+  val numitems = (ISAPairings.pairings.size + numstages - 1) / numstages
+  val groups = ISAPairings.pairings.grouped(numitems)
 
 
-//   connectIn(di)
-//   di.connect(stages(0))
-//   for(i <- 1 until stages.size) {
-//     stages(i-1).connect(stages(i))
-//   }
-//   stages.last.connectOut(pipeOutput)
 
-//   import cpu.debug.{debug_all_decode, debug_last_decode}
+  val di = new DecodeInit
+  val stages = groups.map( g => new uOpAndFormDecoderBySeq(g)).toSeq
 
-//   if (debug_all_decode) {
-//     // print the status of each stage (WARNING! THIS IS COSTLY FOR SIMULATION)
-//     for((stage, index) <- stages.zipWithIndex.reverse) {
-//       when(stage.pipeOutput.fire() && stage.pipeOutput.bits.found_match) {
-//         for (mnemonic <- MnemonicEnums.all){
-//           when (mnemonic === stage.pipeOutput.bits.opcode){
-//             printf(s"DECODE: Got opcode $mnemonic from stage $index\n")
-//           }
-//         }
-//       }
-//     }
-//   }
 
-//   if (debug_last_decode) {
-//     when(pipeOutput.fire() && pipeOutput.bits.found_match) {
-//       for (mnemonic <- MnemonicEnums.all){
-//         when (mnemonic === pipeOutput.bits.opcode){
-//           printf(s"DECODE OUT: Got opcode $mnemonic\n")
-//         }
-//       }
-//     }
-//   }
+  di << pipeInput
+  di >> stages(0)
+  for(i <- 1 until stages.size) {
+    stages(i-1) >> stages(i)
+  }
+  stages.last >> pipeOutput
 
-// }
+  import cpu.debug.{debug_all_decode, debug_last_decode}
+
+  if (debug_all_decode) {
+    // print the status of each stage (WARNING! THIS IS COSTLY FOR SIMULATION)
+    for((stage, index) <- stages.zipWithIndex.reverse) {
+      when(stage.pipeOutput.fire && stage.pipeOutput.payload.found_match) {
+        for (mnemonic <- MnemonicEnums.elements){
+          when (mnemonic === stage.pipeOutput.payload.opcode){
+            printf(s"DECODE: Got opcode $mnemonic from stage $index\n")
+          }
+        }
+      }
+    }
+  }
+
+  if (debug_last_decode) {
+    when(pipeOutput.fire && pipeOutput.payload.found_match) {
+      for (mnemonic <- MnemonicEnums.elements){
+        when (mnemonic === pipeOutput.payload.opcode){
+          printf(s"DECODE OUT: Got opcode $mnemonic\n")
+        }
+      }
+    }
+  }
+
+}
