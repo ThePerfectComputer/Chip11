@@ -191,5 +191,6 @@ object ComparatorArgs {
     val data = new ComparatorArgs
     data.slotB := slotB
     data.logical := Bool(logical)
+    data
   }
 }
