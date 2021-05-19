@@ -11,8 +11,8 @@ class RegisteredPipeStage[A <: Data, B <: Data, I <: Data](gen: => PipeStageIO[A
   val io = cloneOf(pipeMod.io)
   io <> pipeMod.io
 
-  val pipeInput = makeInput(cloneOf(pipeMod.pipeInput.payload))
-  val pipeOutput = makeOutput(cloneOf(pipeMod.pipeOutput.payload))
+  val pipeInput = makeInput(pipeMod.pipeInput.payload)
+  val pipeOutput = makeOutput(pipeMod.pipeOutput.payload)
 
   val data_reg = Reg(cloneOf(pipeMod.pipeOutput.payload))
   val valid_reg = Reg(Bool())

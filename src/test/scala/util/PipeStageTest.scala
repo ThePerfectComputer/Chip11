@@ -24,7 +24,7 @@ class PipeStageTest extends AnyFlatSpec with should.Matchers {
 
   it should "propagate ready/valid" in {
     SimConfig.withWave.doSim(new Delay(UInt(8 bits))){dut =>
-      dut.clockDomain.forkStimulus(period = 10)
+      //dut.clockDomain.forkStimulus(period = 10)
     }
   }
 
