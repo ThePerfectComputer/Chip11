@@ -1,35 +1,33 @@
 package util
 
-import chisel3._
-import chisel3.util._
-import chisel3.experimental.BaseModule
-import chisel3.experimental.IO
+import spinal.core._
+import spinal.lib._
 
 class RegisteredPipeStage[A <: Data, B <: Data, I <: Data](gen: => PipeStageIO[A, B, I])
-     extends MultiIOModule with PipeData[A, B, I]{
+     extends Component with PipeData[A, B, I]{
 
-  val pipeMod = Module(gen)
+  val pipeMod = gen
 
-  val io = IO(chiselTypeOf(pipeMod.io))
+  val io = cloneOf(pipeMod.io)
   io <> pipeMod.io
 
-  val pipeInput = makeInput(pipeMod.pipeInput.bits.cloneType)
-  val pipeOutput = makeOutput(pipeMod.pipeOutput.bits.cloneType)
+  val pipeInput = makeInput(cloneOf(pipeMod.pipeInput.payload))
+  val pipeOutput = makeOutput(cloneOf(pipeMod.pipeOutput.payload))
 
-  val data_reg = Reg(pipeMod.pipeOutput.bits.cloneType)
+  val data_reg = Reg(cloneOf(pipeMod.pipeOutput.payload))
   val valid_reg = Reg(Bool())
 
   pipeMod.pipeInput <> pipeInput
 
   when(pipeOutput.ready) {
-    data_reg := pipeMod.pipeOutput.bits
+    data_reg := pipeMod.pipeOutput.payload
     valid_reg := pipeMod.pipeOutput.valid
   }
 
-  pipeOutput.bits := data_reg
+  pipeOutput.payload := data_reg
   when (pipeOutput.flush) {
-    pipeOutput.valid := false.B
-    valid_reg := false.B
+    pipeOutput.valid := False
+    valid_reg := False
   } .otherwise {
     pipeOutput.valid := valid_reg
   }
