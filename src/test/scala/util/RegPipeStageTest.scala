@@ -27,10 +27,12 @@ class RegPipeStageTest extends AnyFlatSpec with should.Matchers {
     SimConfig.withWave.doSim(new DelayReg(UInt(8 bits))) { dut =>
       dut.clockDomain.forkStimulus(10)
       dut.pipeOutput.ready #= true
+      dut.pipeInput.valid #= false
+      dut.pipeOutput.flush #= false
       sleep(1)
       assert(dut.pipeInput.ready.toBoolean == true)
 
-      dut.clockDomain.waitSampling(1)
+      dut.clockDomain.waitSampling(2)
 
       dut.pipeInput.valid #= true
       dut.pipeInput.payload #= 10
@@ -40,6 +42,7 @@ class RegPipeStageTest extends AnyFlatSpec with should.Matchers {
       dut.pipeInput.valid #= false
       dut.pipeInput.payload #= 0
       dut.pipeOutput.ready #= false
+      sleep(1)
       assert(dut.pipeOutput.valid.toBoolean == true)
       assert(dut.pipeOutput.payload.toInt == 10)
 
@@ -49,7 +52,7 @@ class RegPipeStageTest extends AnyFlatSpec with should.Matchers {
 
       dut.pipeOutput.ready #= true
 
-      dut.clockDomain.waitSampling(1)
+      dut.clockDomain.waitSampling(2)
       assert(dut.pipeOutput.valid.toBoolean == false)
 
     }
