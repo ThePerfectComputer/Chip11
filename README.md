@@ -16,3 +16,8 @@ sbt clean publishLocal
 sbt test
 gtkwave waves/BusTimer/test.vcd
 ```
+
+## Some Specific Tests
+```
+sbt "testOnly util.PipeStageTest"
+```

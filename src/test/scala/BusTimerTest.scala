@@ -1,4 +1,5 @@
 package bus
+
 import core.CommonSimConfig
 import spinal.core._
 import spinal.lib._

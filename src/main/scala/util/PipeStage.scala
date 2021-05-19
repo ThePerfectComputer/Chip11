@@ -10,8 +10,8 @@ trait PipeData[A <: Data, B <: Data, I <: Data] {
   val pipeInput : Flushable[A]
   val pipeOutput : Flushable[B]
 
-  def makeInput(inp: A) = Flushable(inp.asInput()).flip()
-  def makeOutput(outp: B) = Flushable(outp.asOutput())
+  def makeInput(inp: HardType[A]) = slave(Flushable(inp()))
+  def makeOutput(outp: HardType[B]) = master(Flushable(outp()))
   // def makeOutput(outp: B) = IO(Flushable(Output(outp)))
 
 
@@ -33,17 +33,20 @@ trait PipeData[A <: Data, B <: Data, I <: Data] {
 }
 
 
-abstract class PipeStageIO[A <: Data, B <: Data, I <: Data](inp:A, outp: B, io_t: I) extends PipeData[A, B, I]{
+abstract class PipeStageIO[A <: Data, B <: Data, I <: Data](inp: HardType[A], outp: HardType[B], io_t: HardType[I]) extends Component with PipeData[A, B, I]{
 
-  val io = io_t
+  val io = io_t().asOutput()
 
-  val pipeInput = makeInput(inp)
-  val pipeOutput = makeOutput(outp)
+  val pipeInput = slave(Flushable(inp()))
+  val pipeOutput = master(Flushable(outp()))
 
   val i = pipeInput.payload
   val o = pipeOutput.payload
   val ready = True
   val flush = False
+
+  println(pipeInput)
+  println(pipeOutput)
 
   pipeInput.ready := pipeOutput.ready & ready
   pipeInput.flush := pipeOutput.flush | flush
@@ -56,16 +59,20 @@ abstract class PipeStageIO[A <: Data, B <: Data, I <: Data](inp:A, outp: B, io_t
 
 }
 
-class EmptyBundle extends Bundle {
-  val bit = out Bool
+class EmptyBundle extends Bundle  with IMasterSlave {
+  val bit = out UInt(5 bits)
+  override def asMaster(): Unit = {
+    out(bit)
+  }
 }
+
 abstract class PipeStage[A <: Data, B <: Data](inp:A, outp: B) extends PipeStageIO(inp, outp, new EmptyBundle){
   io := io.getZero
 }
 
 
 class Delay[T <: Data](gen:T) extends PipeStage(gen, gen) {
-  i <> o
+  o := i
 
 }
 
