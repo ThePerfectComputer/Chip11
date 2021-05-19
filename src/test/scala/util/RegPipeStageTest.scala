@@ -79,6 +79,7 @@ class DelayLineTest extends AnyFlatSpec with should.Matchers {
       dut.pipeOutput.ready #= true
       val data = Seq(1, 5, 20, 3, 8)
       dut.pipeOutput.ready #= true
+      dut.clockDomain.waitSampling(5)
 
       // Write the elements of data into the pipeline, one at a time
       val inputThread = fork {
