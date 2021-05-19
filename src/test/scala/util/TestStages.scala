@@ -25,11 +25,8 @@ class MultiDelay extends PipeStage(UInt(8 bits), UInt(8 bits)){
   val d2 = new Delay(UInt(8 bits))
   val d3 = new Delay(UInt(8 bits))
 
-
-  pipeInput >> d1.pipeInput
-  d1.pipeOutput >-> d2.pipeInput
-  d2.pipeOutput >-> d3.pipeInput
-  d3.pipeOutput >> pipeOutput
+  d1 << pipeInput
+  d1 >-> d2 >-> d3 >> pipeOutput
 
   d2.pipeOutput.allowOverride
   d2.pipeOutput.flush := stage3Flush

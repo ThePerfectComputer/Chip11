@@ -14,26 +14,39 @@ trait PipeData[A <: Data, B <: Data, I <: Data] {
   def makeOutput(outp: HardType[B]) = master(Flushable(outp()))
   // def makeOutput(outp: B) = IO(Flushable(Output(outp)))
 
+  def >>[C <: Data, J <: Data](other: PipeData[B, C, J]) = {
+    pipeOutput >> other.pipeInput 
+    other
+  }
+  def >>[C <: Data, J <: Data](other: Flushable[B]) = {
+    pipeOutput >> other
+    other
+  }
+  def <<[C <: Data, J <: Data](other: Flushable[A]) = {
+    other >> pipeInput
+    other
+  }
+  def <<[C <: Data, J <: Data](other: PipeData[C, A, J]) = {
+    pipeInput << other.pipeOutput 
+    other
+  }
+  def <-<[C <: Data, J <: Data](other: PipeData[C, A, J]) = {
+    pipeInput <-< other.pipeOutput 
+    other
+  }
+  def >->[C <: Data, J <: Data](other: PipeData[B, C, J]) = {
+    pipeOutput >-> other.pipeInput 
+    other
+  }
+  def <-/<[C <: Data, J <: Data](other: PipeData[C, A, J]) = {
+    pipeInput <-/< other.pipeOutput 
+    other
+  }
+  def >/->[C <: Data, J <: Data](other: PipeData[B, C, J]) = {
+    pipeOutput >/-> other.pipeInput 
+    other
+  }
 
-  def connect[C <: Data, J <: Data](other: PipeData[B, C, J]) = {
-    other.pipeInput >> pipeOutput
-    other
-  }
-  def connectReg[C <: Data, J <: Data](other: PipeData[B, C, J]) = {
-    other.pipeInput >-> pipeOutput
-    other
-  }
-  def connectOut(sig: Flushable[B]) = {
-    sig >> pipeOutput
-  }
-
-  def connectIn[C <: Data, J <: Data](other: PipeData[A, C, J]) = {
-    other.pipeInput << pipeInput
-    other
-  }
-  def connectFrom(data: Flushable[A]) = {
-    pipeInput << data
-  }
 }
 
 
