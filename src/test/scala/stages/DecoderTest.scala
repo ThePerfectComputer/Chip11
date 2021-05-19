@@ -17,9 +17,9 @@ import matchers._
 
 class DecoderDUT extends PipeStage(new FetchOutput, new ReadInterface){
   val dec = new uOpAndFormDecoder
-  //val populate = new PopulateByForm
+  val populate = new PopulateByForm
   dec << pipeInput
-  //dec >-> populate >> pipeOutput
+  dec >-> populate >> pipeOutput
 }
 
 
@@ -33,40 +33,40 @@ class DecoderTest extends AnyFlatSpec with should.Matchers {
   //   stage.emitVerilog(new uOpAndFormDecoderBySeq(ISAPairings.pairings.take(10)), Array("-td", "./test_run_dir"))
   // }
 
-  // it should "decode some simple instructions" in {
-  //   test(new DecoderDUT)
-  //     .withFlags(Array("--t-write-vcd")) { c =>
-  //       c.pipeOutput.ready.poke(1.B)
-  //       c.pipeInput.valid.poke(1.B)
-  //       // andi. r1, r5, 0x3f
-  //       c.pipeInput.bits.insn.poke(0x70a1003F.U)
-  //       c.clock.step(10)
-  //       c.pipeOutput.bits.dec_data.form.expect(FormEnums.D6)
-  //       c.pipeOutput.bits.dec_data.found_match.expect(1.B)
-  //       c.pipeOutput.bits.dec_data.opcode.expect(MnemonicEnums.andidot)
-  //       c.pipeOutput.bits.slots(0).idx.expect(5.U)
-  //       c.pipeOutput.bits.slots(0).sel.expect(SourceSelect.GPR)
-  //       c.pipeOutput.bits.write_interface.slots(0).idx.expect(1.U)
-  //       c.pipeOutput.bits.write_interface.slots(0).sel.expect(SourceSelect.GPR)
-  //       c.pipeOutput.bits.imm.valid.expect(1.B)
-  //       c.pipeOutput.bits.imm.bits.expect(0x3f.U)
-  //     }
-  // }
+  it should "decode some simple instructions" in {
+    SimConfig.withWave.doSim(new DecoderDUT) { dut =>
+      dut.clockDomain.forkStimulus(10)
+        dut.pipeOutput.ready #= true
+        dut.pipeInput.valid #= true
+        // andi. r1, r5, 0x3f
+        dut.pipeInput.payload.insn #= 0x70a1003F
+        dut.clockDomain.waitSampling(10)
+        assert(dut.pipeOutput.payload.dec_data.form == FormEnums.D6)
+        assert(dut.pipeOutput.payload.dec_data.found_match.toBoolean == true)
+        assert(dut.pipeOutput.payload.dec_data.opcode == MnemonicEnums.andidot)
+        assert(dut.pipeOutput.payload.slots(0).idx.toInt == 5)
+        assert(dut.pipeOutput.payload.slots(0).sel == SourceSelect.GPR)
+        assert(dut.pipeOutput.payload.write_interface.slots(0).idx.toInt == 1)
+        assert(dut.pipeOutput.payload.write_interface.slots(0).sel == SourceSelect.GPR)
+        assert(dut.pipeOutput.payload.imm.valid.toBoolean == true)
+        assert(dut.pipeOutput.payload.imm.bits.toInt == 0x3f)
+      }
+  }
   // it should "decode ExecuteArgs" in {
   //   test(new DecoderDUT)
   //     .withFlags(Array("--t-write-vcd")) { c =>
-  //       c.pipeOutput.ready.poke(1.B)
-  //       c.pipeInput.valid.poke(1.B)
+  //       dut.pipeOutput.ready #= True
+  //       dut.pipeInput.valid #= True
 
   //       // addi r4, r8, 0x1234
-  //       c.pipeInput.bits.insn.poke(0x38a81234.U)
-  //       c.clock.step(1)
+  //       dut.pipeInput.payload.insn #= 0x38a81234.U
+  //       dut.clockDomain.waitSampling(1)
   //       // add r2, r3, r4
-  //       c.pipeInput.bits.insn.poke(0x7c432214.U)
-  //       c.clock.step(1)
+  //       dut.pipeInput.payload.insn #= 0x7c432214.U
+  //       dut.clockDomain.waitSampling(1)
   //       // neg r10, r11
-  //       c.pipeInput.bits.insn.poke(0x7d4b00d0.U)
-  //       c.clock.step(10)
+  //       dut.pipeInput.payload.insn #= 0x7d4b00d0.U
+  //       dut.clockDomain.waitSampling(10)
   //     }
   // }
 }
