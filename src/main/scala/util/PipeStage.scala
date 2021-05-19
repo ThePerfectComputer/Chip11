@@ -16,19 +16,23 @@ trait PipeData[A <: Data, B <: Data, I <: Data] {
 
 
   def connect[C <: Data, J <: Data](other: PipeData[B, C, J]) = {
-    other.pipeInput <> pipeOutput
+    other.pipeInput >> pipeOutput
+    other
+  }
+  def connectReg[C <: Data, J <: Data](other: PipeData[B, C, J]) = {
+    other.pipeInput >-> pipeOutput
     other
   }
   def connectOut(sig: Flushable[B]) = {
-    sig <> pipeOutput
+    sig >> pipeOutput
   }
 
   def connectIn[C <: Data, J <: Data](other: PipeData[A, C, J]) = {
-    other.pipeInput <> pipeInput
+    other.pipeInput << pipeInput
     other
   }
   def connectFrom(data: Flushable[A]) = {
-    pipeInput <> data
+    pipeInput << data
   }
 }
 
@@ -56,6 +60,11 @@ abstract class PipeStageIO[A <: Data, B <: Data, I <: Data](inp: HardType[A], ou
   }.otherwise {
     pipeOutput.valid := pipeInput.valid & ready
   }
+  pipeInput.ready.allowOverride
+  pipeInput.flush.allowOverride
+  pipeOutput.valid.allowOverride
+  pipeOutput.payload.allowOverride
+
 
 }
 

@@ -56,15 +56,15 @@ class RegPipeStageTest extends AnyFlatSpec with should.Matchers {
 
 }
 
-// class DelayLineTest extends FlatSpec with ChiselScalatestTester with Matchers {
-//   behavior of "MultiDelay"
+class DelayLineTest extends AnyFlatSpec with should.Matchers {
+  behavior of "MultiDelay"
 
-//   // it should "create verilog" in {
-//   //   println("Before unit test?")
-//   //   val stage = new ChiselStage
+  // it should "create verilog" in {
+  //   println("Before unit test?")
+  //   val stage = new ChiselStage
 
-//   //   println(stage.emitVerilog(new MultiDelay))
-//   // }
+  //   println(stage.emitVerilog(new MultiDelay))
+  // }
 
 //   it should "flush data" in {
 //     test(new MultiDelay)
@@ -107,32 +107,31 @@ class RegPipeStageTest extends AnyFlatSpec with should.Matchers {
 //       }
 //   }
 
-//   it should "delay data" in {
-//     test(new MultiDelay)
-//       .withFlags(Array("--t-write-vcd")) { c =>
-//         dut.pipeOutput.ready #= true
-//         assert(dut.pipeInput.ready.toBoolean == true)
+  it should "delay data" in {
+    SimConfig.withWave.doSim(new MultiDelay) { dut =>
+      dut.pipeOutput.ready #= true
+      assert(dut.pipeInput.ready.toBoolean == true)
 
-//         dut.clockDomain.waitSampling(1)
+      dut.clockDomain.waitSampling(1)
 
-//         dut.pipeInput.valid #= true
-//         dut.pipeInput.payload #= 10
-//         assert(dut.pipeOutput.valid.toBoolean == false)
+      dut.pipeInput.valid #= true
+      dut.pipeInput.payload #= 10
+      assert(dut.pipeOutput.valid.toBoolean == false)
 
-//         dut.clockDomain.waitSampling(1)
-//         dut.pipeInput.valid #= false
-//         dut.pipeInput.payload #= 0
-//         dut.pipeOutput.ready #= false
+      dut.clockDomain.waitSampling(1)
+      dut.pipeInput.valid #= false
+      dut.pipeInput.payload #= 0
+      dut.pipeOutput.ready #= false
 
-//         dut.clockDomain.waitSampling(1)
-//         dut.pipeOutput.ready #= true
-//         assert(dut.pipeOutput.valid.toBoolean == false)
+      dut.clockDomain.waitSampling(1)
+      dut.pipeOutput.ready #= true
+      assert(dut.pipeOutput.valid.toBoolean == false)
 
-//         dut.clockDomain.waitSampling(1)
-//         assert(dut.pipeOutput.valid.toBoolean == true)
-//         assert(dut.pipeOutput.payload.toBoolean == 10)
-//         dut.clockDomain.waitSampling(1)
+      dut.clockDomain.waitSampling(1)
+      assert(dut.pipeOutput.valid.toBoolean == true)
+      assert(dut.pipeOutput.payload.toInt == 10)
+      dut.clockDomain.waitSampling(1)
 
-//       }
-//   }
-// }
+    }
+  }
+}
