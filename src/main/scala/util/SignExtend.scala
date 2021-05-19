@@ -1,15 +1,15 @@
 package util
-import chisel3._
+import spinal.core._
 
 object SignExtend {
 
   def apply(s: SInt, width: Int) : SInt = {
     val sWidth = s.getWidth
-    val tmp = Wire(SInt(width.W))
-    val ret = Wire(SInt(width.W))
+    val tmp = SInt(width bits)
+    val ret = SInt(width bits)
     val shiftamt :Int = width - sWidth
-    tmp := s << shiftamt.U
-    ret := tmp >> shiftamt.U
+    tmp := s << shiftamt
+    ret := tmp >> shiftamt
     ret
   }
 }
@@ -17,7 +17,7 @@ object SignExtend {
 object SignExtendU {
 
   def apply(s: SInt, width: Int) : UInt = {
-    SignExtend(s, width).asUInt()
+    SignExtend(s, width).asUInt
   }
 
 }
