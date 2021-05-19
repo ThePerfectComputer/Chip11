@@ -10,7 +10,6 @@ import flatspec._
 import matchers._
 
 class PipeStageTest extends AnyFlatSpec with should.Matchers {
-  behavior of "PipeStage"
 
   // it should "create verilog" in {
   //   println("Before unit test?")
@@ -22,11 +21,13 @@ class PipeStageTest extends AnyFlatSpec with should.Matchers {
   // }
   // it should "propagate ready/valid" in {
   // }
+
   it should "propagate ready/valid" in {
-    SimConfig.withWave.doSim(new Delay){dut =>
+    SimConfig.withWave.doSim(new Delay(UInt(8 bits))){dut =>
       dut.clockDomain.forkStimulus(period = 10)
     }
   }
+
     // ToyMemSim.main(Array(""))
   // }
 

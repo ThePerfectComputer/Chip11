@@ -33,7 +33,7 @@ trait PipeData[A <: Data, B <: Data, I <: Data] {
 }
 
 
-abstract class PipeStageIO[A <: Data, B <: Data, I <: Data](inp:A, outp: B, io_t: I) extends PipeData[A, B, I]{
+abstract class PipeStageIO[A <: Data, B <: Data, I <: Data](inp:A, outp: B, io_t: I) extends Component with PipeData[A, B, I]{
 
   val io = io_t
 
