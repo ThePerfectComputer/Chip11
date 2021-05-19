@@ -5,10 +5,12 @@ import spinal.lib._
 import spinal.sim._
 import spinal.core.sim._
 
-import org.scalatest.FunSuite
+import org.scalatest._
+import flatspec._
+import matchers._
 
-class PipeStageTest extends FunSuite {
-  // behavior of "PipeStage"
+class PipeStageTest extends AnyFlatSpec with should.Matchers {
+  behavior of "PipeStage"
 
   // it should "create verilog" in {
   //   println("Before unit test?")
@@ -20,7 +22,7 @@ class PipeStageTest extends FunSuite {
   // }
   // it should "propagate ready/valid" in {
   // }
-  test("We're able to inspect and print the memory.") {
+  it should "propagate ready/valid" in {
     SimConfig.withWave.doSim(new Delay){dut =>
       dut.clockDomain.forkStimulus(period = 10)
     }

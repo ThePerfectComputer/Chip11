@@ -7,7 +7,7 @@ val spinalVersion = "1.4.4"
 libraryDependencies ++= Seq(
   "com.github.spinalhdl" %% "spinalhdl-core" % spinalVersion,
   "com.github.spinalhdl" %% "spinalhdl-lib" % spinalVersion,
-  "org.scalatest" % "scalatest_2.10" % "1.9.1" % "test",
+  "org.scalatest" %% "scalatest" % "3.2.7" % "test",
   compilerPlugin("com.github.spinalhdl" %% "spinalhdl-idsl-plugin" % spinalVersion)
 )
 fork := true
