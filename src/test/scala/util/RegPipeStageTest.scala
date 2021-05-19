@@ -25,6 +25,7 @@ class RegPipeStageTest extends AnyFlatSpec with should.Matchers {
 
   it should "register data" in {
     SimConfig.withWave.doSim(new DelayReg(UInt(8 bits))) { dut =>
+      dut.clockDomain.forkStimulus(10)
       dut.pipeOutput.ready #= true
       sleep(1)
       assert(dut.pipeInput.ready.toBoolean == true)
@@ -66,49 +67,63 @@ class DelayLineTest extends AnyFlatSpec with should.Matchers {
   //   println(stage.emitVerilog(new MultiDelay))
   // }
 
-//   it should "flush data" in {
-//     test(new MultiDelay)
-//       .withFlags(Array("--t-write-vcd")) { c =>
-//         val data = Seq(1, 5, 20, 3, 8)
-//         dut.pipeOutput.ready #= true
+  it should "flush data" in {
+    SimConfig.withWave.doSim(new MultiDelay) { dut =>
+      dut.clockDomain.forkStimulus(10)
+      dut.pipeInput.valid #= false
+      dut.stage3Flush #= false
+      dut.pipeOutput.flush #= false
+      dut.pipeOutput.ready #= true
+      val data = Seq(1, 5, 20, 3, 8)
+      dut.pipeOutput.ready #= true
 
-//         // Write the elements of data into the pipeline, one at a time
-//         fork {
-//           dut.clockDomain.waitSampling(1)
-//           dut.pipeInput.valid #= true
-//           for(item <- data){
-//             dut.pipeInput.payload #= item
+      // Write the elements of data into the pipeline, one at a time
+      val inputThread = fork {
+        dut.clockDomain.waitSampling(1)
+        dut.pipeInput.valid #= true
+        for (item <- data) {
+          dut.pipeInput.payload #= item
 
-//             dut.clockDomain.waitSampling(1)
-//           }
-//           // Trigger a flush from inside d3 when item 1 (5) is being
-//           // output. This should clear both item 2 and 3 (20, 3.U) from
-//           // the pipeline, leaving only item 4 (8)
-//         } .fork{
-//           dut.clockDomain.waitSampling(4)
-//           dut.stage3Flush #= true
-//           dut.clockDomain.waitSampling(1)
-//           dut.stage3Flush #= false
-//           dut.clockDomain.waitSampling(4)
+          dut.clockDomain.waitSampling(1)
+        }
+        // Trigger a flush from inside d3 when item 1 (5) is being
+        // output. This should clear both item 2 and 3 (20, 3.U) from
+        // the pipeline, leaving only item 4 (8)
+      }
+      val flushThread = fork {
+        dut.clockDomain.waitSampling(4)
+        dut.stage3Flush #= true
+        dut.clockDomain.waitSampling(1)
+        dut.stage3Flush #= false
+        dut.clockDomain.waitSampling(4)
 
-//           // Check that only items 0, 1, and 4 come out of the pipeline
-//         }.fork{
-//           val dataAfterFlush = Seq(1, 5, 8)
-//           for(item <- dataAfterFlush){
-//             var vld = dut.pipeOutput.valid.peek()
-//             while(!vld.litToBoolean){
-//               dut.clockDomain.waitSampling(1)
-//               vld = dut.pipeOutput.valid.peek()
-//             }
-//             assert(dut.pipeOutput.payload.toBoolean == item)
-//             dut.clockDomain.waitSampling(1)
-//           }
-//         }.join()
-//       }
-//   }
+        // Check that only items 0, 1, and 4 come out of the pipeline
+      }
+      val outputThread = fork {
+        val dataAfterFlush = Seq(1, 5, 8)
+        for (item <- dataAfterFlush) {
+          var vld = dut.pipeOutput.valid.toBoolean
+          while (!vld) {
+            dut.clockDomain.waitSampling(1)
+            vld = dut.pipeOutput.valid.toBoolean
+          }
+          assert(dut.pipeOutput.payload.toInt == item)
+          dut.clockDomain.waitSampling(1)
+        }
+      }
+
+      inputThread.join()
+      flushThread.join()
+      outputThread.join()
+    }
+  }
 
   it should "delay data" in {
     SimConfig.withWave.doSim(new MultiDelay) { dut =>
+      dut.clockDomain.forkStimulus(10)
+      dut.pipeInput.valid #= false
+      dut.stage3Flush #= false
+      dut.pipeOutput.flush #= false
       dut.pipeOutput.ready #= true
       assert(dut.pipeInput.ready.toBoolean == true)
 

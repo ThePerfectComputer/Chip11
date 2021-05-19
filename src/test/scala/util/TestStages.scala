@@ -31,6 +31,6 @@ class MultiDelay extends PipeStage(UInt(8 bits), UInt(8 bits)){
   d2.pipeOutput >-> d3.pipeInput
   d3.pipeOutput >> pipeOutput
 
-  d1.pipeOutput.allowOverride
-  d1.pipeOutput.flush := stage3Flush
+  d2.pipeOutput.allowOverride
+  d2.pipeOutput.flush := stage3Flush
 }
