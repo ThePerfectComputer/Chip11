@@ -1,13 +1,7 @@
-package util.test
+package util
 
-import util._
-
-import org.scalatest._
-import chiseltest._
-import chisel3._
-import chisel3.util._
-import chisel3.stage.ChiselStage
-import chiseltest.experimental.TestOptionBuilder._
+import spinal.core._
+import spinal.lib._
 
 class AdderInput(val wid: Int) extends Bundle {
   val a = UInt(wid.W)
