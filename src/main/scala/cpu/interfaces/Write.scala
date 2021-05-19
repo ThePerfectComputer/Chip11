@@ -6,12 +6,12 @@ import spinal.lib._
 
 
 class WriteInterface extends Bundle {
-  val slots = List(Seq(
+  val slots = Seq(
     new Slot(6, 128),
     new Slot(6, 128),
     new Slot(6, 128),
     new Slot(10, 64),
-    new Slot(10, 64)))
+    new Slot(10, 64))
 }
 
 class WriteStageInterface extends Bundle {

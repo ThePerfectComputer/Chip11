@@ -72,9 +72,9 @@ class uOpAndFormDecoder extends PipeStage(new FetchOutput, new DecoderData){
 
 
   di << pipeInput
-  di >> stages(0)
+  di >-> stages(0)
   for(i <- 1 until stages.size) {
-    stages(i-1) >> stages(i)
+    stages(i-1) >-> stages(i)
   }
   stages.last >> pipeOutput
 

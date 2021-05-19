@@ -1,4 +1,4 @@
-//generated 2021-05-17 23:58:06.829815
+//generated 2021-05-19 16:44:02.442152
 
 package isa
 import spinal.core._
@@ -846,6 +846,8 @@ object Forms {
   object XS1 {
     def RS(instruction: UInt) = selectBits(instruction, 10, 6)
     def RA(instruction: UInt) = selectBits(instruction, 15, 11)
+    def sh1(instruction: UInt) = selectBits(instruction, 20, 16)
+    def sh2(instruction: UInt) = selectBits(instruction, 30)
     def Rc(instruction: UInt) = selectBits(instruction, 31)
   }
   object XX2_1 {
