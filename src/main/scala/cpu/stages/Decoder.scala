@@ -52,9 +52,9 @@ class uOpAndFormDecoderBySeq(val instructions: Seq[InstructionInfo]) extends Pip
     o.opcode.assignFromBits(MuxOH(oneHotMatcher, instructions.map(x => x.mnemonic.asBits)))
     o.form.assignFromBits(
       MuxOH(oneHotMatcher, instructions.map(x => x.form.asBits)))
-    o.uOps := (MuxOH(
-      oneHotMatcher,
-      instructions.map(x => uOpsMapping.lookup(x.mnemonic))))
+    // o.uOps := (MuxOH(
+    //   oneHotMatcher,
+    //   instructions.map(x => uOpsMapping.lookup(x.mnemonic))))
   }
 }
 

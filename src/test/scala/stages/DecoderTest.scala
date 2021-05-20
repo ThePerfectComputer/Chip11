@@ -2,6 +2,7 @@ package cpu.stages
 
 import cpu.interfaces.regfile.{SourceSelect}
 import cpu.interfaces.{DecoderData, ReadInterface, FetchOutput}
+import cpu.uOps.{uOpsMapping}
 import isa.{FormEnums, MnemonicEnums, ISAPairings}
 import util.{PipeStage, PipeData}
 
@@ -25,6 +26,11 @@ class DecoderDUT extends PipeStage(new FetchOutput, new ReadInterface){
 
 class DecoderTest extends AnyFlatSpec with should.Matchers {
   behavior of "uOpAndFormDecoder"
+
+  it should "have literals" in {
+    // println(uOpsMapping.default.asBits)
+    //println(uOpsMapping.lookup(MnemonicEnums.addi))
+  }
 
   // it should "create verilog" in {
   //   val stage = new ChiselStage

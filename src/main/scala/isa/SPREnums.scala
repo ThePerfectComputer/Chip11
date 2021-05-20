@@ -8,33 +8,66 @@ import scala.collection._
 object SPREnums extends SpinalEnum{
   val NONE = newElement()
   // from Power ISA v3.0B, page 117
-  val XER =     U(1)
-  val DSCR =    U(3)
-  val LR =      U(8)
-  val CTR =     U(9)
-  val AMR =     U(13)
-  val TFHAR =   U(128)
-  val TFIAR =   U(129)
-  val TEXASR =  U(130)
-  val TEXASRU = U(131)
-  val VRSAVE =  U(256)
-  val MMCR2 =   U(769)
-  val MMCRA =   U(770)
-  val PMC1 =    U(771)
-  val PMC2 =    U(772)
-  val PMC3 =    U(773)
-  val PMC4 =    U(774)
-  val PMC5 =    U(775)
-  val PMC6 =    U(776)
-  val MMCR0 =   U(779)
-  val BESCRS =  U(800)
-  val BESCRSU = U(801)
-  val BESCRR =  U(802)
-  val BESCRRU = U(803)
-  val EBBHR =   U(804)
-  val EBBRR =   U(805)
-  val BESCR =   U(806)
-  val TAR =     U(815)
-  val PPR =     U(896)
-  val PPR32 =   U(898)
+  val XER =     newElement()
+  val DSCR =    newElement()
+  val LR =      newElement()
+  val CTR =     newElement()
+  val AMR =     newElement()
+  val TFHAR =   newElement()
+  val TFIAR =   newElement()
+  val TEXASR =  newElement()
+  val TEXASRU = newElement()
+  val VRSAVE =  newElement()
+  val MMCR2 =   newElement()
+  val MMCRA =   newElement()
+  val PMC1 =    newElement()
+  val PMC2 =    newElement()
+  val PMC3 =    newElement()
+  val PMC4 =    newElement()
+  val PMC5 =    newElement()
+  val PMC6 =    newElement()
+  val MMCR0 =   newElement()
+  val BESCRS =  newElement()
+  val BESCRSU = newElement()
+  val BESCRR =  newElement()
+  val BESCRRU = newElement()
+  val EBBHR =   newElement()
+  val EBBRR =   newElement()
+  val BESCR =   newElement()
+  val TAR =     newElement()
+  val PPR =     newElement()
+  val PPR32 =   newElement()
+
+
+  defaultEncoding = SpinalEnumEncoding("sprEncoding")(
+  NONE -> 0,
+  XER -> 1,
+  DSCR -> 3,
+  LR -> 8,
+  CTR -> 9,
+  AMR -> 13,
+  TFHAR -> 128,
+  TFIAR -> 129,
+  TEXASR -> 130,
+  TEXASRU -> 131,
+  VRSAVE -> 256,
+  MMCR2 -> 769,
+  MMCRA -> 770,
+  PMC1 -> 771,
+  PMC2 -> 772,
+  PMC3 -> 773,
+  PMC4 -> 774,
+  PMC5 -> 775,
+  PMC6 -> 776,
+  MMCR0 -> 779,
+  BESCRS -> 800,
+  BESCRSU -> 801,
+  BESCRR -> 802,
+  BESCRRU -> 803,
+  EBBHR -> 804,
+  EBBRR -> 805,
+  BESCR -> 806,
+  TAR -> 815,
+  PPR -> 896,
+  PPR32 -> 898)
 }
