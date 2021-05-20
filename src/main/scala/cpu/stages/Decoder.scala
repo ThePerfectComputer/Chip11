@@ -2,7 +2,7 @@ package cpu.stages
 
 import cpu.interfaces.regfile.{SourceSelect}
 import cpu.interfaces.{FetchOutput, DecoderData, ReadInterface}
-import cpu.uOps.{FunctionalUnit, uOpsMapping}
+import cpu.uOps.{FunctionalUnit, UOpsMapping}
 
 import util.{PipeStage, PipeData}
 
@@ -44,6 +44,8 @@ class uOpAndFormDecoderBySeq(val instructions: Seq[InstructionInfo]) extends Pip
       oneHotMatcher(idx) := True
     }
   }
+
+  val uOpsMap = new UOpsMapping
   // If we haven't found a match yet,
   when(i.found_match === False){
     // set found_match if any bit in the vector is high
@@ -52,9 +54,9 @@ class uOpAndFormDecoderBySeq(val instructions: Seq[InstructionInfo]) extends Pip
     o.opcode.assignFromBits(MuxOH(oneHotMatcher, instructions.map(x => x.mnemonic.asBits)))
     o.form.assignFromBits(
       MuxOH(oneHotMatcher, instructions.map(x => x.form.asBits)))
-    // o.uOps := (MuxOH(
-    //   oneHotMatcher,
-    //   instructions.map(x => uOpsMapping.lookup(x.mnemonic))))
+    o.uOps := (MuxOH(
+      oneHotMatcher,
+      instructions.map(x => uOpsMap.lookup(x.mnemonic))))
   }
 }
 

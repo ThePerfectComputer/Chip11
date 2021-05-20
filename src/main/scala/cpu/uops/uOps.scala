@@ -20,12 +20,12 @@ object uOps{
     sub_function : Data,
     args : Data) = {
     val u = new uOps
-    assert(u.sub_function.getBitsWidth >= sub_function.getBitsWidth)
-    assert(u.args.getBitsWidth >= args.getBitsWidth)
-    val data = new uOps
-    data.functional_unit := functional_unit
-    data.sub_function := sub_function.asBits
-    data.args := args.asBits
-    data
+    assert(u.sub_function.getBitsWidth >= sub_function.asBits.getBitsWidth)
+    assert(u.args.getBitsWidth >= args.asBits.getBitsWidth)
+
+    u.functional_unit := functional_unit
+    u.sub_function := sub_function.asBits.resized
+    u.args := args.asBits.resized
+    u
   }
 }

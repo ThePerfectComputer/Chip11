@@ -2,8 +2,8 @@ package cpu.stages
 
 import cpu.interfaces.regfile.{SourceSelect}
 import cpu.interfaces.{DecoderData, ReadInterface, FetchOutput}
-import cpu.uOps.{uOpsMapping}
 import isa.{FormEnums, MnemonicEnums, ISAPairings}
+import cpu.uOps.functional_units.Integer.{IntegerFUSub, AdderSelectB, AdderCarryIn, AdderArgs, LogicSelectB, LogicArgs, MultiplierSelectB, MultiplierArgs, BranchArgs, ShifterSelectB, ShifterME, ShifterMB, ShifterArgs, ComparatorArgs, ComparatorSelectB}
 import util.{PipeStage, PipeData}
 
 import spinal.core._
@@ -28,7 +28,7 @@ class DecoderTest extends AnyFlatSpec with should.Matchers {
   behavior of "uOpAndFormDecoder"
 
   it should "have literals" in {
-    // println(uOpsMapping.default.asBits)
+    // println(x.slotB.asBits.getWidth)
     //println(uOpsMapping.lookup(MnemonicEnums.addi))
   }
 
@@ -58,21 +58,22 @@ class DecoderTest extends AnyFlatSpec with should.Matchers {
         assert(dut.pipeOutput.payload.imm.bits.toBigInt == 0x3f)
       }
   }
-  // it should "decode ExecuteArgs" in {
-  //   test(new DecoderDUT)
-  //     .withFlags(Array("--t-write-vcd")) { c =>
-  //       dut.pipeOutput.ready #= True
-  //       dut.pipeInput.valid #= True
+  it should "decode ExecuteArgs" in {
+    SimConfig.withWave.doSim(new DecoderDUT) { dut =>
+      dut.clockDomain.forkStimulus(10)
+      dut.pipeOutput.ready #= true
+      dut.pipeInput.valid #= true
+      dut.pipeOutput.flush #= false
 
-  //       // addi r4, r8, 0x1234
-  //       dut.pipeInput.payload.insn #= 0x38a81234.U
-  //       dut.clockDomain.waitSampling(1)
-  //       // add r2, r3, r4
-  //       dut.pipeInput.payload.insn #= 0x7c432214.U
-  //       dut.clockDomain.waitSampling(1)
-  //       // neg r10, r11
-  //       dut.pipeInput.payload.insn #= 0x7d4b00d0.U
-  //       dut.clockDomain.waitSampling(10)
-  //     }
-  // }
+      // addi r4, r8, 0x1234
+      dut.pipeInput.payload.insn #= 0x38a81234
+      dut.clockDomain.waitSampling(1)
+      // add r2, r3, r4
+      dut.pipeInput.payload.insn #= 0x7c432214
+      dut.clockDomain.waitSampling(1)
+      // neg r10, r11
+      dut.pipeInput.payload.insn #= 0x7d4b00d0
+      dut.clockDomain.waitSampling(10)
+      }
+  }
 }

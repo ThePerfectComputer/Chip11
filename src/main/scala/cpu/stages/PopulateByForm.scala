@@ -3,7 +3,7 @@ package cpu.stages
 import cpu.interfaces.regfile.{SourceSelect}
 import cpu.interfaces.{DecoderData, ReadInterface}
 import cpu.shared.memory_state.{TransactionType, TransactionSize}
-import cpu.uOps.{FunctionalUnit, uOpsMapping}
+import cpu.uOps.{FunctionalUnit}
 
 import util.{PipeStage, PipeData}
 
