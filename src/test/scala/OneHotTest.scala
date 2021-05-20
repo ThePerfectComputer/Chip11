@@ -28,9 +28,9 @@ class OneHotSwitch(items: Int, width: Int) extends Component {
 
   io.out_decoded := io.out_decoded.getZero
   val decodeItems = Seq.tabulate(items)(i => U((i+1)*(i+1), width bits))
-  oneHotSwitch(io.in_oh){
+  oneHotSwitch(True){
     for((item, i) <- decodeItems.zipWithIndex){
-      is(i){
+      is(io.in_oh(i)){
         io.out_decoded := item
       }
     }

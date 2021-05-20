@@ -51,12 +51,27 @@ class uOpAndFormDecoderBySeq(val instructions: Seq[InstructionInfo]) extends Pip
     // set found_match if any bit in the vector is high
     o.found_match := oneHotMatcher.orR
     // // Lookup the mnemonic from instructions using the one hot index
-    o.opcode.assignFromBits(Mux1H(oneHotMatcher, instructions.map(x => x.mnemonic.asBits)))
-    o.form.assignFromBits(
-      Mux1H(oneHotMatcher, instructions.map(x => x.form.asBits)))
-    o.uOps := (Mux1H(
-      oneHotMatcher,
-      instructions.map(x => uOpsMap.lookup(x.mnemonic))))
+    oneHotSwitch(True){
+      for((info, idx) <- instructions.zipWithIndex){
+        is(oneHotMatcher(idx)){
+          o.opcode := info.mnemonic
+        }
+      }
+    }
+    oneHotSwitch(True){
+      for((info, idx) <- instructions.zipWithIndex){
+        is(oneHotMatcher(idx)){
+          o.form := info.form
+        }
+      }
+    }
+    oneHotSwitch(True){
+      for((info, idx) <- instructions.zipWithIndex){
+        is(oneHotMatcher(idx)){
+          o.uOps := uOpsMap.lookup(info.mnemonic)
+        }
+      }
+    }
   }
 }
 
