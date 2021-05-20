@@ -15,3 +15,9 @@ class DecoderData extends FetchOutput {
   val found_match = Bool()
   val insn_unsupported = Bool()
 }
+
+class MultiDecoderData(val stages: Int) extends FetchOutput {
+  val data = Seq.fill(stages)(new DecoderData)
+
+  override def clone = new MultiDecoderData(stages)
+}
