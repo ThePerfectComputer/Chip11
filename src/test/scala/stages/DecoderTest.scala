@@ -23,14 +23,26 @@ class DecoderDUT extends PipeStage(new FetchOutput, new ReadInterface){
   dec >-> populate >-> pipeOutput
 }
 
+class DecoderTestVerilog extends AnyFlatSpec with should.Matchers {
+  behavior of "uOpAndFormDecoder"
+
+
+  it should "create verilog" in {
+    val config = SpinalConfig(mode=Verilog, mergeAsyncProcess=true).withoutEnumString()
+    SpinalVerilog(new DecoderDUT)
+    SpinalVerilog(new uOpAndFormDecoder)
+    config.generate(new uOpAndFormDecoderBySeq(ISAPairings.pairings.take(10)))
+  }
+}
 
 class DecoderTest extends AnyFlatSpec with should.Matchers {
   behavior of "uOpAndFormDecoder"
 
 
   it should "create verilog" in {
+    val config = SpinalConfig(mode=Verilog, mergeAsyncProcess=true).withoutEnumString()
     SpinalVerilog(new DecoderDUT)
-    val config = SpinalConfig(mode=Verilog).withoutEnumString()
+    SpinalVerilog(new uOpAndFormDecoder)
     config.generate(new uOpAndFormDecoderBySeq(ISAPairings.pairings.take(10)))
   }
 

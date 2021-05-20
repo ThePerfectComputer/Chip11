@@ -4,7 +4,7 @@ import cpu.interfaces.regfile.{SourceSelect}
 import cpu.interfaces.{FetchOutput, DecoderData, ReadInterface}
 import cpu.uOps.{FunctionalUnit, UOpsMapping}
 
-import util.{PipeStage, PipeData}
+import util.{PipeStage, PipeData, Mux1H}
 
 import isa.{MnemonicEnums, FormEnums, SPREnums, Forms}
 import isa.{ISAPairings, InstructionInfo}
@@ -51,9 +51,9 @@ class uOpAndFormDecoderBySeq(val instructions: Seq[InstructionInfo]) extends Pip
     // set found_match if any bit in the vector is high
     o.found_match := oneHotMatcher.orR
     // // Lookup the mnemonic from instructions using the one hot index
-    o.opcode.assignFromBits(MuxOH(oneHotMatcher, instructions.map(x => x.mnemonic.asBits)))
+    o.opcode.assignFromBits(Mux1H(oneHotMatcher, instructions.map(x => x.mnemonic.asBits)))
     o.form.assignFromBits(
-      MuxOH(oneHotMatcher, instructions.map(x => x.form.asBits)))
+      Mux1H(oneHotMatcher, instructions.map(x => x.form.asBits)))
     o.uOps := (MuxOH(
       oneHotMatcher,
       instructions.map(x => uOpsMap.lookup(x.mnemonic))))
