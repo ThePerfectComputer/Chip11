@@ -27,17 +27,10 @@ class DecoderDUT extends PipeStage(new FetchOutput, new ReadInterface){
 class DecoderTest extends AnyFlatSpec with should.Matchers {
   behavior of "uOpAndFormDecoder"
 
-  it should "have literals" in {
-    // println(x.slotB.asBits.getWidth)
-    //println(uOpsMapping.lookup(MnemonicEnums.addi))
+
+  it should "create verilog" in {
+    SpinalVerilog(new DecoderDUT)
   }
-
-  // it should "create verilog" in {
-  //   val stage = new ChiselStage
-
-  //   stage.emitVerilog(new uOpAndFormDecoder, Array("-td", "./test_run_dir"))
-  //   stage.emitVerilog(new uOpAndFormDecoderBySeq(ISAPairings.pairings.take(10)), Array("-td", "./test_run_dir"))
-  // }
 
   it should "decode some simple instructions" in {
     SimConfig.withWave.doSim(new DecoderDUT) { dut =>
