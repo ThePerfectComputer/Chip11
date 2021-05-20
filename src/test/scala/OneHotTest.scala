@@ -20,6 +20,23 @@ class OneHotDUT(items: Int, width: Int) extends Component {
   io.out_decoded := Mux1H(io.in_oh, decodeItems).resized
 }
 
+class OneHotSwitch(items: Int, width: Int) extends Component {
+  val io = new Bundle {
+    val in_oh = in Bits(items bits)
+    val out_decoded = out UInt(width bits)
+  }
+
+  io.out_decoded := io.out_decoded.getZero
+  val decodeItems = Seq.tabulate(items)(i => U((i+1)*(i+1), width bits))
+  oneHotSwitch(io.in_oh){
+    for((item, i) <- decodeItems.zipWithIndex){
+      is(i){
+        io.out_decoded := item
+      }
+    }
+  }
+}
+
 object TestEnum extends SpinalEnum {
   val e0, e1, e2, e3, e4, e5, e6, e7 = newElement()
   val e8, e9, e10, e11, e12, e13, e14, e15 = newElement()
@@ -52,6 +69,7 @@ class OneHotTest extends AnyFlatSpec with should.Matchers {
   it should "create verilog" in {
     val config = SpinalConfig(mode=Verilog, mergeAsyncProcess=true).withoutEnumString()
     config.generate(new OneHotDUT(16, 12))
+    config.generate(new OneHotSwitch(16, 12))
     config.generate(new OneHotEnum(12))
   }
 }
