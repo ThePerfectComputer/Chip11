@@ -5,3 +5,6 @@ simWorkspace/
 project/*
 target/*
 waves/*
+.metals/
+.bloop/
+
