@@ -19,7 +19,7 @@ class MemoryAdaptor(debug : Boolean = false) extends Component {
   val io = new Bundle {
     val request  = in(new LineRequest)
     val response = out(new LineResponse)
-    val membus   = out(new MemBus128)
+    val membus   = (new MemBus128).flip()
 
     // val state =  if(debug) Some(Output(MemoryAdaptorState())) else None
   }
@@ -53,7 +53,6 @@ class MemoryAdaptor(debug : Boolean = false) extends Component {
   request_combined := io.request
 
   // default tieoffs for IO
-  io.response.data         := 0
   io.response.status       := TransactionStatus.IDLE
   io.response.byte_address := request_latched.byte_address
 
@@ -67,6 +66,8 @@ class MemoryAdaptor(debug : Boolean = false) extends Component {
   
   // some internal signals
   val state             = RegInit(MemoryAdaptorState.IDLE)
+  import spinal.core.sim._
+  state.simPublic()
   val aligned           = Bool()
   val start_byte        = request_combined.byte_address(3 downto 0)
   val line_address      = request_combined.byte_address(63 downto 4)
@@ -173,6 +174,10 @@ class MemoryAdaptor(debug : Boolean = false) extends Component {
 
     }
 
+  }
+
+  def debug() {
+    println(s"got callback! ${state.toEnum}")
   }
 
   // manually passthrough signals

@@ -1,6 +1,8 @@
 out/
 *~
 *.v
+*.vhd
+*.bsp
 simWorkspace/
 project/*
 target/*
