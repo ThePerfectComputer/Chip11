@@ -20,7 +20,7 @@ class DecoderDUT extends PipeStage(new FetchOutput, new ReadInterface){
   val dec = new uOpAndFormDecoder
   val populate = new PopulateByForm
   dec << pipeInput
-  dec >-> populate >> pipeOutput
+  dec >-> populate >-> pipeOutput
 }
 
 
@@ -30,6 +30,8 @@ class DecoderTest extends AnyFlatSpec with should.Matchers {
 
   it should "create verilog" in {
     SpinalVerilog(new DecoderDUT)
+    val config = SpinalConfig(mode=Verilog).withoutEnumString()
+    config.generate(new uOpAndFormDecoderBySeq(ISAPairings.pairings.take(10)))
   }
 
   it should "decode some simple instructions" in {
