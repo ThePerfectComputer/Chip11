@@ -2,7 +2,12 @@ package cpu.stages
 
 import cpu.debug.debug_read
 import cpu.interfaces.regfile.{SourceSelect, ReadPort}
-import cpu.interfaces.{ReadInterface, WriteInterface, DecoderData, LoadStoreRequest}
+import cpu.interfaces.{
+  ReadInterface,
+  WriteInterface,
+  DecoderData,
+  LoadStoreRequest
+}
 import util._
 import spinal.core._
 import spinal.lib.{master}
@@ -49,37 +54,35 @@ object PortCycleMap {
   map += ((SourceSelect.FPSCR, ReadSlotPacking.FPSCRPort1) -> (0, 1))
   map += ((SourceSelect.FPSCR, ReadSlotPacking.FPSCRPort1) -> (1, 1))
 
-
-
   def apply(sel: SourceSelect.E, port: Int) = map.get((sel, port))
 }
 
-class ReadStageIO extends Bundle {
-  val gpr_rp = Vec(master(new ReadPort(5, 64)), 2)
-  val vr_rp = Vec(master(new ReadPort(5, 128)), 2)
-  val vsr_rp = Vec(master(new ReadPort(6, 128)), 2)
-  val fpr_rp = Vec(master(new ReadPort(5, 64)), 2)
-  val comb_rp = Vec(master(new ReadPort(5, 64)), 2)
-  val bhrb_rp = Vec(master(new ReadPort(5, 64)), 1)
-  val spr_rp = Vec(master(new ReadPort(10, 64)), 2)
-  val cr_rp = Vec(master(new ReadPort(1, 16)), 2)
-  val fpscr_rp = Vec(master(new ReadPort(1, 16)), 2)
-}
-
-class ReadStage extends PipeStageIO(new ReadInterface, new ReadInterface, new ReadStageIO) {
+class ReadStage extends PipeStage(new ReadInterface, new ReadInterface) {
+  val io = new Bundle {
+    val gpr_rp = Vec(master(new ReadPort(5, 64)), 2)
+    val vr_rp = Vec(master(new ReadPort(5, 128)), 2)
+    val vsr_rp = Vec(master(new ReadPort(6, 128)), 2)
+    val fpr_rp = Vec(master(new ReadPort(5, 64)), 2)
+    val comb_rp = Vec(master(new ReadPort(5, 64)), 2)
+    val bhrb_rp = Vec(master(new ReadPort(5, 64)), 1)
+    val spr_rp = Vec(master(new ReadPort(10, 64)), 2)
+    val cr_rp = Vec(master(new ReadPort(1, 16)), 2)
+    val fpscr_rp = Vec(master(new ReadPort(1, 16)), 2)
+  }
 
   val internal_ready = Bool()
   internal_ready := True
+  ready.allowOverride
   ready := internal_ready
 
+  io.bhrb_rp(0).idx := 0
   // Initialize all the register file read ports
-  for(idx <- 0 until 2){
+  for (idx <- 0 until 2) {
     io.gpr_rp(idx).idx := 0
     io.vr_rp(idx).idx := 0
     io.vsr_rp(idx).idx := 0
     io.fpr_rp(idx).idx := 0
     io.comb_rp(idx).idx := 0
-    io.bhrb_rp(0).idx := 0
     io.spr_rp(idx).idx := 0
     io.cr_rp(idx).idx := 0
     io.fpscr_rp(idx).idx := 0
@@ -93,18 +96,18 @@ class ReadStage extends PipeStageIO(new ReadInterface, new ReadInterface, new Re
     incoming_sel(slot_index) := incoming_sel(slot_index).getZero
     incoming_idx(slot_index) := 0
     // when valid, latch incoming data
-    when (pipeInput.valid) {
+    when(pipeInput.valid) {
       incoming_sel(slot_index) := i.slots(slot_index).sel
-      incoming_idx(slot_index) := i.slots(slot_index).idx
+      incoming_idx(slot_index) := i.slots(slot_index).idx.resized
     }
   }
 
   // Initialize the output registers
-  for(idx <- 0 until 5) {
+  for (idx <- 0 until 5) {
     // for read interface
     o.slots(idx).data := 0
     o.slots(idx).sel := incoming_sel(idx)
-    o.slots(idx).idx := incoming_idx(idx)
+    o.slots(idx).idx := incoming_idx(idx).resized
 
   }
 
@@ -116,15 +119,23 @@ class ReadStage extends PipeStageIO(new ReadInterface, new ReadInterface, new Re
   val secondCycleNeeded = Bool
   secondCycleNeeded := False
   // Holds the data read from the read port on the previous cycle
-  val data_out = Vec(Seq(UInt(128 bits), UInt(128 bits), UInt(128 bits), UInt(64 bits), UInt(64 bits)))
+  val data_out = Vec(
+    Seq(
+      UInt(128 bits),
+      UInt(128 bits),
+      UInt(128 bits),
+      UInt(64 bits),
+      UInt(64 bits)
+    )
+  )
   val data_out_reg = Reg(cloneOf(data_out))
   data_out_reg := data_out
-  for( elem <- data_out) {
+  for (elem <- data_out) {
     elem := 0
   }
   // Take data from data_out versus data_out_reg
   val forward_data = Vec(Bool, 5)
-  for(elem <- forward_data) {
+  for (elem <- forward_data) {
     elem := False
   }
 
@@ -132,32 +143,32 @@ class ReadStage extends PipeStageIO(new ReadInterface, new ReadInterface, new Re
   val main_valid_reg = Reg(Bool())
   main_valid_reg := False
 
+  for ((slot, i) <- i.slots.zipWithIndex) {
 
-
-
-  for((slot, i) <- i.slots.zipWithIndex) {
-
-    def readFromRegfile[T <: Vec[ReadPort]](enumVal: SourceSelect.E, io_rp : T) = {
+    def readFromRegfile[T <: Vec[ReadPort]](
+        enumVal: SourceSelect.E,
+        io_rp: T
+    ) = {
       val regInfo = PortCycleMap(enumVal, i)
       regInfo match {
         // If we get good data back
         case Some((rpidx, readcycle)) => {
           val resultAvailable = Reg(Bool)
           resultAvailable := False
-          when(slot.sel === enumVal){
+          when(slot.sel === enumVal) {
             // Look up the port index and cycle map
             // Assign to the read port index on the correct cycle
             when(cycle === readcycle) {
-              io_rp(rpidx).idx := slot.idx
+              io_rp(rpidx).idx := slot.idx.resized
               resultAvailable := True
             }
             // Also indicate if we need a second cycle
-            if(readcycle == 2)
+            if (readcycle == 2)
               secondCycleNeeded := True
           }
           // If the register file has produced a result, place the data in data_out
-          when(resultAvailable === True){
-            data_out(i) := io_rp(rpidx).data
+          when(resultAvailable === True) {
+            data_out(i) := io_rp(rpidx).data.resized
             forward_data(i) := True
           }
         }
@@ -178,24 +189,24 @@ class ReadStage extends PipeStageIO(new ReadInterface, new ReadInterface, new Re
   }
 
   // Send the data to the pipeline output
-  for((slot, i) <- o.slots.zipWithIndex){
+  for ((slot, i) <- o.slots.zipWithIndex) {
     // If a given piece of data is in data_out
-    when(slot.sel === SourceSelect.NONE){
+    when(slot.sel === SourceSelect.NONE) {
       slot.data := 0
-    } .elsewhen(forward_data(i) === True) {
+    }.elsewhen(forward_data(i) === True) {
       slot.data := data_out(i)
-    } .otherwise {
+    }.otherwise {
       slot.data := data_out_reg(i)
     }
   }
 
-  when(cycle === 1){
+  when(cycle === 1) {
     // If we need to delay, update the cycle counter and clear the ready bit
-    when(secondCycleNeeded =/= False){
+    when(secondCycleNeeded =/= False) {
       internal_ready := False
       cycle := 2
       // Otherwise, delay valid/spec by one cycle
-    } .otherwise {
+    }.otherwise {
       main_valid_reg := pipeInput.valid
     }
   }.otherwise {
@@ -216,20 +227,17 @@ class ReadStage extends PipeStageIO(new ReadInterface, new ReadInterface, new Re
   ldst_request_reg := i.ldst_request
   compare_reg := i.compare
 
-
   o.imm := imm_reg
   o.dec_data := dec_data_reg
   o.write_interface := write_interface_reg
   o.ldst_request := ldst_request_reg
   o.compare := compare_reg
 
-
-
   // Upon a speculative flush, reset the stage so it can begin reading on the next cycle
   // We have to do this manually, because the stage is already
   // registered (we're essentially implementing RegisteredPipeStage by
   // hand).
-  when(pipeOutput.flush){
+  when(pipeOutput.flush) {
     main_valid_reg := False
     cycle := 1
   }

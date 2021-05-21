@@ -5,7 +5,7 @@ import cpu.interfaces.regfile.{ReadPort, WritePort, WritePortMasked}
 import spinal.core._
 import spinal.lib._
 
-class Regfile(val numRegs: Int, val regWidth: Int, val readPorts:Int, val writePorts:Int) extends Component {
+class Regfile(val numRegs: Int, val regWidth: Int, val readPorts:Int=1, val writePorts:Int=1) extends Component {
   val idxWidth = log2Up(numRegs)
   val io = new Bundle{
     val rp = Vec(slave(new ReadPort(idxWidth, regWidth)), readPorts)
@@ -46,7 +46,7 @@ class RegfileMasked(val numRegs: Int, val regWidth: Int, val readPorts:Int, val 
 
 
 // Another Multi-Port regfile that should synthesize a bit better
-class BRAMMultiRegfile(numRegs: Int, regWidth: Int, readPorts:Int, writePorts:Int) extends
+class BRAMMultiRegfile(numRegs: Int, regWidth: Int, readPorts:Int=1, writePorts:Int=1) extends
     Regfile(numRegs, regWidth, readPorts, writePorts){
 
   val memIdxBits = log2Up(writePorts)

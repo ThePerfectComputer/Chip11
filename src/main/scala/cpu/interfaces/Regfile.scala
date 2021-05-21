@@ -3,7 +3,7 @@ package cpu.interfaces.regfile
 import spinal.core._
 import spinal.lib._
 
-class Slot(val idxWid: Int, val dataWid: Int) extends Bundle {
+case class Slot(val idxWid: Int, val dataWid: Int) extends Bundle {
   val idx = UInt(idxWid bits)
   val sel = SourceSelect()
   val data = UInt(dataWid bits)
@@ -15,9 +15,9 @@ class Slot(val idxWid: Int, val dataWid: Int) extends Bundle {
   }
 }
 
-class ReadPort(val idxWidth: Int, val dataWidth: Int) extends Bundle with IMasterSlave{
-  val idx = UInt(idxWidth bits)
-  val data = UInt(dataWidth bits)
+case class ReadPort(val idxWidth: Int, val dataWidth: Int) extends Bundle with IMasterSlave {
+  val idx = out UInt(idxWidth bits)
+  val data = in UInt(dataWidth bits)
 
   override def asMaster() : Unit = {
     in(data)
@@ -25,7 +25,7 @@ class ReadPort(val idxWidth: Int, val dataWidth: Int) extends Bundle with IMaste
   }
 }
 
-class WritePort(val idxWidth: Int, val dataWidth: Int) extends Bundle with IMasterSlave{
+case class WritePort(val idxWidth: Int, val dataWidth: Int) extends Bundle with IMasterSlave{
   val idx = UInt(idxWidth bits)
   val en = Bool()
   val data = UInt(dataWidth bits)
