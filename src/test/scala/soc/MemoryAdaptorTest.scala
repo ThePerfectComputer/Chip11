@@ -15,6 +15,7 @@ import spinal.core.sim._
 import org.scalatest._
 import flatspec._
 import matchers._
+import _root_.soc.devices.DebugDualPortSram128
 
 object DebugMemoryAdaptorWithSram {
   var debug = false
@@ -49,6 +50,7 @@ class MemoryAdaptorWithSram() extends Component {
 
   def debug() {
     if (memory_adaptor.debugEnabled()) {memory_adaptor.debug()}
+    if (ram.debugEnabled()) {ram.debug()}
   }
 }
 
@@ -60,20 +62,21 @@ class TruthTableTest extends AnyFlatSpec with should.Matchers {
   }
 
   it should "test all 80 possible transactions from the truth table" in {
-    val debug = true
-    DebugMemoryAdaptor.debug = true
-    DebugWriteAdaptor.debug = true
+    val debug = false
+    DebugMemoryAdaptor.debug = debug
+    DebugWriteAdaptor.debug = debug
+    DebugDualPortSram128.debug = debug
 
     SimConfig.withWave.doSim(new MemoryAdaptorWithSram()){dut =>
-      SimTimeout(300)
-      if (debug) {dut.clockDomain.onRisingEdges{dut.debug()}}
-      if (debug) {dut.clockDomain.onRisingEdges{println(s"$YELLOW STEPPING $RESET")}}
+      // SimTimeout(300)
+      if (debug) {dut.clockDomain.onFallingEdges{dut.debug()}}
+      if (debug) {dut.clockDomain.onFallingEdges{println(s"$YELLOW STEPPING $RESET")}}
       dut.clockDomain.forkStimulus(period = 10)
 
       def get_ack() = {
         while(!dut.io.ack.toBoolean){
-          // if (debug) {println(s"$CYAN_B stepping ack$RESET")}
-          dut.clockDomain.waitRisingEdge()
+          if (debug) {println(s"$CYAN_B ${dut.io.ack.toBoolean} ack$RESET")}
+          dut.clockDomain.waitFallingEdge()
         }
         dut.io.request.ldst_req #= TransactionType.NONE
       }
@@ -93,19 +96,19 @@ class TruthTableTest extends AnyFlatSpec with should.Matchers {
           dut.io.request.size #= bytes_in_transaction
           val test_data = BigInt.apply(8 * bytes_in_transaction_asInt, scala.util.Random)
           dut.io.request.data #= test_data
-          dut.clockDomain.waitRisingEdge()
+          dut.clockDomain.waitFallingEdge()
           get_ack()
 
 
           // read some data
           if (debug) {println(s"${GREEN}loading $bytes_in_transaction @ $start_byte ${RESET}")}
           dut.io.request.ldst_req #= (TransactionType.LOAD)
-          dut.clockDomain.waitRisingEdge()
+          dut.clockDomain.waitFallingEdge()
           get_ack()
           
           // verify results
           if (debug) {println("trying assertion")}
-          assert(dut.io.response.data.toBigInt == test_data.toInt)
+          assert(dut.io.response.data.toBigInt == test_data)
           }
         }
     }

@@ -13,7 +13,6 @@ object DebugWriteAdaptor {
 class WriteAdaptor extends Component {
 
   val io = new Bundle {
-    val state             = in(MemoryAdaptorState())
     val start_byte        = in(UInt(4 bits))
     val size              = in(TransactionSize())
     val line_request      = in(UInt(128 bits))
@@ -83,6 +82,7 @@ class WriteAdaptor extends Component {
   }
 
   def debug() {
+    // if (io.state == MemoryAdaptorState.Sto)
     println("WRITE ADAPTOR:")
     println(s"size = ${io.size.toEnum}")
     println(s"io.transaction1_data = ${vecToStringU(io.transaction1_data)}")

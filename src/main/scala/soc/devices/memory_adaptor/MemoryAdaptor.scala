@@ -90,7 +90,6 @@ class MemoryAdaptor() extends Component {
   io.response.data                  := load_adaptor.io.line_response
 
   // write adaptor
-  write_adaptor.io.state := state
   write_adaptor.io.start_byte := start_byte
   write_adaptor.io.size := request_combined.size
   write_adaptor.io.line_request := request_combined.data

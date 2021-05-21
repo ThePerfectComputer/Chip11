@@ -5,6 +5,9 @@ import cpu.shared.memory_state.{TransactionStatus, TransactionType}
 
 import spinal.core._
 import spinal.lib._
+object DebugDualPortSram128 {
+  var debug = false
+}
 
 class DualPortSram128(depth: Int=8, dataWidth: Int=128) extends Component {
   val io = new Bundle {
@@ -15,8 +18,6 @@ class DualPortSram128(depth: Int=8, dataWidth: Int=128) extends Component {
 
   val mem = Mem(Vec(UInt(8 bits), 16), depth)
   val address_width = mem.addressWidth
-  println(s"address width is ${address_width}")
-  // loadMemoryFromFile(mem, mem_file)
 
   val port1_do_load  = (io.port_1.ldst_req === TransactionType.LOAD)
   val port1_do_store = (io.port_1.ldst_req === TransactionType.STORE)
@@ -47,8 +48,42 @@ class DualPortSram128(depth: Int=8, dataWidth: Int=128) extends Component {
     port2_status_reg := TransactionStatus.IDLE
   }
 
-}
+  import spinal.core.sim._
+  import util.SimHelpers.{vecToStringU, vecToStringB}
 
-object runme {
-  def main(args : Array[String]) = println("I compiled")
+  def debugEnabled() : Boolean = DebugDualPortSram128.debug
+
+  var last_store_address_port2 = BigInt(0)
+  var last_store_value_port2 = BigInt(0)
+  var last_load_address_port2 = BigInt(0)
+  var last_load_value_port2 = BigInt(0)
+
+  if (debugEnabled()) {
+    mem       simPublic()
+    io.port_1 simPublic()
+    io.port_2 simPublic()
+  }
+  
+  def debugPort(port : MemBus128){
+
+    if (port.ldst_req.toEnum == TransactionType.LOAD){
+      println(s"${port.getName()} RECIEVED ${port.ldst_req.toEnum} REQUEST")
+      println(s"${port.read_data.getName()} = ${vecToStringU(port.read_data)}")
+      println(s"${port.quad_word_address.getName()} = ${port.quad_word_address.toBigInt}")
+    }
+
+    if (port.ldst_req.toEnum == TransactionType.STORE){
+      println(s"${port.getName()} RECIEVED ${port.ldst_req.toEnum} REQUEST")
+      println(s"${port.read_data.getName()} = ${vecToStringU(port.read_data)}")
+      println(s"${port.quad_word_address.getName()} = ${port.quad_word_address.toBigInt}")
+    }
+
+  }
+
+  def debug() {
+    println("RAM:")
+    debugPort(io.port_1)
+    debugPort(io.port_2)
+  }
+
 }

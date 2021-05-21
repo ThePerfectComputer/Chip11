@@ -16,7 +16,7 @@ object SimHelpers{
 
   def vecToStringU(vec : Vec[UInt]) : String = {
     val result  = new StringBuilder("LeastSig <")
-    vec.zipWithIndex.foreach{ case(el, index) => (result ++= s" ${el.toBigInt.toString(16)}, ")}
+    vec.zipWithIndex.foreach{ case(el, index) => (result ++= s" 0x${el.toBigInt.toString(16)}, ")}
     result ++= "> MostSig"
     result.toString()
   }

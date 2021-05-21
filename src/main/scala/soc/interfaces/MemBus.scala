@@ -16,7 +16,3 @@ class MemBus128() extends Bundle {
   val read_data         = out(Vec(UInt(8 bits), 16))
   val status            = out(TransactionStatus())
 }
-
-object runme {
-  def main(args : Array[String]) = println("I compiled")
-}
