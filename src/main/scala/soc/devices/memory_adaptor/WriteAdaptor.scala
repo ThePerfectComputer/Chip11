@@ -13,11 +13,10 @@ object DebugWriteAdaptor {
 class WriteAdaptor extends Component {
 
   val io = new Bundle {
-    val state                   = in(MemoryAdaptorState())
-    val start_byte              = in(UInt(4 bits))
-    val aligned                 = in(Bool())
-    val size                    = in(TransactionSize())
-    val line_request            = in(UInt(128 bits))
+    val state             = in(MemoryAdaptorState())
+    val start_byte        = in(UInt(4 bits))
+    val size              = in(TransactionSize())
+    val line_request      = in(UInt(128 bits))
 
     val transaction1_data = out(Vec(UInt(8 bits), 16))
     val transaction1_mask = out(Vec(Bool(),       16))
@@ -71,20 +70,25 @@ class WriteAdaptor extends Component {
   }
 
   import spinal.core.sim._
-  import util.SimHelpers.{vecToString}
+  import util.SimHelpers.{vecToStringU, vecToStringB}
 
   def debugEnabled() : Boolean = DebugWriteAdaptor.debug
 
   if (debugEnabled()) {
+    io.size              simPublic()
+    io.transaction1_mask simPublic()
+    io.transaction1_data simPublic()
     io.transaction2_mask simPublic()
+    io.transaction2_data simPublic()
   }
 
   def debug() {
     println("WRITE ADAPTOR:")
-    // println(s"io.transaction1_data = ")
-    println(s"io.transaction2_mask = ${vecToString(io.transaction2_mask)}")
-    // println(s"io.transaction1_data = ")
-    // println(s"io.transaction2_mask = ")
+    println(s"size = ${io.size.toEnum}")
+    println(s"io.transaction1_data = ${vecToStringU(io.transaction1_data)}")
+    println(s"io.transaction1_mask = ${vecToStringB(io.transaction1_mask)}")
+    println(s"io.transaction2_data = ${vecToStringU(io.transaction2_data)}")
+    println(s"io.transaction2_mask = ${vecToStringB(io.transaction2_mask)}")
   }
 
 }

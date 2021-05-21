@@ -93,7 +93,6 @@ class MemoryAdaptor() extends Component {
   write_adaptor.io.state := state
   write_adaptor.io.start_byte := start_byte
   write_adaptor.io.size := request_combined.size
-  write_adaptor.io.aligned := aligned
   write_adaptor.io.line_request := request_combined.data
   io.membus.write_data.foreach{el => el := 0}
   io.membus.write_mask.foreach{el => el := False}
@@ -182,13 +181,16 @@ class MemoryAdaptor() extends Component {
   def debugEnabled() : Boolean = DebugMemoryAdaptor.debug
   
   if (debugEnabled()) {
-    state.simPublic()
+    state               simPublic()
+    io.request.ldst_req simPublic()
   }
   
   def debug() {
     println("MEMORY ADAPTOR:")
     println(s"MEMORY ADAPTOR STATE: ${state.toEnum}")
-    if (write_adaptor.debugEnabled()) {write_adaptor.debug()}
+    if (write_adaptor.debugEnabled()) {
+      if (io.request.ldst_req.toEnum == TransactionType.STORE){write_adaptor.debug()}
+    }
   }
 
 }

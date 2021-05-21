@@ -1,6 +1,6 @@
 package soc.devices.memory_adaptor
 
-import Console.{BLUE, GREEN, CYAN_B, RED, RESET}
+import Console.{BLUE, GREEN, CYAN_B, RED, RESET, YELLOW}
 import soc.devices.DualPortSram128
 
 import cpu.interfaces.{LineRequest, LineResponse}
@@ -67,11 +67,12 @@ class TruthTableTest extends AnyFlatSpec with should.Matchers {
     SimConfig.withWave.doSim(new MemoryAdaptorWithSram()){dut =>
       SimTimeout(300)
       if (debug) {dut.clockDomain.onRisingEdges{dut.debug()}}
+      if (debug) {dut.clockDomain.onRisingEdges{println(s"$YELLOW STEPPING $RESET")}}
       dut.clockDomain.forkStimulus(period = 10)
 
       def get_ack() = {
         while(!dut.io.ack.toBoolean){
-          if (debug) {println(s"$CYAN_B stepping ack$RESET")}
+          // if (debug) {println(s"$CYAN_B stepping ack$RESET")}
           dut.clockDomain.waitRisingEdge()
         }
         dut.io.request.ldst_req #= TransactionType.NONE
