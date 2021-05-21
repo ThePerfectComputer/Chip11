@@ -10,3 +10,7 @@ waves/*
 .metals/
 .bloop/
 
+
+*.bin
+*.json
+tmp/*
