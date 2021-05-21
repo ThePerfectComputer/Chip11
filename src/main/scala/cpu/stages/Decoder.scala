@@ -1,7 +1,7 @@
 package cpu.stages
 
 import cpu.interfaces.regfile.{SourceSelect}
-import cpu.interfaces.{FetchOutput, DecoderData, ReadInterface}
+import cpu.interfaces.{FetchOutput, DecoderData, MultiDecoderData, ReadInterface}
 import cpu.uOps.{FunctionalUnit, UOpsMapping}
 
 import util.{PipeStage, PipeData, Mux1H}
@@ -54,55 +54,77 @@ class uOpAndFormDecoderBySeq(val instructions: Seq[InstructionInfo]) extends Pip
     o.opcode.assignFromBits(Mux1H(oneHotMatcher, instructions.map(x => x.mnemonic.asBits)))
     o.form.assignFromBits(
       Mux1H(oneHotMatcher, instructions.map(x => x.form.asBits)))
-    o.uOps := (MuxOH(
+    o.uOps := (Mux1H(
       oneHotMatcher,
       instructions.map(x => uOpsMap.lookup(x.mnemonic))))
+  }
+}
+
+class uOpAndFormDecoderMulti(numStages: Int) extends
+    PipeStage(new DecoderData, new MultiDecoderData(numStages)){
+
+  val numitems = (ISAPairings.pairings.size + numStages - 1) / numStages
+  val groups = ISAPairings.pairings.grouped(numitems)
+  val stages = groups.map( g => new uOpAndFormDecoderBySeq(g)).toSeq
+
+  for((stage, idx) <- stages.zipWithIndex){
+    stage << pipeInput
+    stage.pipeOutput.ready := pipeOutput.ready
+    stage.pipeOutput.flush := pipeOutput.flush
+    pipeOutput.payload.data(idx) := stage.pipeOutput.payload
+  }
+}
+
+class uOpAndFormDecoderMux(numStages: Int) extends
+    PipeStage(new MultiDecoderData(numStages), new DecoderData){
+  //val matches = B(0, numStages bits)
+  o := o.getZero
+  for((decdata, idx) <- i.data.zipWithIndex) {
+    when(decdata.found_match){
+      o := decdata
+    }
   }
 }
 
 
 class uOpAndFormDecoder extends PipeStage(new FetchOutput, new DecoderData){
 
-  val numstages = 6
-  val numitems = (ISAPairings.pairings.size + numstages - 1) / numstages
-  val groups = ISAPairings.pairings.grouped(numitems)
+  val numStages = 6
 
 
 
   val di = new DecodeInit
-  val stages = groups.map( g => new uOpAndFormDecoderBySeq(g)).toSeq
+
+  val multi = new uOpAndFormDecoderMulti(numStages)
+  val mux = new uOpAndFormDecoderMux(numStages)
 
 
   di << pipeInput
-  di >-> stages(0)
-  for(i <- 1 until stages.size) {
-    stages(i-1) >-> stages(i)
-  }
-  stages.last >> pipeOutput
+  di >-> multi >-> mux >> pipeOutput
 
   import cpu.debug.{debug_all_decode, debug_last_decode}
 
-  if (debug_all_decode) {
-    // print the status of each stage (WARNING! THIS IS COSTLY FOR SIMULATION)
-    for((stage, index) <- stages.zipWithIndex.reverse) {
-      when(stage.pipeOutput.fire && stage.pipeOutput.payload.found_match) {
-        for (mnemonic <- MnemonicEnums.elements){
-          when (mnemonic === stage.pipeOutput.payload.opcode){
-            printf(s"DECODE: Got opcode $mnemonic from stage $index\n")
-          }
-        }
-      }
-    }
-  }
+  // if (debug_all_decode) {
+  //   // print the status of each stage (WARNING! THIS IS COSTLY FOR SIMULATION)
+  //   for((stage, index) <- stages.zipWithIndex.reverse) {
+  //     when(stage.pipeOutput.fire && stage.pipeOutput.payload.found_match) {
+  //       for (mnemonic <- MnemonicEnums.elements){
+  //         when (mnemonic === stage.pipeOutput.payload.opcode){
+  //           printf(s"DECODE: Got opcode $mnemonic from stage $index\n")
+  //         }
+  //       }
+  //     }
+  //   }
+  // }
 
-  if (debug_last_decode) {
-    when(pipeOutput.fire && pipeOutput.payload.found_match) {
-      for (mnemonic <- MnemonicEnums.elements){
-        when (mnemonic === pipeOutput.payload.opcode){
-          printf(s"DECODE OUT: Got opcode $mnemonic\n")
-        }
-      }
-    }
-  }
+  // if (debug_last_decode) {
+  //   when(pipeOutput.fire && pipeOutput.payload.found_match) {
+  //     for (mnemonic <- MnemonicEnums.elements){
+  //       when (mnemonic === pipeOutput.payload.opcode){
+  //         printf(s"DECODE OUT: Got opcode $mnemonic\n")
+  //       }
+  //     }
+  //   }
+  // }
 
 }

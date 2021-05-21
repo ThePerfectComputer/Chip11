@@ -24,7 +24,7 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
     o.write_interface.slots(idx).sel := SourceSelect.NONE
   }
   o.imm.valid := False
-  o.imm.bits := 0
+  o.imm.payload := 0
 
   o.compare := o.compare.getZero
   
@@ -87,7 +87,7 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
       }
 
       o.imm.valid := True 
-      o.imm.bits := Forms.B1.BD(i.insn).resize(64).asUInt
+      o.imm.payload := Forms.B1.BD(i.insn).resize(64).asUInt
     }
 
     is(FormEnums.D1){
@@ -107,7 +107,7 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
         o.write_interface.slots(WriteSlotPacking.CRPort2).sel := SourceSelect.CRB
       }
       o.imm.valid := True
-      o.imm.bits := Forms.D1.SI(i.insn).resize(64).asUInt
+      o.imm.payload := Forms.D1.SI(i.insn).resize(64).asUInt
     }
 
     is(FormEnums.D2){
@@ -126,7 +126,7 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
         o.write_interface.slots(WriteSlotPacking.CRPort2).sel := SourceSelect.CRB
       }
       o.imm.valid := True
-      o.imm.bits := Forms.D2.UI(i.insn).resized
+      o.imm.payload := Forms.D2.UI(i.insn).resized
     }
 
     is(FormEnums.D5){
@@ -138,7 +138,7 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
       o.slots(ReadSlotPacking.GPRPort2).idx := Forms.D5.RS(i.insn).resized
       o.slots(ReadSlotPacking.GPRPort2).sel := SourceSelect.GPR
       o.imm.valid := True
-      o.imm.bits := Forms.D5.D(i.insn).resize(64).asUInt
+      o.imm.payload := Forms.D5.D(i.insn).resize(64).asUInt
       when(i.opcode === MnemonicEnums.stb) {
         o.ldst_request.req_type := TransactionType.STORE
         o.ldst_request.size := TransactionSize.BYTE
@@ -152,7 +152,7 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
       o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.D6.RA(i.insn).resized
       o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
       o.imm.valid := True
-      o.imm.bits := Forms.D6.UI(i.insn).resized
+      o.imm.payload := Forms.D6.UI(i.insn).resized
       // for D6 instructions, bit 28 (from left) controls whether the comparison is done
       when(i.insn(28)) {
         // use an output slot to hold the data to write to CR field 0
@@ -174,7 +174,7 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
       o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.D7.RT(i.insn).resized
       o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
       o.imm.valid := True
-      o.imm.bits := Forms.D7.D(i.insn).resize(64).asUInt
+      o.imm.payload := Forms.D7.D(i.insn).resize(64).asUInt
       when(i.opcode === MnemonicEnums.lbz) {
         o.ldst_request.req_type := TransactionType.LOAD
         o.ldst_request.size := TransactionSize.BYTE
@@ -192,7 +192,7 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
       o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := rt.resized
       o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
       o.imm.valid := True
-      o.imm.bits := Forms.D8.SI(i.insn).resize(64).asUInt
+      o.imm.payload := Forms.D8.SI(i.insn).resize(64).asUInt
 
       if (debug_form) { debug_form_d8 }
       def debug_form_d8 {
@@ -216,7 +216,7 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
       o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.DS5.RT(i.insn).resized
       o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
       o.imm.valid := True
-      o.imm.bits := Forms.DS5.DS(i.insn).resize(64).asUInt
+      o.imm.payload := Forms.DS5.DS(i.insn).resize(64).asUInt
       // handle doubleword load to RT, without update
       when(i.opcode === MnemonicEnums.ld) {
         o.ldst_request.req_type := TransactionType.LOAD
@@ -229,9 +229,9 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
     is(FormEnums.I1){
       o.imm.valid := True
       val li = Forms.I1.LI(i.insn)
-      val li_si = SInt(o.imm.bits.getWidth bits)
-      li_si := li.resize(o.imm.bits.getWidth)
-      o.imm.bits := li_si.asUInt
+      val li_si = SInt(o.imm.payload.getWidth bits)
+      li_si := li.resize(o.imm.payload.getWidth)
+      o.imm.payload := li_si.asUInt
       when(Forms.I1.LK(i.insn) === True){
         o.write_interface.slots(WriteSlotPacking.SPRPort1).idx := SPREnums.LR.asBits.asUInt
         o.write_interface.slots(WriteSlotPacking.SPRPort1).sel := SourceSelect.SPR
@@ -246,7 +246,7 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
         o.slots(ReadSlotPacking.GPRPort3).sel := SourceSelect.GPR
       }
       o.imm.valid := True
-      o.imm.bits := Forms.M2.SH(i.insn).resized
+      o.imm.payload := Forms.M2.SH(i.insn).resized
       o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.M2.RA(i.insn).resized
       o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
       when(Forms.M2.Rc(i.insn) === True){
@@ -259,7 +259,7 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
       o.slots(ReadSlotPacking.GPRPort1).idx := Forms.MD1.RS(i.insn).resized
       o.slots(ReadSlotPacking.GPRPort1).sel := SourceSelect.GPR
       o.imm.valid := True
-      o.imm.bits := Cat(Forms.MD1.sh2(i.insn), Forms.MD1.sh1(i.insn)).asUInt.resized
+      o.imm.payload := Cat(Forms.MD1.sh2(i.insn), Forms.MD1.sh1(i.insn)).asUInt.resized
       o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.MD1.RA(i.insn).resized
       o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
       when(Forms.MD1.Rc(i.insn) === True){
@@ -272,7 +272,7 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
       o.slots(ReadSlotPacking.GPRPort1).idx := Forms.MD2.RS(i.insn).resized
       o.slots(ReadSlotPacking.GPRPort1).sel := SourceSelect.GPR
       o.imm.valid := True
-      o.imm.bits := Cat(Forms.MD2.sh2(i.insn), Forms.MD2.sh1(i.insn)).asUInt.resized
+      o.imm.payload := Cat(Forms.MD2.sh2(i.insn), Forms.MD2.sh1(i.insn)).asUInt.resized
       o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.MD2.RA(i.insn).resized
       o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
       when(Forms.MD2.Rc(i.insn) === True){
@@ -328,7 +328,7 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
       o.slots(ReadSlotPacking.GPRPort1).idx := Forms.X65.RS(i.insn).resized
       o.slots(ReadSlotPacking.GPRPort1).sel := SourceSelect.GPR
       o.imm.valid := True
-      o.imm.bits := Forms.X65.SH(i.insn).resized
+      o.imm.payload := Forms.X65.SH(i.insn).resized
       o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.X65.RA(i.insn).resized
       o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
       o.write_interface.slots(WriteSlotPacking.SPRPort1).idx := SPREnums.XER.asBits.asUInt.resized
@@ -507,7 +507,7 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
       o.slots(ReadSlotPacking.GPRPort1).idx := Forms.XS1.RS(i.insn).resized
       o.slots(ReadSlotPacking.GPRPort1).sel := SourceSelect.GPR
       o.imm.valid := True
-      o.imm.bits := Cat(Forms.XS1.sh2(i.insn), Forms.XS1.sh1(i.insn)).asUInt.resized
+      o.imm.payload := Cat(Forms.XS1.sh2(i.insn), Forms.XS1.sh1(i.insn)).asUInt.resized
       o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.XS1.RA(i.insn).resized
       o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
       o.write_interface.slots(WriteSlotPacking.SPRPort1).idx := SPREnums.XER.asBits.asUInt

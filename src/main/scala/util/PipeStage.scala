@@ -4,8 +4,7 @@ import spinal.core._
 import spinal.lib._
 
 
-trait PipeData[A <: Data, B <: Data, I <: Data] {
-  val io : I
+trait PipeData[A <: Data, B <: Data] {
 
   val pipeInput : Flushable[A]
   val pipeOutput : Flushable[B]
@@ -14,43 +13,43 @@ trait PipeData[A <: Data, B <: Data, I <: Data] {
   def makeOutput(outp: HardType[B]) = master(Flushable(outp()))
   // def makeOutput(outp: B) = IO(Flushable(Output(outp)))
 
-  def >>[C <: Data, J <: Data](other: PipeData[B, C, J]) = {
+  def >>[C <: Data](other: PipeData[B, C]) = {
     pipeOutput >> other.pipeInput 
     other
   }
-  def >>[C <: Data, J <: Data](other: Flushable[B]) = {
+  def >>[C <: Data](other: Flushable[B]) = {
     pipeOutput >> other
     other
   }
-  def <<[C <: Data, J <: Data](other: Flushable[A]) = {
+  def <<[C <: Data](other: Flushable[A]) = {
     other >> pipeInput
     other
   }
-  def <<[C <: Data, J <: Data](other: PipeData[C, A, J]) = {
+  def <<[C <: Data](other: PipeData[C, A]) = {
     pipeInput << other.pipeOutput 
     other
   }
-  def <-<[C <: Data, J <: Data](other: PipeData[C, A, J]) = {
+  def <-<[C <: Data](other: PipeData[C, A]) = {
     pipeInput <-< other.pipeOutput 
     other
   }
-  def >->[C <: Data, J <: Data](other: PipeData[B, C, J]) = {
+  def >->[C <: Data](other: PipeData[B, C]) = {
     pipeOutput >-> other.pipeInput 
     other
   }
-  def >->[C <: Data, J <: Data](other: Flushable[B]) = {
+  def >->[C <: Data](other: Flushable[B]) = {
     pipeOutput >-> other
     other
   }
-  def <-/<[C <: Data, J <: Data](other: PipeData[C, A, J]) = {
+  def <-/<[C <: Data](other: PipeData[C, A]) = {
     pipeInput <-/< other.pipeOutput 
     other
   }
-  def >/->[C <: Data, J <: Data](other: PipeData[B, C, J]) = {
+  def >/->[C <: Data](other: PipeData[B, C]) = {
     pipeOutput >/-> other.pipeInput 
     other
   }
-  def >/->[C <: Data, J <: Data](other: Flushable[B]) = {
+  def >/->[C <: Data](other: Flushable[B]) = {
     pipeOutput >/-> other
     other
   }
@@ -58,9 +57,8 @@ trait PipeData[A <: Data, B <: Data, I <: Data] {
 }
 
 
-abstract class PipeStageIO[A <: Data, B <: Data, I <: Data](inp: HardType[A], outp: HardType[B], io_t: HardType[I]) extends Component with PipeData[A, B, I]{
+abstract class PipeStage[A <: Data, B <: Data](inp: HardType[A], outp: HardType[B]) extends Component with PipeData[A, B]{
 
-  val io = io_t().asOutput()
 
   val pipeInput = slave(Flushable(inp()))
   val pipeOutput = master(Flushable(outp()))
@@ -87,17 +85,6 @@ abstract class PipeStageIO[A <: Data, B <: Data, I <: Data](inp: HardType[A], ou
   pipeOutput.payload.allowOverride
 
 
-}
-
-class EmptyBundle extends Bundle  with IMasterSlave {
-  val bit = out UInt(5 bits)
-  override def asMaster(): Unit = {
-    out(bit)
-  }
-}
-
-abstract class PipeStage[A <: Data, B <: Data](inp:A, outp: B) extends PipeStageIO(inp, outp, new EmptyBundle){
-  io := io.getZero
 }
 
 
