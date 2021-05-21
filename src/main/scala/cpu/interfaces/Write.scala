@@ -12,6 +12,7 @@ class WriteInterface extends Bundle {
     new Slot(6, 128),
     new Slot(10, 64),
     new Slot(10, 64))
+  override def clone = new ReadInterface
 }
 
 class WriteStageInterface extends Bundle {

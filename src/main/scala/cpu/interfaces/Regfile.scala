@@ -39,7 +39,7 @@ case class WritePort(val idxWidth: Int, val dataWidth: Int) extends Bundle with 
 
 class WritePortMasked(override val idxWidth: Int, override val dataWidth: Int, val maskWidth: Int)
     extends WritePort(idxWidth, dataWidth) {
-  val mask = Vec(Bool(), maskWidth)
+  val mask = Bits(maskWidth bits)
   override def asMaster() : Unit = {
     out(data)
     out(idx)
