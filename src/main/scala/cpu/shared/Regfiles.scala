@@ -5,7 +5,7 @@ import cpu.interfaces.regfile.{ReadPort, WritePort, WritePortMasked}
 import spinal.core._
 import spinal.lib._
 
-class Regfile(val numRegs: Int, val regWidth: Int, val readPorts:Int=1, val writePorts:Int=1) extends Component {
+class Regfile(val numRegs: Int, val regWidth: Int, val readPorts:Int=1, val writePorts:Int=1, initData:Seq[BigInt]=null) extends Component {
   val idxWidth = log2Up(numRegs)
   val io = new Bundle{
     val rp = Vec(slave(new ReadPort(idxWidth, regWidth)), readPorts)
@@ -13,7 +13,11 @@ class Regfile(val numRegs: Int, val regWidth: Int, val readPorts:Int=1, val writ
     val wp = Vec(slave(new WritePort(idxWidth, regWidth)), writePorts)
   }
 
-  val mem = Mem(UInt(regWidth bits), numRegs)
+  val initialData = if(initData != null){
+    initData.map(x => U(x, regWidth bits))
+  }else Seq.fill(numRegs)(U(0, regWidth bits))
+
+  val mem = Mem(UInt(regWidth bits), numRegs) init(initialData)
 
   for(port <- io.rp) {
     port.data := mem.readSync(port.idx)
@@ -46,12 +50,15 @@ class RegfileMasked(val numRegs: Int, val regWidth: Int, val readPorts:Int, val 
 
 
 // Another Multi-Port regfile that should synthesize a bit better
-class BRAMMultiRegfile(numRegs: Int, regWidth: Int, readPorts:Int=1, writePorts:Int=1) extends
-    Regfile(numRegs, regWidth, readPorts, writePorts){
+class BRAMMultiRegfile(numRegs: Int, regWidth: Int, readPorts:Int=1, writePorts:Int=1, initData:Seq[BigInt]=null) extends
+    Regfile(numRegs, regWidth, readPorts, writePorts, initData){
 
   val memIdxBits = log2Up(writePorts)
   println(memIdxBits)
   val memArr = for (i <- 0 until writePorts) yield Mem(UInt(regWidth bits), numRegs)
+  for(i <- 0 until writePorts){
+    memArr(i) init(initialData)
+  }
 
 
   // Create a table holding the memory that was most recently written to for each register
