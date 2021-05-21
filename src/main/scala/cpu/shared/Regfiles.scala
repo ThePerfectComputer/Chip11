@@ -50,6 +50,7 @@ class BRAMMultiRegfile(numRegs: Int, regWidth: Int, readPorts:Int, writePorts:In
     Regfile(numRegs, regWidth, readPorts, writePorts){
 
   val memIdxBits = log2Up(writePorts)
+  println(memIdxBits)
   val memArr = for (i <- 0 until writePorts) yield Mem(UInt(regWidth bits), numRegs)
 
 
@@ -58,7 +59,7 @@ class BRAMMultiRegfile(numRegs: Int, regWidth: Int, readPorts:Int, writePorts:In
 
 
   for((port, i) <- io.rp.zipWithIndex) {
-    val mem_idx = UInt(memIdxBits bits)
+    val mem_idx = UInt(memIdxBits bits).setName(s"memIdx_$i")
     mem_idx := lvt.readSync(port.idx)
 
     val read_data = Vec(UInt(regWidth bits), writePorts)
@@ -69,7 +70,9 @@ class BRAMMultiRegfile(numRegs: Int, regWidth: Int, readPorts:Int, writePorts:In
   }
 
   for((port, i) <- io.wp.zipWithIndex) {
-    lvt.write(port.idx, i)
+    val idx = UInt(memIdxBits bits).setName(s"writeIdx_$i")
+    idx := i
+    lvt.write(port.idx, idx)
     memArr(i).write(port.idx, port.data, enable=port.en)
   }
 }
