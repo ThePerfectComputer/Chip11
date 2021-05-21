@@ -62,7 +62,7 @@ class DecoderTest extends AnyFlatSpec with should.Matchers {
         assert(dut.pipeOutput.payload.write_interface.slots(0).idx.toInt == 1)
         assert(dut.pipeOutput.payload.write_interface.slots(0).sel.toEnum == SourceSelect.GPR)
         assert(dut.pipeOutput.payload.imm.valid.toBoolean == true)
-        assert(dut.pipeOutput.payload.imm.bits.toBigInt == 0x3f)
+        assert(dut.pipeOutput.payload.imm.payload.toBigInt == 0x3f)
       }
   }
   it should "decode ExecuteArgs" in {

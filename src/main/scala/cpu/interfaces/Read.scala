@@ -17,13 +17,12 @@ class ReadInterface extends Bundle {
     new Slot(6, 128),
     new Slot(10, 64),
     new Slot(10, 64))
-  val imm = new Bundle {
-    val bits = UInt(64 bits)
-    val valid = Bool() // TODO: Do we actually need this? Seems to be implicit wherever imm.bits are used
-  }
+  val imm = Flow(UInt(64 bits))
   val compare = new CompareData
   val dec_data = new DecoderData
   // TODO : make this write stage input
   val write_interface = new WriteInterface
   val ldst_request = new LoadStoreRequest
+
+  override def clone = new ReadInterface
 }
