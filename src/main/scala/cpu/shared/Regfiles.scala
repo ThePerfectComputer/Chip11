@@ -5,12 +5,12 @@ import cpu.interfaces.regfile.{ReadPort, WritePort, WritePortMasked}
 import spinal.core._
 import spinal.lib._
 
-class Regfile(numRegs: Int, regWidth: Int, readPorts:Int, writePorts:Int) extends Component {
+class Regfile(val numRegs: Int, val regWidth: Int, val readPorts:Int, val writePorts:Int) extends Component {
   val idxWidth = log2Up(numRegs)
   val io = new Bundle{
-    val rp = Vec(new ReadPort(idxWidth, regWidth), readPorts)
+    val rp = Vec(slave(new ReadPort(idxWidth, regWidth)), readPorts)
 
-    val wp = Vec(new WritePort(idxWidth, regWidth), writePorts)
+    val wp = Vec(slave(new WritePort(idxWidth, regWidth)), writePorts)
   }
 
   val mem = Mem(UInt(regWidth bits), numRegs)
@@ -23,15 +23,15 @@ class Regfile(numRegs: Int, regWidth: Int, readPorts:Int, writePorts:Int) extend
   }
 }
 
-class RegfileMasked(numRegs: Int, regWidth: Int, readPorts:Int, writePorts:Int, maskWidth: Int) extends Component {
+class RegfileMasked(val numRegs: Int, val regWidth: Int, val readPorts:Int, val writePorts:Int, val maskWidth: Int) extends Component {
   val idxWidth = log2Up(numRegs)
 
   val elemWidth = regWidth/maskWidth // The width of each element that can be masked
 
   val io = new Bundle{
-    val rp = Vec(new ReadPort(idxWidth, regWidth), readPorts)
+    val rp = Vec(slave(new ReadPort(idxWidth, regWidth)), readPorts)
 
-    val wp = Vec(new WritePortMasked(idxWidth, regWidth, maskWidth), writePorts)
+    val wp = Vec(slave(new WritePortMasked(idxWidth, regWidth, maskWidth)), writePorts)
   }
 
   val mem = Mem(Bits(regWidth bits), numRegs)
@@ -64,6 +64,7 @@ class BRAMMultiRegfile(numRegs: Int, regWidth: Int, readPorts:Int, writePorts:In
     val read_data = Vec(UInt(regWidth bits), writePorts)
     for((mem, idx) <- memArr.zipWithIndex) read_data(idx) := mem.readSync(port.idx)
 
+    port.data.allowOverride
     port.data := read_data(mem_idx)
   }
 
