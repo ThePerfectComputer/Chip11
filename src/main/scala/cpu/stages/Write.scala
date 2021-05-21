@@ -67,37 +67,36 @@ class WriteStage extends PipeStage(new WriteStageInterface, UInt(1 bits)) {
     val fpscr_wp = Vec(master(new WritePort(1, 16)), 1)
   }
 
+  io.vr_wp(0).idx := 0
+  io.vsr_wp(0).idx := 0
+  io.comb_wp(0).idx := 0
+  io.bhrb_wp(0).idx := 0
+  io.spr_wp(0).idx := 0
+  io.fpscr_wp(0).idx := 0
+  io.vr_wp(0).data := 0
+  io.vsr_wp(0).data := 0
+  io.comb_wp(0).data := 0
+  io.bhrb_wp(0).data := 0
+  io.spr_wp(0).data := 0
+  io.fpscr_wp(0).data := 0
+  io.vr_wp(0).en := False
+  io.vsr_wp(0).en := False
+  io.comb_wp(0).en := False
+  io.bhrb_wp(0).en := False
+  io.spr_wp(0).en := False
+  io.fpscr_wp(0).en := False
   for (idx <- 0 until 2) {
     io.gpr_wp(idx).idx := 0
-    io.vr_wp(0).idx := 0
-    io.vsr_wp(0).idx := 0
     io.fpr_wp(idx).idx := 0
-    io.comb_wp(0).idx := 0
-    io.bhrb_wp(0).idx := 0
-    io.spr_wp(0).idx := 0
     io.cr_wp(idx).idx := 0
-    io.fpscr_wp(0).idx := 0
     io.gpr_wp(idx).data := 0
-    io.vr_wp(0).data := 0
-    io.vsr_wp(0).data := 0
     io.fpr_wp(idx).data := 0
-    io.comb_wp(0).data := 0
-    io.bhrb_wp(0).data := 0
-    io.spr_wp(0).data := 0
     io.cr_wp(idx).data := 0
     io.cr_wp(idx).mask := B(15, 4 bits)
-    io.fpscr_wp(0).data := 0
     io.gpr_wp(idx).en := False
-    io.vr_wp(0).en := False
-    io.vsr_wp(0).en := False
     io.fpr_wp(idx).en := False
-    io.comb_wp(0).en := False
-    io.bhrb_wp(0).en := False
-    io.spr_wp(0).en := False
     io.cr_wp(idx).en := False
-    io.fpscr_wp(0).en := False
   }
-
 
   o := 0
 
@@ -119,8 +118,8 @@ class WriteStage extends PipeStage(new WriteStageInterface, UInt(1 bits)) {
             // When the selector enum matches enumVal on the given slot
             when(wp.sel === enumVal) {
               when(cycle === writecycle) {
-                io_wp(wpidx).idx := wp.idx
-                io_wp(wpidx).data := wp.data
+                io_wp(wpidx).idx := wp.idx.resized
+                io_wp(wpidx).data := wp.data.resized
                 io_wp(wpidx).en := True
 
                 // if (debug_write) {
@@ -150,11 +149,13 @@ class WriteStage extends PipeStage(new WriteStageInterface, UInt(1 bits)) {
             // When the selector enum matches enumVal on the given slot
             when(wp.sel === enumVal) {
               when(cycle === writecycle) {
-                io_wp(wpidx).idx := wp.idx
-                io_wp(wpidx).data := wp.data
+                io_wp(wpidx).idx := wp.idx.resized
+                io_wp(wpidx).data := wp.data.resized
                 io_wp(wpidx).en := True
                 if (use_mask) {
-                  io_wp(wpidx).mask := wp.idx(io_wp(wpidx).mask.getWidth - 1 downto 0).asBits
+                  io_wp(wpidx).mask := wp
+                    .idx(io_wp(wpidx).mask.getWidth - 1 downto 0)
+                    .asBits
                 } else {
                   io_wp(wpidx).mask := ~B(0, io_wp(wpidx).mask.getWidth bits)
                 }

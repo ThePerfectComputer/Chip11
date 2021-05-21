@@ -11,7 +11,7 @@ class CompareData extends Bundle {
 }
 
 class ReadInterface extends Bundle {
-  val slots = Seq(
+  val slots = Vec(
     new Slot(6, 128),
     new Slot(6, 128),
     new Slot(6, 128),
@@ -23,6 +23,4 @@ class ReadInterface extends Bundle {
   // TODO : make this write stage input
   val write_interface = new WriteInterface
   val ldst_request = new LoadStoreRequest
-
-  override def clone = new ReadInterface
 }

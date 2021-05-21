@@ -15,7 +15,7 @@ case class Slot(val idxWid: Int, val dataWid: Int) extends Bundle {
   }
 }
 
-case class ReadPort(val idxWidth: Int, val dataWidth: Int) extends Bundle with IMasterSlave {
+class ReadPort(val idxWidth: Int, val dataWidth: Int) extends Bundle with IMasterSlave {
   val idx = out UInt(idxWidth bits)
   val data = in UInt(dataWidth bits)
 
@@ -23,29 +23,32 @@ case class ReadPort(val idxWidth: Int, val dataWidth: Int) extends Bundle with I
     in(data)
     out(idx)
   }
+  override def clone = new ReadPort(idxWidth, dataWidth)
 }
 
-case class WritePort(val idxWidth: Int, val dataWidth: Int) extends Bundle with IMasterSlave{
-  val idx = UInt(idxWidth bits)
-  val en = Bool()
-  val data = UInt(dataWidth bits)
+class WritePort(val idxWidth: Int, val dataWidth: Int) extends Bundle with IMasterSlave{
+  val idx = out UInt(idxWidth bits)
+  val en =  out Bool()
+  val data =  out UInt(dataWidth bits)
 
   override def asMaster() : Unit = {
     out(data)
     out(idx)
     out(en)
   }
+  override def clone = new WritePort(idxWidth, dataWidth)
 }
 
 class WritePortMasked(override val idxWidth: Int, override val dataWidth: Int, val maskWidth: Int)
     extends WritePort(idxWidth, dataWidth) {
-  val mask = Bits(maskWidth bits)
+  val mask = out Bits(maskWidth bits)
   override def asMaster() : Unit = {
     out(data)
     out(idx)
     out(en)
     out(mask)
   }
+  override def clone = new WritePortMasked(idxWidth, dataWidth, maskWidth)
 }
 
 // Register file selector for source 1-2
