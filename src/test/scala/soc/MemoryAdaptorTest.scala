@@ -59,7 +59,7 @@ class TruthTableTest extends AnyFlatSpec with should.Matchers {
     SpinalVerilog(new MemoryAdaptorWithSram)
   }
 
-  it should "test all 80 possible transactions from the truth table" in {
+  ignore should "test all 80 possible transactions from the truth table" in {
     val debug = true
     DebugMemoryAdaptor.debug = true
     DebugWriteAdaptor.debug = true
