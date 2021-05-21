@@ -7,6 +7,11 @@ import cpu.shared.memory_state.{TransactionStatus, TransactionType, TransactionS
 
 import spinal.core._
 import spinal.lib._
+import scala.collection.concurrent.Debug
+
+object DebugMemoryAdaptor {
+  var debug = false
+}
 
 object MemoryAdaptorState extends SpinalEnum {
   val IDLE         = newElement()
@@ -14,17 +19,15 @@ object MemoryAdaptorState extends SpinalEnum {
   val TRANSACTION2 = newElement()
 }
 
-class MemoryAdaptor(debug : Boolean = false) extends Component {
+class MemoryAdaptor() extends Component {
 
   val io = new Bundle {
     val request  = in(new LineRequest)
     val response = out(new LineResponse)
     val membus   = (new MemBus128).flip()
 
-    // val state =  if(debug) Some(Output(MemoryAdaptorState())) else None
   }
 
-  // TODO : remove request combined(may not actually need it)
 
   def connect_transaction1() : Unit = {
     io.membus.write_data := write_adaptor.io.transaction1_data
@@ -66,8 +69,6 @@ class MemoryAdaptor(debug : Boolean = false) extends Component {
   
   // some internal signals
   val state             = RegInit(MemoryAdaptorState.IDLE)
-  import spinal.core.sim._
-  state.simPublic()
   val aligned           = Bool()
   val start_byte        = request_combined.byte_address(3 downto 0)
   val line_address      = request_combined.byte_address(63 downto 4)
@@ -176,21 +177,18 @@ class MemoryAdaptor(debug : Boolean = false) extends Component {
 
   }
 
-  def debug() {
-    println(s"got callback! ${state.toEnum}")
+  import spinal.core.sim._
+
+  def debugEnabled() : Boolean = DebugMemoryAdaptor.debug
+  
+  if (debugEnabled()) {
+    state.simPublic()
   }
-
-  // manually passthrough signals
-  // if (debug) {io.state.get := state}
-
-  // if (debug_memory_adaptor) {
-  //   MemoryAdaptorState.all.foreach{state_iter => 
-  //     when (state === state_iter){
-  //       printf(s"$state_iter\n")
-  //       printf(p" ${state.asUInt} \n")
-  //     }
-  //   }
-  // }
-
+  
+  def debug() {
+    println("MEMORY ADAPTOR:")
+    println(s"MEMORY ADAPTOR STATE: ${state.toEnum}")
+    if (write_adaptor.debugEnabled()) {write_adaptor.debug()}
+  }
 
 }

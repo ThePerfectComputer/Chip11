@@ -16,9 +16,13 @@ import org.scalatest._
 import flatspec._
 import matchers._
 
-class MemoryAdaptorWithSram(debug : Boolean = false) extends Component {
+object DebugMemoryAdaptorWithSram {
+  var debug = false
+}
+
+class MemoryAdaptorWithSram() extends Component {
   // instantiate modules
-  val memory_adaptor = new MemoryAdaptor(debug = true)
+  val memory_adaptor = new MemoryAdaptor()
   val ram = new DualPortSram128()
   
   val io = new Bundle {
@@ -43,35 +47,9 @@ class MemoryAdaptorWithSram(debug : Boolean = false) extends Component {
   ram.io.port_1.write_mask.foreach{byte_mask => byte_mask := False}
   ram.io.port_1.write_data.foreach{byte => byte := 0}
 
-  // if (debug) {
-  //   // need cycle count when debugging
-  //   val cycle_count_reg = RegInit(U(0, 8 bits))
-  //   cycle_count_reg := cycle_count_reg + 1
-  
-  //   // print state
-  //   MemoryAdaptorState.all.foreach{value =>
-  //     when (memory_adaptor.io.state.get === value){
-  //       printf(p"memory_adaptor.state = ${MemoryAdaptorState(value.litValue.asUInt).toString}\n")
-  //     }
-  //   }
-
-  //   TransactionType.all.foreach{value =>
-  //     when (io.request.ldst_req === value){
-  //       printf(p"io.request.ldst_req = ${TransactionType(value.litValue.asUInt).toString}\n")
-  //     }
-  //   }
-
-  //   TransactionStatus.all.foreach{value =>
-  //     when (io.response.status === value){
-  //       printf(p"io.response.status = ${TransactionStatus(value.litValue.asUInt).toString}\n")
-  //     }
-  //   }
-    
-  //   printf(p"ack = ${io.ack}\n")
-  //   printf(p"cycle_count = $cycle_count_reg\n")
-  //   printf(p"\n")
-  // }
-
+  def debug() {
+    if (memory_adaptor.debugEnabled()) {memory_adaptor.debug()}
+  }
 }
 
 class TruthTableTest extends AnyFlatSpec with should.Matchers {
@@ -83,10 +61,12 @@ class TruthTableTest extends AnyFlatSpec with should.Matchers {
 
   it should "test all 80 possible transactions from the truth table" in {
     val debug = true
+    DebugMemoryAdaptor.debug = true
+    DebugWriteAdaptor.debug = true
 
     SimConfig.withWave.doSim(new MemoryAdaptorWithSram()){dut =>
       SimTimeout(300)
-      dut.clockDomain.onRisingEdges{dut.memory_adaptor.debug()}
+      if (debug) {dut.clockDomain.onRisingEdges{dut.debug()}}
       dut.clockDomain.forkStimulus(period = 10)
 
       def get_ack() = {

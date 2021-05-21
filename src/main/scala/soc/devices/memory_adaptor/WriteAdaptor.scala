@@ -6,6 +6,9 @@ import cpu.shared.memory_state.{TransactionStatus, TransactionType, TransactionS
 
 import spinal.core._
 import spinal.lib._
+object DebugWriteAdaptor {
+  var debug = false
+}
 
 class WriteAdaptor extends Component {
 
@@ -65,6 +68,23 @@ class WriteAdaptor extends Component {
         .take(bytes_in_transaction2)
           .foreach{el => el := True}
     }
+  }
+
+  import spinal.core.sim._
+  import util.SimHelpers.{vecToString}
+
+  def debugEnabled() : Boolean = DebugWriteAdaptor.debug
+
+  if (debugEnabled()) {
+    io.transaction2_mask simPublic()
+  }
+
+  def debug() {
+    println("WRITE ADAPTOR:")
+    // println(s"io.transaction1_data = ")
+    println(s"io.transaction2_mask = ${vecToString(io.transaction2_mask)}")
+    // println(s"io.transaction1_data = ")
+    // println(s"io.transaction2_mask = ")
   }
 
 }
