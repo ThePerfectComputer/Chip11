@@ -25,5 +25,21 @@ class IndentationManagerTest extends AnyFlatSpec with should.Matchers {
         Most Indent
 """)
 
+
+  }
+  it should "Support custom tab levels" in {
+    val stream = new java.io.ByteArrayOutputStream()
+    Console.withOut(stream) {
+      IndentationManager.getIndent(spacesPerLevel=2){ manager =>
+        println("Some Indent")
+        manager.getIndent(){ manager =>
+          println("More Indent")
+        }
+      }
+    }
+    assert(stream.toString() =="""  Some Indent
+    More Indent
+""")
+
   }
 }

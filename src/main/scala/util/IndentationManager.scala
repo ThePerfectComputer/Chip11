@@ -1,5 +1,11 @@
 package util
 
+object IndentationManager {
+  def getIndent(spacesPerLevel: Int=4, levels: Int=1)(body: IndentationManager => Unit) : Unit = {
+    val manager = new IndentationManager(spacesPerLevel)
+    manager.getIndent(levels)(body)
+  }
+}
 class IndentationManager(val spacesPerLevel: Int=4){
   val tabs = " ".repeat(spacesPerLevel)
 
