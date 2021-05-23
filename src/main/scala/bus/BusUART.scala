@@ -29,12 +29,14 @@ class BusUART(uartCtrlConfig: UartCtrlGenerics, rxFifoDepth: Int) extends Compon
 
   busCtrl.createAndDriveFlow(Bits(uartCtrlConfig.dataWidthMax bits), address = 8).toStream >> txFifo.io.push
 
-  busCtrl.read(uartCtrl.io.write.valid, address=8)
-  busCtrl.read(txFifo.io.push.ready, address=8, bitOffset=1)
-  busCtrl.read(txFifo.io.occupancy, address=8, bitOffset=2)
-
   val stream : Stream[Bits] = uartCtrl.io.read.queue(rxFifoDepth)
   busCtrl.readStreamNonBlocking(stream, address=12, validBitOffset=31, payloadBitOffset=0)
+
+  busCtrl.read(uartCtrl.io.write.valid, address=8)
+  busCtrl.read(txFifo.io.push.ready, address=8, bitOffset=1)
+  busCtrl.read(stream.valid, address=8, bitOffset=2)
+  busCtrl.read(txFifo.io.occupancy, address=8, bitOffset=3)
+
 
   // axiCrossbar.addSlaves(
   //   timerA.io.bus -> (0x40, 0x10),
