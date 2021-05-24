@@ -122,13 +122,9 @@ class WriteStage extends PipeStage(new WriteStageInterface, UInt(1 bits)) {
                 io_wp(wpidx).data := wp.data.resized
                 io_wp(wpidx).en := True
 
-                // if (debug_write) {
-                //   printf(
-                //     p"WRITE: Writing value 0x${Hexadecimal(wp.data.asTypeOf(io_wp(wpidx).data))}"
-                //   )
-                //   printf(p" at idx ${wp.idx}")
-                //   printf(s" to $enumVal\n")
-                // }
+                if (debug_write) {
+                  report(L"WRITE: writing ${wp.data} at ${wp.idx}")
+                }
               }
               if (writecycle == 2)
                 secondCycleNeeded := True

@@ -94,10 +94,14 @@ class uOpAndFormDecoderMux(numStages: Int) extends
     PipeStage(new MultiDecoderData(numStages), new DecoderData){
   //val matches = B(0, numStages bits)
   o := o.getZero
+  o.opcode := MnemonicEnums.td
   for((decdata, idx) <- i.data.zipWithIndex) {
     when(decdata.found_match){
       o := decdata
     }
+  }
+  when(o.found_match === False){
+    pipeOutput.valid := False
   }
 }
 

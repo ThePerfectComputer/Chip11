@@ -9,6 +9,7 @@ import cpu.stages.functional_units.integer.{Stage1, Stage2, Stage3}
 import util.{PipeStage, Delay}
 
 import spinal.core._
+import spinal.core.sim._
 import spinal.lib._
 
 object config {
@@ -175,4 +176,5 @@ class CPU extends Component {
   write.pipeOutput.ready := True
   write.pipeOutput.flush := False
 
+  write.pipeOutput.simPublic()
 }

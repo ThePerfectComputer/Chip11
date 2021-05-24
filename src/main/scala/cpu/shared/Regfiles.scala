@@ -4,6 +4,7 @@ import cpu.interfaces.regfile.{ReadPort, WritePort, WritePortMasked}
 
 import spinal.core._
 import spinal.lib._
+import spinal.core.sim._
 
 class Regfile(val numRegs: Int, val regWidth: Int, val readPorts:Int=1, val writePorts:Int=1, initData:Seq[BigInt]=null) extends Component {
   val idxWidth = log2Up(numRegs)
@@ -18,6 +19,7 @@ class Regfile(val numRegs: Int, val regWidth: Int, val readPorts:Int=1, val writ
   }else Seq.fill(numRegs)(U(0, regWidth bits))
 
   val mem = Mem(UInt(regWidth bits), numRegs) init(initialData)
+  mem.simPublic()
 
   for(port <- io.rp) {
     port.data := mem.readSync(port.idx)
@@ -38,7 +40,7 @@ class RegfileMasked(val numRegs: Int, val regWidth: Int, val readPorts:Int, val 
     val wp = Vec(slave(new WritePortMasked(idxWidth, regWidth, maskWidth)), writePorts)
   }
 
-  val mem = Mem(Bits(regWidth bits), numRegs)
+  val mem = Mem(Bits(regWidth bits), numRegs).simPublic()
 
   for(port <- io.rp) {
     port.data := mem.readSync(port.idx).asBits.asUInt
