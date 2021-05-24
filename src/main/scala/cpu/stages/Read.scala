@@ -140,7 +140,7 @@ class ReadStage extends PipeStage(new ReadInterface, new ReadInterface) {
   }
 
   // Registers for emulating the behavior of RegisteredPipeStage manually
-  val main_valid_reg = Reg(Bool())
+  val main_valid_reg = Reg(Bool()) init(False)
   main_valid_reg := False
 
   for ((slot, i) <- i.slots.zipWithIndex) {
@@ -153,7 +153,7 @@ class ReadStage extends PipeStage(new ReadInterface, new ReadInterface) {
       regInfo match {
         // If we get good data back
         case Some((rpidx, readcycle)) => {
-          val resultAvailable = Reg(Bool)
+          val resultAvailable = Reg(Bool) init(False)
           resultAvailable := False
           when(slot.sel === enumVal) {
             // Look up the port index and cycle map

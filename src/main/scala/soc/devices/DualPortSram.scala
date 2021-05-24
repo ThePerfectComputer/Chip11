@@ -5,18 +5,36 @@ import cpu.shared.memory_state.{TransactionStatus, TransactionType}
 
 import spinal.core._
 import spinal.lib._
+
+import scala.collection.mutable.ListBuffer
+
+import java.nio.file.{Files, Paths}
 object DebugDualPortSram128 {
   var debug = false
 }
 
-class DualPortSram128(depth: Int=8, dataWidth: Int=128) extends Component {
+class DualPortSram128(depth: Int=8, dataWidth: Int=128, val mem_file:String = null) extends Component {
   val io = new Bundle {
     val port_1 = new MemBus128()
     val port_2 = new MemBus128()
   }
-  // val mem_file: String="c_sources/simple_test/program.mem"
+  val bytesPerLine = dataWidth/8
 
-  val mem = Mem(Vec(UInt(8 bits), 16), depth)
+  var initialData = new ListBuffer[Vec[UInt]]
+  for(i <- 0 until depth)
+    initialData += Vec(UInt(8 bits), bytesPerLine).getZero
+  if(mem_file != null){
+    val filePath = Paths.get(mem_file)
+    val arr = Files.readAllBytes(filePath)
+    for((byte, idx) <- arr.zipWithIndex){
+      val line_address = idx / bytesPerLine
+      val byte_address = idx % bytesPerLine
+      initialData(line_address)(byte_address) := byte
+    }
+  }
+
+  //val mem = Mem(Vec(UInt(8 bits), 16), depth)
+  val mem = Mem(Vec(UInt(8 bits), 16), initialContent=initialData)
   val address_width = mem.addressWidth
 
   val port1_do_load  = (io.port_1.ldst_req === TransactionType.LOAD)
