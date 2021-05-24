@@ -98,51 +98,50 @@ class Stage1 extends PipeStage(new ReadInterface, new FunctionalUnit) {
         }
       }
 
-      // is(IntegerFUSub.Branch){
-      //   if (config.branch) {
-      //     val branchMod = Module(new Branch)
-      //     branchMod.io.ri := i
+      is(IntegerFUSub.Branch){
+        if (config.branch) {
+          val branchMod = new Branch
+          branchMod.io.ri := i
 
-      //     def debug_branch(){
-      //       when (pipeOutput.fire()) {
-      //         printf(p"\tBRANCH IO:\n")
-      //         printf(p"\t\tBranch Address: ${Hexadecimal(branchMod.io.bc.branch_addr)}\n")
-      //         printf(p"\t\t  Branch Taken: ${branchMod.io.bc.branch_taken}\n")
-      //         printf(p"\t\t     Is Branch: ${branchMod.io.bc.is_branch}\n")
-      //         printf(p"\t\tTarget Address: ${Hexadecimal(branchMod.io.bc.target_addr)}\n")
-      //       }
-      //     }
-      //     if (cpu.debug.debug_stage1_ifu_branch) {debug_branch()}
+          // def debug_branch(){
+          //   when (pipeOutput.fire()) {
+          //     printf(p"\tBRANCH IO:\n")
+          //     printf(p"\t\tBranch Address: ${Hexadecimal(branchMod.io.bc.branch_addr)}\n")
+          //     printf(p"\t\t  Branch Taken: ${branchMod.io.bc.branch_taken}\n")
+          //     printf(p"\t\t     Is Branch: ${branchMod.io.bc.is_branch}\n")
+          //     printf(p"\t\tTarget Address: ${Hexadecimal(branchMod.io.bc.target_addr)}\n")
+          //   }
+          // }
+          // if (cpu.debug.debug_stage1_ifu_branch) {debug_branch()}
 
-      //     when(pipeOutput.valid){
-      //       io.bc := branchMod.io.bc
-      //       when (branchMod.io.bc.branch_taken) {
-      //         pipeInput.flush := 1.B
-      //       }
-      //       dontTouch(branchMod.io.bc)
-      //     }
-      //     // TODO :
-      //     // By default we shouldn't write to any registers,
-      //     // should be tied off up top.
+          when(pipeOutput.valid){
+            io.bc := branchMod.io.bc
+            when (branchMod.io.bc.branch_taken) {
+              pipeInput.flush := True
+            }
+          }
+          // TODO :
+          // By default we shouldn't write to any registers,
+          // should be tied off up top.
 
-      //     // By default don't write to the SPRs
-      //     o.write_interface.slots(WriteSlotPacking.SPRPort1).sel := SourceSelect.NONE
-      //     o.write_interface.slots(WriteSlotPacking.SPRPort2).sel := SourceSelect.NONE
+          // By default don't write to the SPRs
+          o.write_interface.slots(WriteSlotPacking.SPRPort1).sel := SourceSelect.NONE
+          o.write_interface.slots(WriteSlotPacking.SPRPort2).sel := SourceSelect.NONE
 
-      //     // If the branch unit outputs a valid ctr, then write that to ctr SPR
-      //     when(branchMod.io.ctr_w.valid){
-      //       o.write_interface.slots(WriteSlotPacking.SPRPort1).data := branchMod.io.ctr_w.bits
-      //       o.write_interface.slots(WriteSlotPacking.SPRPort1).sel := SourceSelect.SPR
-      //       o.write_interface.slots(WriteSlotPacking.SPRPort1).idx := SPREnums.CTR
-      //     }
-      //     // Same with LR
-      //     when(branchMod.io.lr_w.valid){
-      //       o.write_interface.slots(WriteSlotPacking.SPRPort2).data := branchMod.io.lr_w.bits
-      //       o.write_interface.slots(WriteSlotPacking.SPRPort2).sel := SourceSelect.SPR
-      //       o.write_interface.slots(WriteSlotPacking.SPRPort2).idx := SPREnums.LR
-      //     }
-      //   }
-      // }
+          // If the branch unit outputs a valid ctr, then write that to ctr SPR
+          when(branchMod.io.ctr_w.valid){
+            o.write_interface.slots(WriteSlotPacking.SPRPort1).data := branchMod.io.ctr_w.payload
+            o.write_interface.slots(WriteSlotPacking.SPRPort1).sel := SourceSelect.SPR
+            o.write_interface.slots(WriteSlotPacking.SPRPort1).idx := SPREnums.CTR.asBits.asUInt
+          }
+          // Same with LR
+          when(branchMod.io.lr_w.valid){
+            o.write_interface.slots(WriteSlotPacking.SPRPort2).data := branchMod.io.lr_w.payload
+            o.write_interface.slots(WriteSlotPacking.SPRPort2).sel := SourceSelect.SPR
+            o.write_interface.slots(WriteSlotPacking.SPRPort2).idx := SPREnums.LR.asBits.asUInt
+          }
+        }
+      }
 
       // is(IntegerFUSub.LogicUnit){
       //   if(config.logical) {

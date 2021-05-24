@@ -47,9 +47,9 @@ class Branch extends Component {
     io.bc.branch_addr := dec_data.cia
     // absolute address
     when(Forms.I1.AA(insn) === True){
-      io.bc.target_addr := io.ri.imm.payload << 2
+      io.bc.target_addr := io.ri.imm.payload |<< 2
     }.otherwise{
-      io.bc.target_addr := (io.ri.imm.payload << 2) + dec_data.cia
+      io.bc.target_addr := (io.ri.imm.payload |<< 2) + dec_data.cia
     }
   } .otherwise {
     // Yep, reverse it because power's bit ordering is weird
@@ -114,9 +114,9 @@ class Branch extends Component {
     // absolute address
     when(branchArgs.immediate_address){
       when(Forms.B1.AA(insn) === True){
-        io.bc.target_addr := io.ri.imm.payload << 2
+        io.bc.target_addr := io.ri.imm.payload |<< 2
       }.otherwise{
-        io.bc.target_addr := (io.ri.imm.payload << 2) + dec_data.cia
+        io.bc.target_addr := (io.ri.imm.payload |<< 2) + dec_data.cia
       }
     }.otherwise {
       io.bc.target_addr := io.ri.slots(ReadSlotPacking.SPRPort1).data

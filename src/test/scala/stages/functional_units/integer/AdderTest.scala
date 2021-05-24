@@ -17,6 +17,16 @@ import flatspec._
 import matchers._
 import scala.util.Random
 
+class Stage1TestVerilog extends AnyFlatSpec with should.Matchers {
+  behavior of "Stage1"
+
+
+  it should "create verilog" in {
+    val config = SpinalConfig(mode=Verilog, mergeAsyncProcess=true).withoutEnumString()
+    config.generate(new Stage1)
+  }
+}
+
 class Stage1AdderTest extends AnyFlatSpec with should.Matchers {
   behavior of "Stage1"
 
