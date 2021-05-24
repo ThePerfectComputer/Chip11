@@ -29,7 +29,7 @@ class Stage3 extends PipeStage(new FunctionalUnit, new FunctionalUnitExit) {
         for ((out_slot, out_index) <- o.write_interface.slots.zipWithIndex) {
           // check if the index matches the out_slot value set during form population
           when (out_index === i.compare.out_slot) {
-            out_slot.data := comparison.asUInt
+            out_slot.data := comparison.asUInt.resized
             if (debug_stage3) {
               // when (pipeOutput.fire()) {
               //   printf(p"STAGE 3: Compared slot ${in_index.U} data 0x${Hexadecimal(in_slot.data)} to 0, got ${Binary(comparison)}\n")

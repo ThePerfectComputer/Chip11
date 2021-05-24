@@ -21,7 +21,7 @@ class BPFetchRequestInterface extends Bundle with IMasterSlave {
   val branch = Flow(UInt(64 bits))
 
   override def asMaster() : Unit = {
-    out(branch)
+    master(branch)
   }
 }
 
@@ -32,6 +32,6 @@ class BPFetchResponseInterface extends Bundle with IMasterSlave{
     val cia = UInt(64 bits)
   })
   override def asMaster() : Unit = {
-    out(fetch_info)
+    master(fetch_info)
   }
 }

@@ -11,8 +11,8 @@ class BranchPredictor extends Component {
   val io = new Bundle {
     val b_ctrl = slave(new BranchControl)
 
-    val fetch_req_interface = new BPFetchRequestInterface()
-    val fetch_resp_interface = new BPFetchResponseInterface()
+    val fetch_req_interface = master(new BPFetchRequestInterface())
+    val fetch_resp_interface = slave(new BPFetchResponseInterface())
   }
 
   io.fetch_req_interface.branch.valid := False

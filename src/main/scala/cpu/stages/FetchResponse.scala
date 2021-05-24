@@ -14,7 +14,7 @@ import cpu.debug.debug_fetch_response
 class FetchResponse extends PipeStage(UInt(64 bits), new FetchOutput) {
   val io = new Bundle {
   val line_response = slave(new LineResponse)
-  val bp_interface = slave(new BPFetchResponseInterface())
+  val bp_interface = master(new BPFetchResponseInterface())
 }
 
 
@@ -22,6 +22,7 @@ class FetchResponse extends PipeStage(UInt(64 bits), new FetchOutput) {
   pipeOutput.payload.insn  := 0
   pipeOutput.payload.cia   := 0
 
+  ready.allowOverride
   ready := False
 
   val cia = pipeInput.payload
@@ -49,7 +50,8 @@ class FetchResponse extends PipeStage(UInt(64 bits), new FetchOutput) {
 
       when (accessing && address_match) {
         ready := True
-        pipeOutput.payload.insn  := io.line_response.data
+        // Is this right??
+        pipeOutput.payload.insn  := io.line_response.data(31 downto 0)
         pipeOutput.payload.cia   := cia
 
         when(pipeOutput.fire) {debug()}
@@ -59,7 +61,7 @@ class FetchResponse extends PipeStage(UInt(64 bits), new FetchOutput) {
 
     when (accessing  &&  fifo_written && address_match_reg) {
       ready := True
-      pipeOutput.payload.insn  := line_response_reg.data
+      pipeOutput.payload.insn  := line_response_reg.data(31 downto 0)
       pipeOutput.payload.cia   := cia
       fifo_written := False
 

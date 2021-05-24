@@ -63,7 +63,7 @@ class WriteStage extends PipeStage(new WriteStageInterface, UInt(1 bits)) {
     val comb_wp = Vec(master(new WritePort(5, 64)), 1)
     val bhrb_wp = Vec(master(new WritePort(5, 64)), 1)
     val spr_wp = Vec(master(new WritePort(10, 64)), 1)
-    val cr_wp = Vec(master(new WritePortMasked(1, 16, 4)), 2)
+    val cr_wp = Vec(master(new WritePortMasked(0, 16, 4)), 2)
     val fpscr_wp = Vec(master(new WritePort(1, 16)), 1)
   }
 

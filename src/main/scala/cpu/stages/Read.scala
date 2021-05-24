@@ -66,7 +66,7 @@ class ReadStage extends PipeStage(new ReadInterface, new ReadInterface) {
     val comb_rp = Vec(master(new ReadPort(5, 64)), 2)
     val bhrb_rp = Vec(master(new ReadPort(5, 64)), 1)
     val spr_rp = Vec(master(new ReadPort(10, 64)), 2)
-    val cr_rp = Vec(master(new ReadPort(1, 16)), 2)
+    val cr_rp = Vec(master(new ReadPort(0, 16)), 2)
     val fpscr_rp = Vec(master(new ReadPort(1, 16)), 2)
   }
 

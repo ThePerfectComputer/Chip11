@@ -37,7 +37,7 @@ class HazardDetector(val stages: Seq[String])
                 write_slot.sel === SourceSelect.CRA || write_slot.sel === SourceSelect.CRB
               ) {
                 val cond1 = (write_slot.sel === read_slot.sel)
-                val cond2 = (write_slot.idx & read_slot.idx) =/= 0
+                val cond2 = (write_slot.idx.resized & read_slot.idx.resized) =/= 0
                 when(cond1 && cond2) {
                   when(pipeInput.valid) {
                     ready := False
