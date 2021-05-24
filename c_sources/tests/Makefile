@@ -5,7 +5,8 @@ ASFLAGS=-mpower9
 LDFLAGS=-T linker.lds
 OBFLAGS=
 
-dirs= test_simple
+dirs = $(sort $(dir $(wildcard */test.s)))
+$(info [${dirs}])
 
 AS_LE += $(ASFLAGS) -mlittle
 LD_LE += $(LDFLAGS) -EL
