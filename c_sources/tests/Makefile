@@ -43,3 +43,4 @@ clean:
 	-rm -f $(foreach dir, $(dirs), $(wildcard $(dir)/*.bin))
 
 .PHONY: all clean LE BE
+.SECONDARY:

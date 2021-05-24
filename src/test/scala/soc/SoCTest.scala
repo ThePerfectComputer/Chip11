@@ -1,7 +1,7 @@
 package soc
 
 import spinal.core._
-import spinal.lib._
+//import spinal.lib._
 import spinal.sim._
 
 import spinal.core.sim._
@@ -47,8 +47,9 @@ class SoCTestRun extends AnyFlatSpec with should.Matchers {
   behavior of "SoC"
 
   it should "run" in {
-    SimConfig.withWave.doSim(new SoC("c_sources/tests/test_simple/test_le.bin")) {
+    SimConfig.withWave.doSim(new SoC) {
       dut =>
+      dut.ram.loadFromFile("c_sources/tests/test_simple/test_le.bin")
       val logger = new CSVLogger(dut, "test.csv")
         dut.clockDomain.forkStimulus(10)
         dut.clockDomain.waitSampling(200)

@@ -4,6 +4,7 @@ import soc.interfaces.MemBus128
 import cpu.shared.memory_state.{TransactionStatus, TransactionType}
 
 import spinal.core._
+import spinal.core.sim._
 import spinal.lib._
 
 import scala.collection.mutable.ListBuffer
@@ -34,10 +35,14 @@ class DualPortSram128(depth: Int=8, dataWidth: Int=128, val mem_file:String = nu
       initialData(line_address) = data | newData
     }
   }
-  print(initialData)
+  for(item <- initialData){
+    println(f"$item%x")
+  }
+
 
   //val mem = Mem(Bits(dataWidth bits), depth)
   val mem = Mem(Bits(dataWidth bits), initialContent=initialData.map(x => B(x, dataWidth bits)))
+  mem.simPublic()
   val address_width = mem.addressWidth
 
   val port1_do_load  = (io.port_1.ldst_req === TransactionType.LOAD)
@@ -109,6 +114,21 @@ class DualPortSram128(depth: Int=8, dataWidth: Int=128, val mem_file:String = nu
     println("RAM:")
     debugPort(io.port_1)
     debugPort(io.port_2)
+  }
+
+  def loadFromFile(fileName:String){
+    val filePath = Paths.get(fileName)
+    val arr = Files.readAllBytes(filePath)
+    var data = BigInt(0)
+    for((byte, idx) <- arr.zipWithIndex){
+      val line_address = idx / bytesPerLine
+      val byte_address = idx % bytesPerLine
+      if(byte_address == 0) data = BigInt(0)
+      val newData = BigInt(byte & 0xff) << (byte_address * 8)
+      data = data | newData
+      println(f"$data%x")
+      mem.setBigInt(line_address, data)
+    }
   }
 
 }
