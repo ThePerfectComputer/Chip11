@@ -1,5 +1,6 @@
 	.org 0
-	b start
+	b _start
 .org 0x10
-start:
+_start:
 	li 1, 0x1234
+	nop

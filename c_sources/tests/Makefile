@@ -7,28 +7,39 @@ OBFLAGS=
 
 dirs= test_simple
 
-ifeq ($(LE), 1)
-	ASFLAGS += -mlittle
-	LDFLAGS += -EL
-	OBFLAGS += -I elf64-little
-else
-	ASFLAGS += -mbig
-	LDFLAGS += -EB
-	OBFLAGS += -I elf64-big
-endif
+AS_LE += $(ASFLAGS) -mlittle
+LD_LE += $(LDFLAGS) -EL
+OB_LE += $(OBFLAGS) -I elf64-little
+AS_BE += $(ASFLAGS) -mbig
+LD_BE += $(LDFLAGS) -EB
+OB_BE += $(OBFLAGS) -I elf64-big
 
 
-%.o: %.s
-	$(TOOL)-as $(ASFLAGS) -o $@ $<
+%.ol: %.s
+	$(TOOL)-as $(AS_LE) -o $@ $<
+%.ob: %.s
+	$(TOOL)-as $(AS_BE) -o $@ $<
 
-%.elf: %.o linker.lds
-	$(TOOL)-ld $(LDFLAGS) -o $@ $<
-%.bin: %.elf
-	$(TOOL)-objcopy $(OBFLAGS) -O binary $< $@
+%_le.elf: %.ol linker.lds
+	$(TOOL)-ld $(LD_LE) -o $@ $<
 
-all: $(foreach dir, $(dirs), $(dir)/test.bin)
+%_be.elf: %.ob linker.lds
+	$(TOOL)-ld $(LD_BE) -o $@ $<
+
+%_le.bin: %_le.elf
+	$(TOOL)-objcopy $(OB_LE) -O binary $< $@
+
+%_be.bin: %_be.elf
+	$(TOOL)-objcopy $(OB_BE) -O binary $< $@
+
+LE: $(foreach dir, $(dirs), $(dir)/test_le.bin)
+BE: $(foreach dir, $(dirs), $(dir)/test_be.bin)
+all: BE LE
 
 clean:
-	-rm -f $(foreach dir, $(dirs), $(wildcard $(dir)/*.o))
+	-rm -f $(foreach dir, $(dirs), $(wildcard $(dir)/*.ol))
+	-rm -f $(foreach dir, $(dirs), $(wildcard $(dir)/*.ob))
 	-rm -f $(foreach dir, $(dirs), $(wildcard $(dir)/*.elf))
 	-rm -f $(foreach dir, $(dirs), $(wildcard $(dir)/*.bin))
+
+.PHONY: all clean LE BE

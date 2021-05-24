@@ -37,7 +37,7 @@ class SoCTestRun extends AnyFlatSpec with should.Matchers {
   behavior of "SoC"
 
   it should "run" in {
-    SimConfig.withWave.doSim(new SoC("c_sources/tests/test_simple/test.bin")) {
+    SimConfig.withWave.doSim(new SoC("c_sources/tests/test_simple/test_le.bin")) {
       dut =>
       val logger = new CSVLogger(dut, "test.csv")
         dut.clockDomain.forkStimulus(10)
