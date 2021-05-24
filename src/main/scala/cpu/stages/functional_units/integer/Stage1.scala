@@ -319,74 +319,74 @@ class Stage1 extends PipeStage(new ReadInterface, new FunctionalUnit) {
       }
 
 
-      // is(IntegerFUSub.Move){
-      //   if (config.adder) {
-      //     o.write_interface.slots(0).data := 0.U
-      //     o.ldst_request.ea := 0.U
+      is(IntegerFUSub.Move){
+        if (config.adder) {
+          o.write_interface.slots(0).data := 0
+          o.ldst_request.ea := 0
 
-      //     when(i.dec_data.opcode === MnemonicEnums.mtspr) {
-      //       o.write_interface.slots(WriteSlotPacking.SPRPort1).data := 
-      //         i.slots(ReadSlotPacking.GPRPort1).data
-      //     }
-      //     when(i.dec_data.opcode === MnemonicEnums.mfspr) {
-      //       o.write_interface.slots(WriteSlotPacking.GPRPort1).data := 
-      //         i.slots(ReadSlotPacking.SPRPort1).data
-      //     }
-      //     when(i.dec_data.opcode === MnemonicEnums.mtcrf || i.dec_data.opcode === MnemonicEnums.mtocrf) {
-      //       val fxm = Forms.XFX3.FXM(i.dec_data.insn)
-      //       val maska = Cat(fxm(7), fxm(5), fxm(3), fxm(1))
-      //       val maskb = Cat(fxm(6), fxm(4), fxm(2), fxm(0))
-      //       val datain = i.slots(ReadSlotPacking.GPRPort1).data(31, 0)
-      //       when(maska =/= 0.U){
-      //         val dataa = Cat(datain(31, 28), datain(23, 20), datain(15, 12), datain(7, 4))
-      //         o.write_interface.slots(WriteSlotPacking.CRPort1).data := dataa
-      //       }
-      //       when(maskb =/= 0.U){
-      //         val datab = Cat(datain(27, 24), datain(19, 16), datain(11, 8), datain(3, 0))
-      //         o.write_interface.slots(WriteSlotPacking.CRPort2).data := datab
-      //       }
-      //     }
-      //     when(i.dec_data.opcode === MnemonicEnums.mfcr) {
-      //       val cra = i.slots(ReadSlotPacking.CRPort1).data
-      //       val crb = i.slots(ReadSlotPacking.CRPort2).data
-      //       val dataout = Wire(Vec(8, UInt(4.W)))
-      //       dataout(7) := cra(15, 12)
-      //       dataout(5) := cra(11, 8)
-      //       dataout(3) := cra(7, 4)
-      //       dataout(1) := cra(3, 0)
-      //       dataout(6) := crb(15, 12)
-      //       dataout(4) := crb(11, 8)
-      //       dataout(2) := crb(7, 4)
-      //       dataout(0) := crb(3, 0)
-      //       o.write_interface.slots(WriteSlotPacking.GPRPort1).data := dataout.asUInt()
-      //     }
-      //     when(i.dec_data.opcode === MnemonicEnums.mfocrf) {
-      //       val cra = i.slots(ReadSlotPacking.CRPort1).data
-      //       val crb = i.slots(ReadSlotPacking.CRPort2).data
-      //       val dataout = Wire(Vec(8, UInt(4.W)))
-      //       val fxm = Forms.XFX6.FXM(i.dec_data.insn)
-      //       dataout(7) := cra(15, 12)
-      //       dataout(5) := cra(11, 8)
-      //       dataout(3) := cra(7, 4)
-      //       dataout(1) := cra(3, 0)
-      //       dataout(6) := crb(15, 12)
-      //       dataout(4) := crb(11, 8)
-      //       dataout(2) := crb(7, 4)
-      //       dataout(0) := crb(3, 0)
-      //       val datamask = Wire(Vec(8, UInt(4.W)))
-      //       for(i <- 0 until 8){
-      //         datamask(i) := 0.U
-      //         when(fxm(i)){
-      //           datamask(i) := 0xF.U
-      //         }
-      //       }
-      //       val data_masked = dataout.asUInt() & datamask.asUInt()
-      //       o.write_interface.slots(WriteSlotPacking.GPRPort1).data := data_masked
-      //     }
+          when(i.dec_data.opcode === MnemonicEnums.mtspr) {
+            o.write_interface.slots(WriteSlotPacking.SPRPort1).data := 
+              i.slots(ReadSlotPacking.GPRPort1).data.resize(64)
+          }
+          when(i.dec_data.opcode === MnemonicEnums.mfspr) {
+            o.write_interface.slots(WriteSlotPacking.GPRPort1).data := 
+              i.slots(ReadSlotPacking.SPRPort1).data.resized
+          }
+          when(i.dec_data.opcode === MnemonicEnums.mtcrf || i.dec_data.opcode === MnemonicEnums.mtocrf) {
+            val fxm = Forms.XFX3.FXM(i.dec_data.insn)
+            val maska = Cat(fxm(7), fxm(5), fxm(3), fxm(1))
+            val maskb = Cat(fxm(6), fxm(4), fxm(2), fxm(0))
+            val datain = i.slots(ReadSlotPacking.GPRPort1).data(31 downto 0)
+            when(maska =/= 0){
+              val dataa = Cat(datain(31 downto 28), datain(23 downto 20), datain(15 downto 12), datain(7 downto 4))
+              o.write_interface.slots(WriteSlotPacking.CRPort1).data := dataa.asUInt.resized
+            }
+            when(maskb =/= 0){
+              val datab = Cat(datain(27 downto 24), datain(19 downto 16), datain(11 downto 8), datain(3 downto 0))
+              o.write_interface.slots(WriteSlotPacking.CRPort2).data := datab.asUInt.resized
+            }
+          }
+          when(i.dec_data.opcode === MnemonicEnums.mfcr) {
+            val cra = i.slots(ReadSlotPacking.CRPort1).data
+            val crb = i.slots(ReadSlotPacking.CRPort2).data
+            val dataout = Vec(UInt(4 bits), 8)
+            dataout(7) := cra(15 downto 12)
+            dataout(5) := cra(11 downto 8)
+            dataout(3) := cra(7 downto 4)
+            dataout(1) := cra(3 downto 0)
+            dataout(6) := crb(15 downto 12)
+            dataout(4) := crb(11 downto 8)
+            dataout(2) := crb(7 downto 4)
+            dataout(0) := crb(3 downto 0)
+            o.write_interface.slots(WriteSlotPacking.GPRPort1).data := dataout.asBits.asUInt.resized
+          }
+          when(i.dec_data.opcode === MnemonicEnums.mfocrf) {
+            val cra = i.slots(ReadSlotPacking.CRPort1).data
+            val crb = i.slots(ReadSlotPacking.CRPort2).data
+            val dataout = Vec(UInt(4 bits), 8)
+            val fxm = Forms.XFX6.FXM(i.dec_data.insn)
+            dataout(7) := cra(15 downto 12)
+            dataout(5) := cra(11 downto 8)
+            dataout(3) := cra(7 downto 4)
+            dataout(1) := cra(3 downto 0)
+            dataout(6) := crb(15 downto 12)
+            dataout(4) := crb(11 downto 8)
+            dataout(2) := crb(7 downto 4)
+            dataout(0) := crb(3 downto 0)
+            val datamask = Vec(UInt(4 bits), 8)
+            for(i <- 0 until 8){
+              datamask(i) := 0
+              when(fxm(i)){
+                datamask(i) := 0xF
+              }
+            }
+            val data_masked = dataout.asBits.asUInt & datamask.asBits.asUInt
+            o.write_interface.slots(WriteSlotPacking.GPRPort1).data := data_masked.resized
+          }
 
 
-      //   }
-      // }
+        }
+      }
     }
   }
 }
