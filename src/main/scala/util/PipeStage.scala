@@ -33,6 +33,10 @@ trait PipeData[A <: Data, B <: Data] {
     pipeInput <-< other.pipeOutput 
     other
   }
+  def <-<[C <: Data](other: Flushable[A]) = {
+    other >-> pipeInput
+    other
+  }
   def >->[C <: Data](other: PipeData[B, C]) = {
     pipeOutput >-> other.pipeInput 
     other

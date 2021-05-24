@@ -3,6 +3,7 @@ import subprocess
 import csv
 from random import Random
 import os
+import pathlib
 
 os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
@@ -19,7 +20,11 @@ class ASMTestCase(unittest.TestCase):
         self.rand = Random(self.id())
 
     def generate_data(self):
-        self.instructions.extend(["""generate_data:
+        self.instructions.extend([""".org 0
+b _start
+.org 0x10
+_start:
+generate_data:
 lis 1, 0xdead,
 ori 1, 1, 0xbeef
 lis 2, 0x1234
@@ -41,9 +46,11 @@ mtcr 1
     def tearDown(self):
         # print(cls.instructions)
         self.instructions.append('nop')
+        self.instructions.append('li 31, 1')
+        self.instructions.append('hang: b hang')
 
         test_name = self.id().split('.')[-1]
-        os.mkdir(test_name)
+        pathlib.Path(test_name).mkdir(parents=True, exist_ok=True)
         test_file = os.path.join(test_name, 'test.s')
         #Write all instructions to test.s
         with open(test_file, 'w') as asmfile:

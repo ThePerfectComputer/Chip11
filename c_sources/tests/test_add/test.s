@@ -1,3 +1,7 @@
+.org 0
+b _start
+.org 0x10
+_start:
 generate_data:
 lis 1, 0xdead,
 ori 1, 1, 0xbeef
@@ -16,8 +20,10 @@ ori 8, 8, 0xdef0
 mtcr 1
 
 test_add:
-addis 17, 2, 0xa5a5                               # 16
-addis 17, 0, 0x0001                               # 17
-addis 17, 0, 0xffff                               # 18
-addi 17, 3, -1                                    # 19
+addis 17, 2, 0xa5a5                               # 20
+addis 17, 0, 0x0001                               # 21
+addis 17, 0, 0xffff                               # 22
+addi 17, 3, -1                                    # 23
 nop
+li 31, 1
+hang: b hang
