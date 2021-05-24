@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd $(dirname $0)
+
 dirs=$(ls -d */)
 echo "dirs: $dirs"
 make -B BE

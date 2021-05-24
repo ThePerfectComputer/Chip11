@@ -10,6 +10,7 @@ class FunctionalUnit extends Bundle {
 }
 
 class FunctionalUnitExit extends Bundle {
+  val cia = UInt(64 bits)
   val ldst_request    = new LoadStoreRequest
   val write_interface = new WriteInterface
 }

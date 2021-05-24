@@ -12,6 +12,7 @@ import cpu.debug.debug_stage3
 class Stage3 extends PipeStage(new FunctionalUnit, new FunctionalUnitExit) {
   o.write_interface := i.write_interface
   o.ldst_request := i.ldst_request
+  o.cia := i.dec_data.cia
 
   def compare_slot_value(slot : Slot) = {
     val value = slot.data.asSInt

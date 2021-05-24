@@ -54,7 +54,7 @@ object WritePortCycleMap {
 
 import cpu.debug.debug_write
 
-class WriteStage extends PipeStage(new WriteStageInterface, UInt(1 bits)) {
+class WriteStage extends PipeStage(new WriteStageInterface, UInt(64 bits)) {
   val io = new Bundle {
     val gpr_wp = Vec(master(new WritePort(5, 64)), 2)
     val vr_wp = Vec(master(new WritePort(5, 128)), 1)
@@ -98,7 +98,7 @@ class WriteStage extends PipeStage(new WriteStageInterface, UInt(1 bits)) {
     io.cr_wp(idx).en := False
   }
 
-  o := 0
+  o := i.cia
 
   val cycle = RegInit(U(1, 2 bits))
   cycle := 1

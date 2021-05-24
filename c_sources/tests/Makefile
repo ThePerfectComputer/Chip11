@@ -14,6 +14,9 @@ AS_BE += $(ASFLAGS) -mbig
 LD_BE += $(LDFLAGS) -EB
 OB_BE += $(OBFLAGS) -I elf64-big
 
+all: BE LE
+LE: $(foreach dir, $(dirs), $(dir)/test_le.bin)
+BE: $(foreach dir, $(dirs), $(dir)/test_be.bin)
 
 %.ol: %.s
 	$(TOOL)-as $(AS_LE) -o $@ $<
@@ -32,9 +35,6 @@ OB_BE += $(OBFLAGS) -I elf64-big
 %_be.bin: %_be.elf
 	$(TOOL)-objcopy $(OB_BE) -O binary $< $@
 
-LE: $(foreach dir, $(dirs), $(dir)/test_le.bin)
-BE: $(foreach dir, $(dirs), $(dir)/test_be.bin)
-all: BE LE
 
 clean:
 	-rm -f $(foreach dir, $(dirs), $(wildcard $(dir)/*.ol))

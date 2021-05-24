@@ -17,5 +17,6 @@ class WriteInterface extends Bundle {
 
 class WriteStageInterface extends Bundle {
   val write_interface = new WriteInterface
+  val cia = UInt(64 bits)
   override def clone = new WriteStageInterface
 }

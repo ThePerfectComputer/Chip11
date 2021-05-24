@@ -6,5 +6,5 @@ QEMU_PID=$!
 
 powerpc64-linux-gnu-gdb -batch -x gdbscript -q
 kill $QEMU_PID
-sed -i -e '1d' -e '/()/d' -e '/\[Inferior/d' test.csv
+sed -i -e '/()/d' -e '/\[Inferior/d' test.csv
 mv test.csv $2
