@@ -33,7 +33,7 @@ class Stage1 extends PipeStage(new ReadInterface, new FunctionalUnit) {
   // TODO: determine whether this should be done here, in read, or somewhere else
   for((s, i) <- pipeInput.payload.slots.zipWithIndex) {
     when(pipeInput.payload.ldst_request.store_src_slot === i) {
-      pipeOutput.payload.ldst_request.store_data := pipeInput.payload.slots(i).data
+      pipeOutput.payload.ldst_request.store_data := pipeInput.payload.slots(i).data.resized
     }
   }
 
@@ -51,7 +51,7 @@ class Stage1 extends PipeStage(new ReadInterface, new FunctionalUnit) {
     //if (cpu.debug.debug_stage1) {when (pipeOutput.fire()) {printf("IFU STAGE1:\n")}}
 
     val sub_unit = IntegerFUSub()
-    sub_unit.assignFromBits(sub_function)
+    sub_unit.assignFromBits(sub_function(sub_unit.getBitsWidth-1 downto 0))
 
     // also need a switch statement here to select particular subfunction
     // to route to
@@ -60,32 +60,30 @@ class Stage1 extends PipeStage(new ReadInterface, new FunctionalUnit) {
       is(IntegerFUSub.Adder){
         if (config.adder) {
           val adderMod = new Adder(64)
-          adderMod.io.a := 0
-          adderMod.io.b := 0
-          adderMod.io.carry_in := False
-          adderMod.io.invert_a := False
 
 
           val adderArgs = new AdderArgs
           adderArgs.assignFromBits(i.dec_data.uOps.args)
 
-          adderMod.io.a := i.slots(ReadSlotPacking.GPRPort1).data
+          adderMod.io.a := i.slots(ReadSlotPacking.GPRPort1).data.resize(64)
           switch(adderArgs.slotB){
-            is(AdderSelectB.Slot1) { adderMod.io.b := i.slots(ReadSlotPacking.GPRPort1).data}
-            is(AdderSelectB.Slot2) { adderMod.io.b := i.slots(ReadSlotPacking.GPRPort2).data}
-            is(AdderSelectB.Slot3) { adderMod.io.b := i.slots(ReadSlotPacking.GPRPort3).data}
+            is(AdderSelectB.Slot1) { adderMod.io.b := i.slots(ReadSlotPacking.GPRPort1).data.resize(64)}
+            is(AdderSelectB.Slot2) { adderMod.io.b := i.slots(ReadSlotPacking.GPRPort2).data.resize(64)}
+            is(AdderSelectB.Slot3) { adderMod.io.b := i.slots(ReadSlotPacking.GPRPort3).data.resize(64)}
             is(AdderSelectB.Imm) { adderMod.io.b := i.imm.payload}
-            is(AdderSelectB.ImmShift) { adderMod.io.b := (i.imm.payload << 16)}
-            is(AdderSelectB.ImmShift2) { adderMod.io.b := (i.imm.payload << 2)}
+            is(AdderSelectB.ImmShift) { adderMod.io.b := (i.imm.payload |<< 16)}
+            is(AdderSelectB.ImmShift2) { adderMod.io.b := (i.imm.payload |<< 2)}
             is(AdderSelectB.ZERO) { adderMod.io.b := 0}
           }
           switch(adderArgs.cIn) {
             is(AdderCarryIn.ZERO) { adderMod.io.carry_in := False}
             is(AdderCarryIn.ONE) { adderMod.io.carry_in := False}
+            // TODO Fix
+            is(AdderCarryIn.CA) { adderMod.io.carry_in := False}
           }
           adderMod.io.invert_a := adderArgs.invertA
 
-          o.write_interface.slots(WriteSlotPacking.GPRPort1).data := adderMod.io.o
+          o.write_interface.slots(WriteSlotPacking.GPRPort1).data := adderMod.io.o.resized
           o.ldst_request.ea := adderMod.io.o
 
           def debug_adder(){

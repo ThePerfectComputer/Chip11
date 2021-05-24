@@ -21,8 +21,8 @@ class Adder(val wid: Int) extends Component {
     val o = out UInt(wid bits)
     val carry_out = out Bool()
   }
-  val adder_a = UInt((wid+2) bits)
-  val adder_b = UInt((wid+2) bits)
+  val adder_a = UInt((wid+1) bits)
+  val adder_b = UInt((wid+1) bits)
   val adder_o = UInt((wid+2) bits)
 
   when(io.invert_a) {
@@ -32,7 +32,8 @@ class Adder(val wid: Int) extends Component {
   }
   adder_b := Cat(io.b, io.carry_in).asUInt
 
-  adder_o := adder_a + adder_b
+  // Add, and widen for carry bit
+  adder_o := adder_a +^ adder_b
 
   io.o := adder_o(wid downto 1)
   io.carry_out := adder_o(wid+1)
