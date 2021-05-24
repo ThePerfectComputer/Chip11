@@ -20,21 +20,24 @@ class DualPortSram128(depth: Int=8, dataWidth: Int=128, val mem_file:String = nu
   }
   val bytesPerLine = dataWidth/8
 
-  var initialData = new ListBuffer[Vec[UInt]]
+  var initialData = new ListBuffer[BigInt]
   for(i <- 0 until depth)
-    initialData += Vec(UInt(8 bits), bytesPerLine).getZero
+    initialData += 0
   if(mem_file != null){
     val filePath = Paths.get(mem_file)
     val arr = Files.readAllBytes(filePath)
     for((byte, idx) <- arr.zipWithIndex){
       val line_address = idx / bytesPerLine
       val byte_address = idx % bytesPerLine
-      initialData(line_address)(byte_address) := byte
+      val data = initialData(line_address)
+      val newData = BigInt(byte & 0xff) << (byte_address * 8)
+      initialData(line_address) = data | newData
     }
   }
+  print(initialData)
 
-  //val mem = Mem(Vec(UInt(8 bits), 16), depth)
-  val mem = Mem(Vec(UInt(8 bits), 16), initialContent=initialData)
+  //val mem = Mem(Bits(dataWidth bits), depth)
+  val mem = Mem(Bits(dataWidth bits), initialContent=initialData.map(x => B(x, dataWidth bits)))
   val address_width = mem.addressWidth
 
   val port1_do_load  = (io.port_1.ldst_req === TransactionType.LOAD)
@@ -50,7 +53,9 @@ class DualPortSram128(depth: Int=8, dataWidth: Int=128, val mem_file:String = nu
   io.port_2.status := port2_status_reg
   
   // for the fetch stage
-  io.port_1.read_data := mem.readSync(io.port_1.quad_word_address.take(mem.addressWidth).asUInt, enable=port1_do_load)
+  val rport1_data = Bits(dataWidth bits)
+  rport1_data := mem.readSync(io.port_1.quad_word_address.take(mem.addressWidth).asUInt, enable=port1_do_load)
+  io.port_1.read_data.assignFromBits(rport1_data)
   when(port1_do_load | port1_do_store) {
     port1_status_reg := TransactionStatus.DONE
   }.otherwise{
@@ -58,8 +63,10 @@ class DualPortSram128(depth: Int=8, dataWidth: Int=128, val mem_file:String = nu
   }
 
   // for the loadstore stage
-  when (port2_do_store) {mem.write(io.port_2.quad_word_address.take(mem.addressWidth).asUInt, io.port_2.write_data, mask=io.port_2.write_mask.asBits)}
-  io.port_2.read_data := mem.readSync(io.port_2.quad_word_address.take(mem.addressWidth).asUInt, enable=port2_do_load)
+  when (port2_do_store) {mem.write(io.port_2.quad_word_address.take(mem.addressWidth).asUInt, io.port_2.write_data.asBits, mask=io.port_2.write_mask.asBits)}
+  val rport2_data = Bits(dataWidth bits)
+  rport2_data := mem.readSync(io.port_2.quad_word_address.take(mem.addressWidth).asUInt, enable=port2_do_load)
+  io.port_2.read_data.assignFromBits(rport2_data)
   when(port2_do_load | port2_do_store) {
     port2_status_reg := TransactionStatus.DONE
   }.otherwise{

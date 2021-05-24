@@ -24,7 +24,7 @@ class SoCTestRun extends AnyFlatSpec with should.Matchers {
   behavior of "SoC"
 
   it should "run" in {
-    SimConfig.withWave.doSim(new SoC) { dut =>
+    SimConfig.withWave.doSim(new SoC("c_sources/tests/test_simple/test.bin")) { dut =>
       dut.clockDomain.forkStimulus(10)
       dut.clockDomain.waitSampling(200)
     }
