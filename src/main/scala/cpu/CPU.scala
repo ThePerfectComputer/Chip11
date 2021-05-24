@@ -1,12 +1,12 @@
 package cpu
 
-// import cpu.interfaces.{LineRequest, LineResponse, ReadInterface, WriteInterface}
-// import cpu.shared.{Regfile, RegfileMasked}
-// import cpu.shared.{BranchPredictor, BRAMMultiRegfile, RegfileMasked, DebugBRAMMultiRegfile, DebugRegfileMasked}
-// import cpu.stages.{FetchRequest, FetchResponse, uOpAndFormDecoder, PopulateByForm, ReadStage}
-// import cpu.stages.{HazardDetector, LDSTRequest, LDSTResponse, WriteStage}
-// import cpu.stages.functional_units.integer.{Stage1, Stage2, Stage3}
-// import util.{PipeStage, RegisteredPipeStage, Delay}
+import cpu.interfaces.{LineRequest, LineResponse, ReadInterface, WriteInterface}
+import cpu.shared.{Regfile, RegfileMasked}
+import cpu.shared.{BranchPredictor, BRAMMultiRegfile, RegfileMasked}
+import cpu.stages.{FetchRequest, FetchResponse, uOpAndFormDecoder, PopulateByForm, ReadStage}
+import cpu.stages.{HazardDetector, WriteStage, LDSTRequest, LDSTResponse}
+import cpu.stages.functional_units.integer.{Stage1, Stage2, Stage3}
+import util.{PipeStage, Delay}
 
 import spinal.core._
 import spinal.lib._
@@ -40,4 +40,139 @@ object debug {
   val debug_stage1_ifu_shifter    = debug_stage1_ifu
   val debug_stage3                = debug
   val debug_write                 = true
+}
+
+class CPU extends Component {
+  // create external interfaces to memory from fetch and loadstore
+  val io = new Bundle {
+    val fetch_request   = master(new LineRequest)
+    val fetch_response  = slave(new LineResponse)
+
+    val ldst_request    = master(new LineRequest)
+    val ldst_response   = slave(new LineResponse)
+  }
+
+  // if enabled, keep track of current cycle with a counter (useful for waveform debugging)
+  if (debug.cycle_count) {
+    val cycle_counter = Counter(1000000)
+  }
+
+  // instantiate pipeline stages
+  val fetch_req     = new FetchRequest
+  val fetch_resp    = new FetchResponse      // fetch instructions from memory
+  val decode        = new uOpAndFormDecoder                           // decode instructions into uOps and forms
+  val form_pop      = new PopulateByForm     // use form to populate instruction data
+
+  val read          = new ReadStage                                   // read registers into slots selected by form
+  val s1            = new Stage1             // execute stage 1 of integer functional unit
+  val s2            = new Stage2             // execute stage 2 of integer functional unit
+  val s3            = new Stage3             // execute stage 3 of integer functional unit
+  val ldst_request  = new LDSTRequest        // interact with memory to read/write register slots
+  val ldst_response = new LDSTResponse       // interact with memory to read/write register slots
+  val write         = new WriteStage                                  // write slot data into selected registers
+
+  // unfortunately, Chisel's limitations make it difficult to do something
+  // more elegant than the following. I tried for almost two days.
+  val stagesCommittable = Seq(
+    read.getClass.getName(),
+    s1.getClass.getName(),
+    s2.getClass.getName(),
+    s3.getClass.getName(),
+    ldst_request.getClass.getName(),
+    ldst_response.getClass.getName(),
+    write.getClass.getName()
+  )
+  // val stagesCommittable = Seq(
+  //   "read",
+  //   "execute1",
+  //   "execute2",
+  //   "execute3",
+  //   "write")
+
+  val hazard        = new HazardDetector(stagesCommittable)
+
+  // connect hazard detector inputs
+  hazard.io.write_interface_vec(0) := read.pipeInput.payload.write_interface
+  hazard.io.write_interface_vec(1) := s1.pipeInput.payload.write_interface
+  hazard.io.write_interface_vec(2) := s2.pipeInput.payload.write_interface
+  hazard.io.write_interface_vec(3) := s3.pipeInput.payload.write_interface
+  hazard.io.write_interface_vec(4) := ldst_request.pipeInput.payload.write_interface
+  hazard.io.write_interface_vec(5) := ldst_response.pipeInput.payload.write_interface
+  hazard.io.write_interface_vec(6) := write.pipeInput.payload.write_interface
+
+  hazard.io.stage_valid_vec(0) := read.pipeInput.valid
+  hazard.io.stage_valid_vec(1) := s1.pipeInput.valid
+  hazard.io.stage_valid_vec(2) := s2.pipeInput.valid
+  hazard.io.stage_valid_vec(3) := s3.pipeInput.valid
+  hazard.io.stage_valid_vec(4) := ldst_request.pipeInput.valid
+  hazard.io.stage_valid_vec(5) := ldst_response.pipeInput.valid
+  hazard.io.stage_valid_vec(6) := write.pipeInput.valid
+
+  // connect up pipeline stages
+  fetch_resp << fetch_req.pipeOutput
+  fetch_resp >-> decode >-> form_pop >-> hazard >-> read >->
+  s1 >-> s2 >-> s3 >-> ldst_request >-> ldst_response >-> write
+  
+  // instantiate other hardware that isn't pipeline stages
+  val branch        = new BranchPredictor                             // branch predictor
+
+  // connect fetch unit to branch predictor
+  fetch_req.io.bp_interface <> branch.io.fetch_req_interface
+  fetch_resp.io.bp_interface <> branch.io.fetch_resp_interface
+  // connect branch predictor to the execute stage 1 branch unit
+  s1.io.bc <> branch.io.b_ctrl
+
+  // connect fetch and loadstore to memory interfaces
+  // fetch_req.io.line_request       <> io.fetch_request
+  io.fetch_request                := fetch_req.io.line_request
+  fetch_resp.io.line_response     <> io.fetch_response
+  ldst_request.io                 <> io.ldst_request
+  ldst_response.io                <> io.ldst_response
+
+  // instantiate the regfile(s)
+  // val gpr = if(doDebug) new DebugBRAMMultiRegfile(32, 64, 2, 2) else
+  //     new BRAMMultiRegfile(32, 64, 2, 2)
+  // val spr = if(doDebug) new DebugBRAMMultiRegfile(1024, 64, 2, 1) else
+  //     new BRAMMultiRegfile(1024, 64, 2, 1)
+  // val cr  = if(doDebug) new DebugRegfileMasked(2, 16, 2, 2, 4) else
+  //     new RegfileMasked(2, 16, 2, 2, 4)
+  val gpr =  new BRAMMultiRegfile(32, 64, 2, 2)
+  val spr =  new BRAMMultiRegfile(1024, 64, 2, 1)
+  val cra  =  new RegfileMasked(1, 16, 1, 1, 4)
+  val crb  =  new RegfileMasked(1, 16, 1, 1, 4)
+
+  
+  // connect the GPR regfile read ports to the read stage,
+  // and the GPR regfile write ports to the write stage
+  for(i <- 0 until 2) {
+    gpr.io.rp(i) <> read.io.gpr_rp(i)
+    gpr.io.wp(i) <> write.io.gpr_wp(i)
+    spr.io.rp(i) <> read.io.spr_rp(i)
+    // same for the CR
+  }
+  cra.io.rp(0) <> read.io.cr_rp(0)
+  crb.io.rp(0) <> read.io.cr_rp(1)
+  cra.io.wp(0) <> write.io.cr_wp(0)
+  crb.io.wp(0) <> write.io.cr_wp(1)
+
+  spr.io.wp(0) <> write.io.spr_wp(0)
+
+  // default tieoffs for read stage ports
+  for(i <- 0 until 2) {
+    read.io.vr_rp(i).data    := 0
+    read.io.vsr_rp(i).data   := 0
+    read.io.fpr_rp(i).data   := 0
+    read.io.comb_rp(i).data  := 0
+    read.io.fpscr_rp(i).data := 0
+  }
+  read.io.bhrb_rp(0).data    := 0
+
+  // TODO tie off any unused signals (register ports, etc.)
+
+  // ensure first pipeline stage has valid input
+
+  // ensure last pipeline stage is always ready
+  write.pipeOutput.ready := True
+  write.pipeOutput.flush := False
+
 }
