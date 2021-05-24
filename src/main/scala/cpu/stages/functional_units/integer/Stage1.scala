@@ -143,46 +143,40 @@ class Stage1 extends PipeStage(new ReadInterface, new FunctionalUnit) {
         }
       }
 
-      // is(IntegerFUSub.LogicUnit){
-      //   if(config.logical) {
-      //     val logicMod = Module(new LogicUnit(64))
-      //     logicMod.io.a := 0.U
-      //     logicMod.io.b := 0.U
-      //     logicMod.io.invert_a := false.B
-      //     logicMod.io.invert_b := false.B
-      //     logicMod.io.invert_o := false.B
-      //     logicMod.io.xor := false.B
+      is(IntegerFUSub.LogicUnit){
+        if(config.logical) {
+          val logicMod = new LogicUnit(64)
 
-      //     def debug_logic(){
-      //       when (pipeOutput.fire()) {
-      //         printf("\tLOGIC IO:\n")
-      //         printf(p"\t\tInput A: ${logicMod.io.a}\n")
-      //         printf(p"\t\tInput B: ${logicMod.io.b}\n")
-      //         printf(p"\t\t Output: ${logicMod.io.o}\n")
-      //       }
-      //     }
-      //     if (cpu.debug.debug_stage1) {debug_logic()}
+          // def debug_logic(){
+          //   when (pipeOutput.fire()) {
+          //     printf("\tLOGIC IO:\n")
+          //     printf(p"\t\tInput A: ${logicMod.io.a}\n")
+          //     printf(p"\t\tInput B: ${logicMod.io.b}\n")
+          //     printf(p"\t\t Output: ${logicMod.io.o}\n")
+          //   }
+          // }
+          // if (cpu.debug.debug_stage1) {debug_logic()}
 
-      //     val logicArgs = Wire(new LogicArgs)
-      //     logicArgs := i.dec_data.uOps.args.asTypeOf(new LogicArgs)
+          val logicArgs = new LogicArgs
+          logicArgs.assignFromBits(i.dec_data.uOps.args)
 
-      //     logicMod.io.a := i.slots(ReadSlotPacking.GPRPort1).data
-      //     switch(logicArgs.slotB){
-      //       is(LogicSelectB.Slot1) { logicMod.io.b := i.slots(ReadSlotPacking.GPRPort1).data}
-      //       is(LogicSelectB.Slot2) { logicMod.io.b := i.slots(ReadSlotPacking.GPRPort2).data}
-      //       is(LogicSelectB.Slot3) { logicMod.io.b := i.slots(ReadSlotPacking.GPRPort3).data}
-      //       is(LogicSelectB.Imm) { logicMod.io.b := i.imm.bits}
-      //       is(LogicSelectB.ImmShift) { logicMod.io.b := (i.imm.bits << 16)}
-      //     }
+          logicMod.io.a := i.slots(ReadSlotPacking.GPRPort1).data.resize(64)
+          switch(logicArgs.slotB){
+            is(LogicSelectB.Slot1) { logicMod.io.b := i.slots(ReadSlotPacking.GPRPort1).data.resize(64)}
+            is(LogicSelectB.Slot2) { logicMod.io.b := i.slots(ReadSlotPacking.GPRPort2).data.resize(64)}
+            is(LogicSelectB.Slot3) { logicMod.io.b := i.slots(ReadSlotPacking.GPRPort3).data.resize(64)}
+            is(LogicSelectB.Imm) { logicMod.io.b := i.imm.payload}
+            is(LogicSelectB.ImmShift) { logicMod.io.b := (i.imm.payload |<< 16)}
+          }
 
-      //     logicMod.io.invert_a := logicArgs.invertA
-      //     logicMod.io.invert_b := logicArgs.invertB
-      //     logicMod.io.invert_o := logicArgs.invertO
-      //     logicMod.io.xor := logicArgs.xor
+          logicMod.io.invert_a := logicArgs.invertA
+          logicMod.io.invert_b := logicArgs.invertB
+          logicMod.io.invert_o := logicArgs.invertO
+          logicMod.io.xor := logicArgs.xor
 
-      //     o.write_interface.slots(WriteSlotPacking.GPRPort1).data := logicMod.io.o
-      //   }
-      // }
+          o.write_interface.slots(WriteSlotPacking.GPRPort1).data := logicMod.io.o.resized
+        }
+      }
 
       // is(IntegerFUSub.Multiplier){
       //   if (config.multiplier) {
