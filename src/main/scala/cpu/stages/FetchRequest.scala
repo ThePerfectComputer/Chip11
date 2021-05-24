@@ -24,7 +24,7 @@ class FetchRequest extends Component {
   }
   val state = RegInit(FetchState.firstRequest)
 
-  val cia_reg           = RegInit(U(0, 64 bits))
+  val cia_reg           = RegInit(U(0x10, 64 bits))
   val nia               = cia_reg + 4
 
   // default tieoffs

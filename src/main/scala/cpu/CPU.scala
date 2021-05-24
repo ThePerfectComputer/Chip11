@@ -40,7 +40,7 @@ object debug {
   val debug_stage1_ifu_multiplier = debug_stage1_ifu
   val debug_stage1_ifu_shifter    = debug_stage1_ifu
   val debug_stage3                = debug
-  val debug_write                 = true
+  val debug_write                 = debug
 }
 
 class CPU extends Component {

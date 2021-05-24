@@ -35,9 +35,6 @@ class DualPortSram128(depth: Int=8, dataWidth: Int=128, val mem_file:String = nu
       initialData(line_address) = data | newData
     }
   }
-  for(item <- initialData){
-    println(f"$item%x")
-  }
 
 
   //val mem = Mem(Bits(dataWidth bits), depth)
@@ -126,7 +123,6 @@ class DualPortSram128(depth: Int=8, dataWidth: Int=128, val mem_file:String = nu
       if(byte_address == 0) data = BigInt(0)
       val newData = BigInt(byte & 0xff) << (byte_address * 8)
       data = data | newData
-      println(f"$data%x")
       mem.setBigInt(line_address, data)
     }
   }
