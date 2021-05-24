@@ -234,26 +234,26 @@ class Stage1 extends PipeStage(new ReadInterface, new FunctionalUnit) {
       //     shifterMod.io.is_shift := false.B
       //     shifterMod.io.byte_op := false.B
 
-      //     def debug_shifter(){
-      //       when (pipeOutput.fire()) {
-      //         printf(p"\tSHIFTER IO: ${shifterMod.io}\n")
-      //       }
-      //     }
-      //     if (cpu.debug.debug_stage1) {debug_shifter()}
+      //     // def debug_shifter(){
+      //     //   when (pipeOutput.fire()) {
+      //     //     printf(p"\tSHIFTER IO: ${shifterMod.io}\n")
+      //     //   }
+      //     // }
+      //     // if (cpu.debug.debug_stage1) {debug_shifter()}
 
-      //     val shifterArgs = Wire(new ShifterArgs)
-      //     shifterArgs := i.dec_data.uOps.args.asTypeOf(new ShifterArgs)
+      //     val shifterArgs = new ShifterArgs
+      //     shifterArgs.assignFromBits(i.dec_data.uOps.args)
         
-      //     shifterMod.io.rs := i.slots(ReadSlotPacking.GPRPort1).data
+      //     shifterMod.io.rs := i.slots(ReadSlotPacking.GPRPort1).data.resized(64)
       //     switch(shifterArgs.slotB){
-      //       is(ShifterSelectB.Slot1) { shifterMod.io.rb := i.slots(ReadSlotPacking.GPRPort1).data}
-      //       is(ShifterSelectB.Slot2) { shifterMod.io.rb := i.slots(ReadSlotPacking.GPRPort2).data}
-      //       is(ShifterSelectB.Slot3) { shifterMod.io.rb := i.slots(ReadSlotPacking.GPRPort3).data}
+      //       is(ShifterSelectB.Slot1) { shifterMod.io.rb := i.slots(ReadSlotPacking.GPRPort1).data.resized}
+      //       is(ShifterSelectB.Slot2) { shifterMod.io.rb := i.slots(ReadSlotPacking.GPRPort2).data.resized}
+      //       is(ShifterSelectB.Slot3) { shifterMod.io.rb := i.slots(ReadSlotPacking.GPRPort3).data.resized}
       //       is(ShifterSelectB.Imm) { shifterMod.io.rb := i.imm.bits}
-      //       is(ShifterSelectB.ZERO) { shifterMod.io.rb := 0.U}
+      //       is(ShifterSelectB.ZERO) { shifterMod.io.rb := 0}
       //     }
       //     switch(shifterArgs.me){
-      //       is(ShifterME.LSB) { shifterMod.io.me := 63.U}
+      //       is(ShifterME.LSB) { shifterMod.io.me := 63}
       //       // WTF is this? I think this is supposed to be Forms.MD(whatever).me(i.insn)
       //       is(ShifterME.ME) { shifterMod.io.me := i.slots(3).data}
       //       is(ShifterME.IMM_REV) { shifterMod.io.me := (63.U - i.imm.bits)}
@@ -276,49 +276,47 @@ class Stage1 extends PipeStage(new ReadInterface, new FunctionalUnit) {
       //   }
       // }
 
-      // is(IntegerFUSub.Comparator){
-      //   if (config.comparator) {
-      //     val comparatorMod = Module(new Comparator(64))
-      //     comparatorMod.io.a := 0.U
-      //     comparatorMod.io.b := 0.U
-      //     comparatorMod.io.l := 0.U
-      //     comparatorMod.io.logical := false.B
-      //     def debug_comparator(){
-      //       when (pipeOutput.fire()) {
-      //         printf(p"\tCOMP. IO: ${comparatorMod.io}\n")
-      //       }
-      //     }
-      //     if (cpu.debug.debug_stage1) {debug_comparator()}
-      //     val comparatorArgs = Wire(new ComparatorArgs)
-      //     comparatorArgs := i.dec_data.uOps.args.asTypeOf(new ComparatorArgs)
+      is(IntegerFUSub.Comparator){
+        if (config.comparator) {
+          val comparatorMod = new Comparator(64)
+          // def debug_comparator(){
+          //   when (pipeOutput.fire()) {
+          //     printf(p"\tCOMP. IO: ${comparatorMod.io}\n")
+          //   }
+          // }
+          // if (cpu.debug.debug_stage1) {debug_comparator()}
+          val comparatorArgs = new ComparatorArgs
+          comparatorArgs.assignFromBits(i.dec_data.uOps.args)
 
-      //     comparatorMod.io.a := i.slots(0).data
-      //     switch(comparatorArgs.slotB){
-      //       is(ComparatorSelectB.Slot1) { comparatorMod.io.b := i.slots(0).data}
-      //       is(ComparatorSelectB.Slot2) { comparatorMod.io.b := i.slots(1).data}
-      //       is(ComparatorSelectB.Slot3) { comparatorMod.io.b:= i.slots(2).data}
-      //       is(ComparatorSelectB.Imm)   { comparatorMod.io.b := i.imm.bits}
-      //     }
+          comparatorMod.io.a := i.slots(0).data.resize(64)
+          switch(comparatorArgs.slotB){
+            is(ComparatorSelectB.Slot1) { comparatorMod.io.b := i.slots(0).data.resize(64)}
+            is(ComparatorSelectB.Slot2) { comparatorMod.io.b := i.slots(1).data.resize(64)}
+            is(ComparatorSelectB.Slot3) { comparatorMod.io.b:= i.slots(2).data.resize(64)}
+            is(ComparatorSelectB.Imm)   { comparatorMod.io.b := i.imm.payload}
+          }
 
-      //     comparatorMod.io.l := i.slots(3).data
-      //     comparatorMod.io.logical := comparatorArgs.logical
-      //     val bf = Forms.D1.BF(i.dec_data.insn)
-      //     val field_select = 3.U - bf(2,1)
 
-      //     val cr_fields = Wire(Vec(4, UInt(4.W)))
+          val l = Forms.D1.L(i.dec_data.insn)
+          comparatorMod.io.is_64b := l
+          comparatorMod.io.logical := comparatorArgs.logical
+          val bf = Forms.D1.BF(i.dec_data.insn)
+          val field_select = 3 - bf(2 downto 1)
 
-      //     val xer = i.slots(ReadSlotPacking.SPRPort1).data
-      //     val xer_so = xer(31)
-      //     cr_fields := 0.U.asTypeOf(cr_fields)
-      //     cr_fields(field_select) := Cat(comparatorMod.io.o, xer_so)
+          val cr_fields = Vec(UInt(4 bits), 4)
 
-      //     when((bf(0) & 1.U) === 0.U) {
-      //       o.write_interface.slots(WriteSlotPacking.CRPort1).data := cr_fields.asUInt()
-      //     }.otherwise {
-      //       o.write_interface.slots(WriteSlotPacking.CRPort2).data := cr_fields.asUInt()
-      //     }
-      //   }
-      // }
+          val xer = i.slots(ReadSlotPacking.SPRPort1).data
+          val xer_so = xer(31)
+          cr_fields := cr_fields.getZero
+          cr_fields(field_select) := Cat(comparatorMod.io.o, xer_so).asUInt
+
+          when(bf(0) === False) {
+            o.write_interface.slots(WriteSlotPacking.CRPort1).data := cr_fields.asBits.asUInt.resized
+          }.otherwise {
+            o.write_interface.slots(WriteSlotPacking.CRPort2).data := cr_fields.asBits.asUInt.resized
+          }
+        }
+      }
 
 
       // is(IntegerFUSub.Move){
