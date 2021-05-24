@@ -34,14 +34,16 @@ class CSVLogger(dut: SoC, filePath: String) {
         else
           writer.write(f"$reg%x,")
       }
-      if(iteration >= 100) finish()
       writer.flush()
+      if(iteration >= 100){
+        finish()
+      }
       iteration += 1
     }
   }
   def finish() {
-    simSuccess()
     writer.close()
+    simSuccess()
   }
 
 }
@@ -88,8 +90,8 @@ class SoCTestRun extends AnyFlatSpec with should.Matchers {
         val logger = new CSVLogger(dut, testCsv)
         dut.clockDomain.forkStimulus(10)
       }
+      compareCsvs(goldCsv, testCsv)
     }
-    compareCsvs(goldCsv, testCsv)
   }
   val testDirFile = new File(testDir)
   val tests = testDirFile.listFiles().filter(_.isDirectory)
