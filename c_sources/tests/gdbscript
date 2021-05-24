@@ -1,0 +1,29 @@
+set confirm off
+set print address off
+set pagination off
+
+target remote localhost:1234
+
+set logging file test.csv
+set logging overwrite on
+set logging on
+
+set $i=0
+set $end=100
+
+printf "cia,cr,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,r13,r14,r15,r16,r17,r18,r19,r20,r21,r22,r23,r24,r25,r26,r27,r28,r29,r30,r31\n"
+set $r3=0
+
+while($i < $end)
+  si
+  printf "%lx,", $pc
+  printf "%x,", $cr
+  printf "%lx,%lx,%lx,%lx,%lx,%lx,%lx,%lx,", $r0, $r1, $r2, $r3, $r4, $r5, $r6, $r7
+  printf "%lx,%lx,%lx,%lx,%lx,%lx,%lx,%lx,", $r8, $r9, $r10, $r11, $r12, $r13, $r14, $r15
+  printf "%lx,%lx,%lx,%lx,%lx,%lx,%lx,%lx,", $r16, $r17, $r18, $r19, $r20, $r21, $r22, $r23
+  printf "%lx,%lx,%lx,%lx,%lx,%lx,%lx,%lx", $r24, $r25, $r26, $r27, $r28, $r29, $r30, $r31
+printf "\n"
+set $i=$i+1
+end
+
+q

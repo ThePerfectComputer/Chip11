@@ -4,3 +4,4 @@
 _start:
 	li 1, 0x1234
 	nop
+hang:	b hang
