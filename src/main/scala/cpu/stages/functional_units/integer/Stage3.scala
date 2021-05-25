@@ -15,7 +15,8 @@ class Stage3 extends PipeStage(new FunctionalUnit, new FunctionalUnitExit) {
   o.cia := i.dec_data.cia
 
   def compare_slot_value(slot : Slot) = {
-    val value = slot.data.asSInt
+    val value = SInt(64 bits)
+    value := slot.data(63 downto 0).asSInt
     val cmp = UInt(4 bits)
     when(value < 0){
       cmp := 8
