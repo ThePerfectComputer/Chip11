@@ -9,7 +9,7 @@ import cpu.shared.memory_state.{TransactionStatus, TransactionType, TransactionS
 import cpu.shared.{XERBits}
 import cpu.uOps.functional_units.Integer.{AdderSelectB, AdderCarryIn, AdderArgs, LogicSelectB, LogicArgs, 
   MultiplierSelectB, MultiplierArgs, ShifterSelectB, ShifterME, ShifterMB, ShifterArgs, 
-  ComparatorSelectB, ComparatorArgs, ZCntArgs, ZCntDirection, ZCntSize}
+  ComparatorSelectB, ComparatorArgs, ZCntArgs, ZCntDirection, ZCntSize, PopcntArgs, PopcntSize}
 import cpu.uOps.functional_units.Integer.{IntegerFUSub}
 import cpu.uOps.{FunctionalUnit}
 import util.{PipeStage}
@@ -349,6 +349,34 @@ class Stage1 extends PipeStage(new ReadInterface, new FunctionalUnit) {
           o.write_interface.slots(WriteSlotPacking.GPRPort1).data := zCntMod.io.count.resized
 
 
+        }
+      }
+
+      is(IntegerFUSub.Popcnt){
+        if (config.zcnt) {
+          val popcntMod = new PopcntB
+          // def debug_comparator(){
+          //   when (pipeOutput.fire()) {
+          //     printf(p"\tCOMP. IO: ${comparatorMod.io}\n")
+          //   }
+          // }
+          // if (cpu.debug.debug_stage1) {debug_comparator()}
+          val popcntArgs = new PopcntArgs
+          popcntArgs.assignFromBits(i.dec_data.uOps.args)
+
+          
+          popcntMod.io.data := i.slots(ReadSlotPacking.GPRPort1).data(63 downto 0).asBits.resized
+          switch(popcntArgs.size){
+            is(PopcntSize.DWORD){
+              o.write_interface.slots(WriteSlotPacking.GPRPort1).data := popcntMod.io.count.resized
+            }
+            is(PopcntSize.WORD){
+              o.write_interface.slots(WriteSlotPacking.GPRPort1).data := popcntMod.io.count32.resized
+            }
+            is(PopcntSize.BYTE){
+              o.write_interface.slots(WriteSlotPacking.GPRPort1).data := popcntMod.io.count8.resized
+            }
+          }
         }
       }
 

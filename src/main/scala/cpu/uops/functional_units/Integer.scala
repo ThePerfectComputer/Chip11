@@ -14,6 +14,7 @@ object IntegerFUSub extends SpinalEnum {
   val Comparator = newElement()
   val Move = newElement()
   val ZCnt = newElement()
+  val Popcnt = newElement()
 }
 
 object AdderSelectB extends SpinalEnum {
@@ -217,6 +218,24 @@ object ZCntArgs {
   def apply(direction: ZCntDirection.E, size: ZCntSize.E) = {
     val data = new ZCntArgs
     data.direction := direction
+    data.size := size
+    data
+  }
+}
+
+object PopcntSize extends SpinalEnum {
+  val DWORD = newElement()
+  val WORD = newElement()
+  val BYTE = newElement()
+}
+
+class PopcntArgs extends Bundle {
+  val size = PopcntSize()
+}
+
+object PopcntArgs {
+  def apply(size: PopcntSize.E) = {
+    val data = new PopcntArgs
     data.size := size
     data
   }

@@ -356,6 +356,12 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
         o.compare.out_slot := WriteSlotPacking.CRPort1
       }
     }
+    is(FormEnums.X60){
+      o.slots(ReadSlotPacking.GPRPort1).idx := Forms.X62.RS(i.insn).resized
+      o.slots(ReadSlotPacking.GPRPort1).sel := SourceSelect.GPR
+      o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.X62.RA(i.insn).resized
+      o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
+    }
 
     is(FormEnums.X65){
       o.slots(ReadSlotPacking.GPRPort1).idx := Forms.X65.RS(i.insn).resized

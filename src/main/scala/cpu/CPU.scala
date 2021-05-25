@@ -20,6 +20,7 @@ object config {
   val comparator = true
   val multiplier = false
   val zcnt = true
+  val popcnt = true
 }
 
 object debug {

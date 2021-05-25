@@ -14,10 +14,10 @@ class PopcntTest extends AnyFlatSpec with should.Matchers {
   behavior of "Popcount"
 
   it should "count set bits" in {
-    SimConfig.withWave.doSim(new Popcnt(64)) { dut =>
+    SimConfig.withWave.doSim(new PopcntB) { dut =>
       for(i <- 0 to 64){
         val test = (BigInt(1) << i) - 1
-        dut.io.data_in #= test
+        dut.io.data #= test
         sleep(1)
         assert(dut.io.count.toInt == i)
         sleep(10)

@@ -2,7 +2,7 @@ package cpu.uOps
 
 import cpu.uOps.functional_units.Integer.{IntegerFUSub, AdderSelectB, AdderCarryIn, AdderArgs, LogicSelectB, LogicArgs, MultiplierSelectB, MultiplierArgs, BranchArgs, ShifterSelectB, ShifterME, ShifterMB, ShifterArgs, ComparatorArgs, ComparatorSelectB}
 
-import cpu.uOps.functional_units.Integer.{ZCntArgs, ZCntDirection, ZCntSize}
+import cpu.uOps.functional_units.Integer.{ZCntArgs, ZCntDirection, ZCntSize, PopcntSize, PopcntArgs}
 import spinal.core._
 //import spinal.lib._
 import scala.collection._
@@ -107,6 +107,11 @@ class UOpsMapping extends Component {
     cntlzw_dot_ -> out(uOps(INTEGER, IntegerFUSub.ZCnt, ZCntArgs(ZCntDirection.LEADING, ZCntSize.WORD))),
     cnttzw_dot_ -> out(uOps(INTEGER, IntegerFUSub.ZCnt, ZCntArgs(ZCntDirection.TRAILING, ZCntSize.WORD)))
   )
+  val popcnt = Map(
+    popcntd -> out(uOps(INTEGER, IntegerFUSub.Popcnt, PopcntArgs(PopcntSize.DWORD))),
+    popcntw -> out(uOps(INTEGER, IntegerFUSub.Popcnt, PopcntArgs(PopcntSize.WORD))),
+    popcntb -> out(uOps(INTEGER, IntegerFUSub.Popcnt, PopcntArgs(PopcntSize.BYTE)))
+  )
   val default = out(uOps(INTEGER, U(0), U(0)))
 
   import cpu.config
@@ -118,7 +123,8 @@ class UOpsMapping extends Component {
     .++(if(config.adder) shifter else Nil)
     .++(if(config.adder) move else Nil)
     .++(if(config.comparator) comparator else Nil)
-    .++(if(config.adder) zCnt else Nil)
+    .++(if(config.zcnt) zCnt else Nil)
+    .++(if(config.popcnt) popcnt else Nil)
 
   def lookup(x: MnemonicEnums.E) = 
     info getOrElse (x, default)

@@ -235,6 +235,19 @@ mtcr 1
                 ])
         self.add_code(self.id(), insns)
 
+    def test_popcnt(self):
+        insns = []
+        insns.append('li 17, 1')
+        for i in range(64):
+            insns.extend([
+                f'sldi 18, 17, {i}',
+                'addi 18, 18, -1',
+                'popcntd 19, 18',
+                'popcntw 20, 18',
+                'popcntb 21, 18'
+                ])
+        self.add_code(self.id(), insns)
+
 
     def test_and(self):
         self.add_code(self.id(), [
