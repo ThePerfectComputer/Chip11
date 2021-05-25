@@ -69,4 +69,5 @@ object SourceSelect extends SpinalEnum {
   val CRB      = newElement()
 
   val BHRB     = newElement()
+  val XER      = newElement()
 }

@@ -54,6 +54,8 @@ object PortCycleMap {
   map += ((SourceSelect.FPSCR, ReadSlotPacking.FPSCRPort1) -> (0, 1))
   map += ((SourceSelect.FPSCR, ReadSlotPacking.FPSCRPort1) -> (1, 1))
 
+  map += ((SourceSelect.XER, ReadSlotPacking.XERPort1) -> (0, 1))
+
   def apply(sel: SourceSelect.E, port: Int) = map.get((sel, port))
 }
 
@@ -68,6 +70,7 @@ class ReadStage extends PipeStage(new ReadInterface, new ReadInterface) {
     val spr_rp = Vec(master(new ReadPort(10, 64)), 2)
     val cr_rp = Vec(master(new ReadPort(1, 16)), 2)
     val fpscr_rp = Vec(master(new ReadPort(1, 16)), 2)
+    val xer_rp = Vec(master(new ReadPort(0, 64)), 1)
   }
   io.cr_rp(0).idx.allowOverride 
   io.cr_rp(1).idx.allowOverride 
@@ -89,6 +92,7 @@ class ReadStage extends PipeStage(new ReadInterface, new ReadInterface) {
     io.cr_rp(idx).idx := 0
     io.fpscr_rp(idx).idx := 0
   }
+  io.xer_rp(0).idx := 0
 
   // We need to latch some of the incoming slot data
   val incoming_sel = Reg(Vec(cloneOf(i.slots(0).sel), 5))
@@ -188,6 +192,7 @@ class ReadStage extends PipeStage(new ReadInterface, new ReadInterface) {
     readFromRegfile(SourceSelect.CRA, io.cr_rp)
     readFromRegfile(SourceSelect.CRB, io.cr_rp)
     readFromRegfile(SourceSelect.FPSCR, io.fpscr_rp)
+    readFromRegfile(SourceSelect.XER, io.xer_rp)
   }
 
   io.cr_rp(0).idx := 0

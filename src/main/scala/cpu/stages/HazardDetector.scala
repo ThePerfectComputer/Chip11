@@ -34,7 +34,7 @@ class HazardDetector(val stages: Seq[String])
           when(commit_is_valid) {
             write_slots.slots.foreach { write_slot =>
               when(
-                write_slot.sel === SourceSelect.CRA || write_slot.sel === SourceSelect.CRB
+                write_slot.sel === SourceSelect.CRA || write_slot.sel === SourceSelect.CRB || write_slot.sel === SourceSelect.XER
               ) {
                 val cond1 = (write_slot.sel === read_slot.sel)
                 val cond2 = (write_slot.idx.resized & read_slot.idx.resized) =/= 0

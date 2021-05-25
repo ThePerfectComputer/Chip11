@@ -1,7 +1,7 @@
 package cpu
 
 import cpu.interfaces.{LineRequest, LineResponse, ReadInterface, WriteInterface}
-import cpu.shared.{Regfile, RegfileMasked}
+import cpu.shared.{Regfile, RegfileMasked, XERMaskMapping}
 import cpu.shared.{BranchPredictor, BRAMMultiRegfile, RegfileMasked}
 import cpu.stages.{FetchRequest, FetchResponse, uOpAndFormDecoder, PopulateByForm, ReadStage}
 import cpu.stages.{HazardDetector, WriteStage, LDSTRequest, LDSTResponse}
@@ -146,6 +146,7 @@ class CPU extends Component {
   val gpr =  new BRAMMultiRegfile(32, 64, 2, 2)
   val spr =  new BRAMMultiRegfile(1024, 64, 2, 1)
   val cr  =  new RegfileMasked(2, 16, 2, 2, 4)
+  val xer  =  new RegfileMasked(1, 64, 1, 1, 6, () => new XERMaskMapping)
 
   
   // connect the GPR regfile read ports to the read stage,
@@ -160,6 +161,9 @@ class CPU extends Component {
   cr.io.rp(1) <> read.io.cr_rp(1)
   cr.io.wp(0) <> write.io.cr_wp(0)
   cr.io.wp(1) <> write.io.cr_wp(1)
+
+  xer.io.rp(0) <> read.io.xer_rp(0)
+  xer.io.wp(0) <> write.io.xer_wp(0)
 
   spr.io.wp(0) <> write.io.spr_wp(0)
 

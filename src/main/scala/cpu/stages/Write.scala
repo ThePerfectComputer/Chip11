@@ -49,6 +49,8 @@ object WritePortCycleMap {
   map += ((SourceSelect.FPSCR, WriteSlotPacking.FPSCRPort1) -> (0, 1))
   map += ((SourceSelect.FPSCR, WriteSlotPacking.FPSCRPort2) -> (0, 2))
 
+  map += ((SourceSelect.XER, WriteSlotPacking.XERPort1) -> (0, 1))
+
   def apply(sel: SourceSelect.E, port: Int) = map.get((sel, port))
 }
 
@@ -65,6 +67,7 @@ class WriteStage extends PipeStage(new WriteStageInterface, UInt(64 bits)) {
     val spr_wp = Vec(master(new WritePort(10, 64)), 1)
     val cr_wp = Vec(master(new WritePortMasked(1, 16, 4)), 2)
     val fpscr_wp = Vec(master(new WritePort(1, 16)), 1)
+    val xer_wp = Vec(master(new WritePortMasked(0, 64, 6)), 1)
   }
 
   io.vr_wp(0).idx := 0
@@ -73,18 +76,22 @@ class WriteStage extends PipeStage(new WriteStageInterface, UInt(64 bits)) {
   io.bhrb_wp(0).idx := 0
   io.spr_wp(0).idx := 0
   io.fpscr_wp(0).idx := 0
+  io.xer_wp(0).idx := 0
   io.vr_wp(0).data := 0
   io.vsr_wp(0).data := 0
   io.comb_wp(0).data := 0
   io.bhrb_wp(0).data := 0
   io.spr_wp(0).data := 0
   io.fpscr_wp(0).data := 0
+  io.xer_wp(0).data := 0
   io.vr_wp(0).en := False
   io.vsr_wp(0).en := False
   io.comb_wp(0).en := False
   io.bhrb_wp(0).en := False
   io.spr_wp(0).en := False
   io.fpscr_wp(0).en := False
+  io.xer_wp(0).en := False
+  io.xer_wp(0).mask := 0
   for (idx <- 0 until 2) {
     io.gpr_wp(idx).idx := 0
     io.fpr_wp(idx).idx := 0
@@ -125,7 +132,7 @@ class WriteStage extends PipeStage(new WriteStageInterface, UInt(64 bits)) {
                 io_wp(wpidx).en := True
 
                 if (debug_write) {
-                  report(L"WRITE: writing ${wp.data} at ${wp.idx}")
+                  report(L"WRITE: ${pipeInput.payload.cia} writing ${wp.data} at ${wp.idx} in regfile ${wp.sel.asBits.asUInt}")
                 }
               }
               if (writecycle == 2)
@@ -157,6 +164,10 @@ class WriteStage extends PipeStage(new WriteStageInterface, UInt(64 bits)) {
                 } else {
                   io_wp(wpidx).mask := ~B(0, io_wp(wpidx).mask.getWidth bits)
                 }
+
+                if (debug_write) {
+                  report(L"WRITE: ${pipeInput.payload.cia} writing ${io_wp(wpidx).data} with mask ${wp.idx} in regfile ${wp.sel.asBits.asUInt}")
+                }
                 // if (debug_write) {
                 //   printf(
                 //     p"WRITE: Writing value 0x${Hexadecimal(wp.data.asTypeOf(io_wp(wpidx).data))}"
@@ -182,6 +193,7 @@ class WriteStage extends PipeStage(new WriteStageInterface, UInt(64 bits)) {
       writeToRegfileMasked(SourceSelect.CRA, io.cr_wp, use_mask = true)
       writeToRegfileMasked(SourceSelect.CRB, io.cr_wp, use_mask = true)
       writeToRegfile(SourceSelect.FPSCR, io.fpscr_wp)
+      writeToRegfileMasked(SourceSelect.XER, io.xer_wp, use_mask = true)
     }
   }
   io.cr_wp(0).idx := 0

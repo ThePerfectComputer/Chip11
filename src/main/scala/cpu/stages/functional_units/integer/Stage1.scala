@@ -6,6 +6,7 @@ import cpu.interfaces.{ReadInterface, FunctionalUnit, BranchControl}
 
 import cpu.interfaces.regfile.{SourceSelect}
 import cpu.shared.memory_state.{TransactionStatus, TransactionType, TransactionSize}
+import cpu.shared.{XERBits}
 import cpu.uOps.functional_units.Integer.{AdderSelectB, AdderCarryIn, AdderArgs, LogicSelectB, LogicArgs, 
   MultiplierSelectB, MultiplierArgs, ShifterSelectB, ShifterME, ShifterMB, ShifterArgs, 
   ComparatorSelectB, ComparatorArgs}
@@ -79,11 +80,15 @@ class Stage1 extends PipeStage(new ReadInterface, new FunctionalUnit) {
             is(AdderCarryIn.ZERO) { adderMod.io.carry_in := False}
             is(AdderCarryIn.ONE) { adderMod.io.carry_in := True}
             // TODO Fix
-            is(AdderCarryIn.CA) { adderMod.io.carry_in := False}
+            is(AdderCarryIn.CA) {
+              adderMod.io.carry_in := i.slots(ReadSlotPacking.XERPort1).data(XERBits.CA)
+            }
           }
           adderMod.io.invert_a := adderArgs.invertA
 
           o.write_interface.slots(WriteSlotPacking.GPRPort1).data := adderMod.io.o.resized
+          o.write_interface.slots(WriteSlotPacking.XERPort1).data(XERBits.CA) := adderMod.io.carry_out
+          o.write_interface.slots(WriteSlotPacking.XERPort1).data(XERBits.OV) := adderMod.io.overflow_out
           o.ldst_request.ea := adderMod.io.o
 
           def debug_adder(){

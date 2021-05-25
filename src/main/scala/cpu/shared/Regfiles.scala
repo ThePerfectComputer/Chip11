@@ -29,7 +29,22 @@ class Regfile(val numRegs: Int, val regWidth: Int, val readPorts:Int=1, val writ
   }
 }
 
-class RegfileMasked(val numRegs: Int, val regWidth: Int, val readPorts:Int, val writePorts:Int, val maskWidth: Int) extends Component {
+class MaskMapping(inWidth: Int, outWidth: Int) extends Component {
+  val io = new Bundle{
+    val mask_in = in Bits(inWidth bits)
+    val mask_out = out Bits(outWidth bits)
+  }
+  io.mask_out.allowOverride
+  io.mask_out := io.mask_in.resized
+}
+
+class RegfileMasked(val numRegs: Int, val regWidth: Int, val readPorts:Int, val writePorts:Int, val maskWidth: Int, mapping: () => MaskMapping = null) extends Component {
+
+  val maskMapping = if(mapping == null)
+    (() => new MaskMapping(maskWidth, maskWidth))
+  else
+    mapping
+
   val idxWidth = log2Up(numRegs)
 
   val elemWidth = regWidth/maskWidth // The width of each element that can be masked
@@ -49,7 +64,9 @@ class RegfileMasked(val numRegs: Int, val regWidth: Int, val readPorts:Int, val 
     port.data := mem.readSync(port.idx).asBits.asUInt
   }
   for(port <- io.wp) {
-    mem.write(port.idx, port.data.asBits, enable=port.en, mask=port.mask.asBits)
+    val mapper = maskMapping()
+    mapper.io.mask_in := port.mask.asBits
+    mem.write(port.idx, port.data.asBits, enable=port.en, mask=mapper.io.mask_out)
   }
 }
 
