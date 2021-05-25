@@ -222,9 +222,6 @@ class Stage1 extends PipeStage(new ReadInterface, new FunctionalUnit) {
       is(IntegerFUSub.Shifter){
         if (config.shifter) {
           val shifterMod = new Shifter(64)
-          shifterMod.io.me := 0
-          shifterMod.io.mb := 0
-          shifterMod.io.word_op := False
 
           // def debug_shifter(){
           //   when (pipeOutput.fire()) {
@@ -236,7 +233,7 @@ class Stage1 extends PipeStage(new ReadInterface, new FunctionalUnit) {
           val shifterArgs = new ShifterArgs
           shifterArgs.assignFromBits(i.dec_data.uOps.args)
         
-          shifterMod.io.rs := i.slots(ReadSlotPacking.GPRPort1).data.resize(64)
+          shifterMod.io.rs := i.slots(ReadSlotPacking.GPRPort1).data.resized
           switch(shifterArgs.slotB){
             is(ShifterSelectB.Slot1) { shifterMod.io.rb := i.slots(ReadSlotPacking.GPRPort1).data.resized}
             is(ShifterSelectB.Slot2) { shifterMod.io.rb := i.slots(ReadSlotPacking.GPRPort2).data.resized}
@@ -246,35 +243,35 @@ class Stage1 extends PipeStage(new ReadInterface, new FunctionalUnit) {
           }
           switch(shifterArgs.me){
             is(ShifterME.LSB) { shifterMod.io.me := 63}
-            // WTF is this? I think this is supposed to be Forms.MD(whatever).me(i.insn)
             is(ShifterME.ME) {
               val me = Forms.MD2.me(i.dec_data.insn)
               shifterMod.io.me := Cat(me(0), me(5 downto 1)).asUInt
             }
             is(ShifterME.ME_32) {
-              shifterMod.io.me := Forms.M2.ME(i.dec_data.insn)
+              shifterMod.io.me := Forms.M2.ME(i.dec_data.insn).resized
             }
             is(ShifterME.IMM_REV) { shifterMod.io.me := (63 - i.imm.payload(5 downto 0))}
             is(ShifterME.WORD) { shifterMod.io.me := 31}
           }
-          switch(shifterArgs.mb){
-            is(ShifterMB.MSB) { shifterMod.io.me := 0}
-            // WTF is this? I think this is supposed to be Forms.MD(whatever).mb(i.insn)
+          val argsMb = ShifterMB()
+          argsMb.assignFromBits(shifterArgs.mb.asBits)
+          switch(argsMb){
+            is(ShifterMB.MSB) { shifterMod.io.mb := 0}
             is(ShifterMB.MB) {
               val mb = Forms.MDS1.mb(i.dec_data.insn)
               shifterMod.io.mb := Cat(mb(0), mb(5 downto 1)).asUInt
             }
             is(ShifterMB.MB_32) {
-              shifterMod.io.mb := Forms.M2.MB(i.dec_data.insn)
+              shifterMod.io.mb := Forms.M2.MB(i.dec_data.insn).resized
             }
           }
-          // Huh?
           shifterMod.io.ra := i.slots(ReadSlotPacking.GPRPort3).data(63 downto 0)
           shifterMod.io.left := shifterArgs.left
           shifterMod.io.keep_source := shifterArgs.keep_source
           shifterMod.io.is_shift := shifterArgs.is_shift
           shifterMod.io.is_arithmetic := shifterArgs.is_arithmetic
           shifterMod.io.byte_op := shifterArgs.byte_op
+          shifterMod.io.word_op := shifterArgs.word_op
 
           o.write_interface.slots(WriteSlotPacking.GPRPort1).data := shifterMod.io.o.resized
         }
