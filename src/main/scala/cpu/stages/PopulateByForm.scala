@@ -553,6 +553,10 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
         o.slots(ReadSlotPacking.XERPort1).idx := XERMask.CA
         o.slots(ReadSlotPacking.XERPort1).sel := SourceSelect.XER
       }
+      when(i.opcode === MnemonicEnums.addc_o__dot_ || i.opcode === MnemonicEnums.adde_o__dot_){
+        o.write_interface.slots(WriteSlotPacking.XERPort1).idx := XERMask.CA
+        o.write_interface.slots(WriteSlotPacking.XERPort1).sel := SourceSelect.XER
+      }
 
     }
 
