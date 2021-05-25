@@ -12,7 +12,7 @@ import matchers._
 import java.io._
 import scala.io.Source
 import scala.Console
-import Console.{RED, RESET}
+import Console.{RED, RESET, YELLOW}
 
 class CSVLogger(dut: SoC, filePath: String) {
   val writer = new PrintWriter(new File(filePath))
@@ -78,15 +78,30 @@ class SoCTestRun extends AnyFlatSpec with should.Matchers {
   val goldCsvDir = "c_sources/tests"
   csvOutputDir.mkdir()
 
+  def examineDifference(goldLine: String, testLine: String, headerLine: String){
+    val headerIter = headerLine.split(',')
+    val goldIter = goldLine.split(',')
+    val testIter = testLine.split(',')
+    val data = (goldIter zip testIter zip headerIter).map(x => (x._1._1, x._1._2, x._2))
+    for((gold, test, header) <- data){
+      if(gold != test){
+        Console.println(s"${RESET}${YELLOW} Difference in $header - expected $gold, found $test${RESET}")
+      }
+    }
+
+  }
+
   def compareCsvs(goldCsvFile: String, testCsvFile: String){
     println(s"compare: $goldCsvFile with $testCsvFile")
-    val goldCsvLines = Source.fromFile(goldCsvFile).getLines()
-    val testCsvLines = Source.fromFile(testCsvFile).getLines()
+    val goldCsvLines = Source.fromFile(goldCsvFile).getLines().toList
+    val testCsvLines = Source.fromFile(testCsvFile).getLines().toList
+    val csvHeader = goldCsvLines(0)
     for((gold, test) <- goldCsvLines zip testCsvLines){
       if(gold != test){
         Console.println(s"${RESET}${RED}Found difference:")
         Console.println(s"    $gold")
         Console.println(s"    $test${RESET}")
+        examineDifference(gold, test, csvHeader)
         fail()
       }
     }
