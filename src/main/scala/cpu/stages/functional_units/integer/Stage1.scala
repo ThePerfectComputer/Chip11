@@ -219,62 +219,62 @@ class Stage1 extends PipeStage(new ReadInterface, new FunctionalUnit) {
       //   }
       // }
 
-      // is(IntegerFUSub.Shifter){
-      //   if (config.shifter) {
-      //     val shifterMod = Module(new Shifter(64))
-      //     shifterMod.io.rs := 0.U
-      //     shifterMod.io.rb := 0.U
-      //     shifterMod.io.ra := 0.U
-      //     shifterMod.io.me := 0.U
-      //     shifterMod.io.mb := 0.U
-      //     shifterMod.io.keep_source := false.B
-      //     shifterMod.io.word_op := false.B
-      //     shifterMod.io.left := false.B
-      //     shifterMod.io.is_arithmetic := false.B
-      //     shifterMod.io.is_shift := false.B
-      //     shifterMod.io.byte_op := false.B
+      is(IntegerFUSub.Shifter){
+        if (config.shifter) {
+          val shifterMod = new Shifter(64)
+          shifterMod.io.rs := 0
+          shifterMod.io.rb := 0
+          shifterMod.io.ra := 0
+          shifterMod.io.me := 0
+          shifterMod.io.mb := 0
+          shifterMod.io.keep_source := False
+          shifterMod.io.word_op := False
+          shifterMod.io.left := False
+          shifterMod.io.is_arithmetic := False
+          shifterMod.io.is_shift := False
+          shifterMod.io.byte_op := False
 
-      //     // def debug_shifter(){
-      //     //   when (pipeOutput.fire()) {
-      //     //     printf(p"\tSHIFTER IO: ${shifterMod.io}\n")
-      //     //   }
-      //     // }
-      //     // if (cpu.debug.debug_stage1) {debug_shifter()}
+          // def debug_shifter(){
+          //   when (pipeOutput.fire()) {
+          //     printf(p"\tSHIFTER IO: ${shifterMod.io}\n")
+          //   }
+          // }
+          // if (cpu.debug.debug_stage1) {debug_shifter()}
 
-      //     val shifterArgs = new ShifterArgs
-      //     shifterArgs.assignFromBits(i.dec_data.uOps.args)
+          val shifterArgs = new ShifterArgs
+          shifterArgs.assignFromBits(i.dec_data.uOps.args)
         
-      //     shifterMod.io.rs := i.slots(ReadSlotPacking.GPRPort1).data.resized(64)
-      //     switch(shifterArgs.slotB){
-      //       is(ShifterSelectB.Slot1) { shifterMod.io.rb := i.slots(ReadSlotPacking.GPRPort1).data.resized}
-      //       is(ShifterSelectB.Slot2) { shifterMod.io.rb := i.slots(ReadSlotPacking.GPRPort2).data.resized}
-      //       is(ShifterSelectB.Slot3) { shifterMod.io.rb := i.slots(ReadSlotPacking.GPRPort3).data.resized}
-      //       is(ShifterSelectB.Imm) { shifterMod.io.rb := i.imm.bits}
-      //       is(ShifterSelectB.ZERO) { shifterMod.io.rb := 0}
-      //     }
-      //     switch(shifterArgs.me){
-      //       is(ShifterME.LSB) { shifterMod.io.me := 63}
-      //       // WTF is this? I think this is supposed to be Forms.MD(whatever).me(i.insn)
-      //       is(ShifterME.ME) { shifterMod.io.me := i.slots(3).data}
-      //       is(ShifterME.IMM_REV) { shifterMod.io.me := (63.U - i.imm.bits)}
-      //       is(ShifterME.WORD) { shifterMod.io.me := 31.U}
-      //     }
-      //     switch(shifterArgs.mb){
-      //       is(ShifterMB.MSB) { shifterMod.io.me := 0.U}
-      //       // WTF is this? I think this is supposed to be Forms.MD(whatever).mb(i.insn)
-      //       is(ShifterMB.MB) { shifterMod.io.me := i.slots(4).data}
-      //     }
-      //     // Huh?
-      //     shifterMod.io.ra := i.slots(2).data
-      //     shifterMod.io.left := shifterArgs.left
-      //     shifterMod.io.keep_source := shifterArgs.keep_source
-      //     shifterMod.io.is_shift := shifterArgs.is_shift
-      //     shifterMod.io.is_arithmetic := shifterArgs.is_arithmetic
-      //     shifterMod.io.byte_op := shifterArgs.byte_op
+          shifterMod.io.rs := i.slots(ReadSlotPacking.GPRPort1).data.resize(64)
+          switch(shifterArgs.slotB){
+            is(ShifterSelectB.Slot1) { shifterMod.io.rb := i.slots(ReadSlotPacking.GPRPort1).data.resized}
+            is(ShifterSelectB.Slot2) { shifterMod.io.rb := i.slots(ReadSlotPacking.GPRPort2).data.resized}
+            is(ShifterSelectB.Slot3) { shifterMod.io.rb := i.slots(ReadSlotPacking.GPRPort3).data.resized}
+            is(ShifterSelectB.Imm) { shifterMod.io.rb := i.imm.payload}
+            is(ShifterSelectB.ZERO) { shifterMod.io.rb := 0}
+          }
+          switch(shifterArgs.me){
+            is(ShifterME.LSB) { shifterMod.io.me := 63}
+            // WTF is this? I think this is supposed to be Forms.MD(whatever).me(i.insn)
+            is(ShifterME.ME) { shifterMod.io.me := i.slots(3).data}
+            is(ShifterME.IMM_REV) { shifterMod.io.me := (63 - i.imm.payload)}
+            is(ShifterME.WORD) { shifterMod.io.me := 31}
+          }
+          switch(shifterArgs.mb){
+            is(ShifterMB.MSB) { shifterMod.io.me := 0}
+            // WTF is this? I think this is supposed to be Forms.MD(whatever).mb(i.insn)
+            is(ShifterMB.MB) { shifterMod.io.me := i.slots(4).data}
+          }
+          // Huh?
+          shifterMod.io.ra := i.slots(2).data
+          shifterMod.io.left := shifterArgs.left
+          shifterMod.io.keep_source := shifterArgs.keep_source
+          shifterMod.io.is_shift := shifterArgs.is_shift
+          shifterMod.io.is_arithmetic := shifterArgs.is_arithmetic
+          shifterMod.io.byte_op := shifterArgs.byte_op
 
-      //     o.write_interface.slots(WriteSlotPacking.GPRPort1).data := shifterMod.io.o
-      //   }
-      // }
+          o.write_interface.slots(WriteSlotPacking.GPRPort1).data := shifterMod.io.o
+        }
+      }
 
       is(IntegerFUSub.Comparator){
         if (config.comparator) {
