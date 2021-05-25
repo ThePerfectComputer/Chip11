@@ -10,16 +10,16 @@ import flatspec._
 import matchers._
 import scala.util.Random
 
-class LZCntTest extends AnyFlatSpec with should.Matchers {
-  behavior of "LZCnt"
+class PopcntTest extends AnyFlatSpec with should.Matchers {
+  behavior of "Popcount"
 
-  it should "count leading zeros" in {
-    SimConfig.withWave.doSim(new LZCnt(64)) { dut =>
+  it should "count set bits" in {
+    SimConfig.withWave.doSim(new Popcnt(64)) { dut =>
       for(i <- 0 to 64){
         val test = (BigInt(1) << i) - 1
         dut.io.data_in #= test
         sleep(1)
-        assert(dut.io.count.toInt == 64 - i)
+        assert(dut.io.count.toInt == i)
         sleep(10)
       }
     }
