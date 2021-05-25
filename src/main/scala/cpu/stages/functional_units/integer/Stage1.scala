@@ -248,6 +248,7 @@ class Stage1 extends PipeStage(new ReadInterface, new FunctionalUnit) {
           }
           switch(shifterArgs.me){
             is(ShifterME.LSB) { shifterMod.io.me := 63}
+            is(ShifterME.LSB_32) { shifterMod.io.me := 31}
             is(ShifterME.ME) {
               val me = Forms.MD2.me(i.dec_data.insn)
               shifterMod.io.me := Cat(me(0), me(5 downto 1)).asUInt

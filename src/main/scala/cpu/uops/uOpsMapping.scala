@@ -72,7 +72,7 @@ class UOpsMapping extends Component {
     srad_dot_ -> out(uOps(INTEGER, IntegerFUSub.Shifter, ShifterArgs(ShifterSelectB.Slot2, ShifterME.LSB, ShifterMB.MSB, false, false, false, true, true, false))),
     sradi_dot_ -> out(uOps(INTEGER, IntegerFUSub.Shifter, ShifterArgs(ShifterSelectB.Imm, ShifterME.LSB, ShifterMB.MSB, false, false, false, true, true, false))),
     sraw_dot_ -> out(uOps(INTEGER, IntegerFUSub.Shifter, ShifterArgs(ShifterSelectB.Slot2, ShifterME.LSB, ShifterMB.MSB, false, true, false, true, true, false))),
-    srawi_dot_ -> out(uOps(INTEGER, IntegerFUSub.Shifter, ShifterArgs(ShifterSelectB.Imm, ShifterME.LSB, ShifterMB.MSB, false, true, false, true, true, false))),
+    srawi_dot_ -> out(uOps(INTEGER, IntegerFUSub.Shifter, ShifterArgs(ShifterSelectB.Imm, ShifterME.LSB_32, ShifterMB.MSB, false, true, false, true, true, false))),
     srd_dot_ -> out(uOps(INTEGER, IntegerFUSub.Shifter, ShifterArgs(ShifterSelectB.Slot2, ShifterME.LSB, ShifterMB.MSB, false, false, false, false, true, false))),
     srw_dot_ -> out(uOps(INTEGER, IntegerFUSub.Shifter, ShifterArgs(ShifterSelectB.Slot2, ShifterME.LSB, ShifterMB.MSB, false, true, false, false, true, false))),
 

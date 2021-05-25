@@ -117,6 +117,7 @@ object ShifterSelectB extends SpinalEnum {
 
 object ShifterME extends SpinalEnum {
   val LSB = newElement()                                                                    
+  val LSB_32 = newElement()                                                                    
   val ME = newElement()
   val ME_32 = newElement()
   val IMM_REV = newElement()

@@ -20,6 +20,7 @@ class ReadStageWrapper extends PipeStage(new ReadInterface, new ReadInterface){
 
   val rs = new ReadStage
   rs.io.bhrb_rp(0).data := 0
+  rs.io.xer_rp(0).data := 0
   for(idx <- 0 until 2){
     rs.io.comb_rp(idx).data := 0
     rs.io.spr_rp(idx).data := 0
