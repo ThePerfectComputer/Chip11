@@ -193,6 +193,15 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
       o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
       o.imm.valid := True
       o.imm.payload := Forms.D8.SI(i.insn).resize(64).asUInt
+      when(i.opcode === MnemonicEnums.addicdot) {
+        // use an output slot to hold the data to write to CR field 0
+        // Select cr0 (the most significant 4 bits of the data field)
+        o.write_interface.slots(WriteSlotPacking.CRPort1).idx := 0x8
+        o.write_interface.slots(WriteSlotPacking.CRPort1).sel := SourceSelect.CRA
+        o.compare.activate := i.insn(28)
+        o.compare.in_slot := WriteSlotPacking.GPRPort1
+        o.compare.out_slot := WriteSlotPacking.CRPort1
+      }
 
       if (debug_form) { debug_form_d8 }
       def debug_form_d8 {
