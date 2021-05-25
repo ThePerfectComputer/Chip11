@@ -63,7 +63,7 @@ class WriteStage extends PipeStage(new WriteStageInterface, UInt(64 bits)) {
     val comb_wp = Vec(master(new WritePort(5, 64)), 1)
     val bhrb_wp = Vec(master(new WritePort(5, 64)), 1)
     val spr_wp = Vec(master(new WritePort(10, 64)), 1)
-    val cr_wp = Vec(master(new WritePortMasked(0, 16, 4)), 2)
+    val cr_wp = Vec(master(new WritePortMasked(1, 16, 4)), 2)
     val fpscr_wp = Vec(master(new WritePort(1, 16)), 1)
   }
 
@@ -97,6 +97,8 @@ class WriteStage extends PipeStage(new WriteStageInterface, UInt(64 bits)) {
     io.fpr_wp(idx).en := False
     io.cr_wp(idx).en := False
   }
+  io.cr_wp(0).idx.allowOverride
+  io.cr_wp(1).idx.allowOverride
 
   o := i.cia
 
@@ -182,6 +184,8 @@ class WriteStage extends PipeStage(new WriteStageInterface, UInt(64 bits)) {
       writeToRegfile(SourceSelect.FPSCR, io.fpscr_wp)
     }
   }
+  io.cr_wp(0).idx := 0
+  io.cr_wp(1).idx := 1
 
   when(cycle === 1) {
     // If we need to delay, update the cycle counter and clear the ready bit

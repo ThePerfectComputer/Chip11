@@ -40,7 +40,10 @@ class RegfileMasked(val numRegs: Int, val regWidth: Int, val readPorts:Int, val 
     val wp = Vec(slave(new WritePortMasked(idxWidth, regWidth, maskWidth)), writePorts)
   }
 
-  val mem = Mem(Bits(regWidth bits), numRegs).simPublic()
+  val initialData = Seq.fill(numRegs)(B(0, regWidth bits))
+
+  val mem = Mem(Bits(regWidth bits), numRegs) init(initialData)
+  mem.simPublic()
 
   for(port <- io.rp) {
     port.data := mem.readSync(port.idx).asBits.asUInt
@@ -60,11 +63,13 @@ class BRAMMultiRegfile(numRegs: Int, regWidth: Int, readPorts:Int=1, writePorts:
   val memArr = for (i <- 0 until writePorts) yield Mem(UInt(regWidth bits), numRegs)
   for(i <- 0 until writePorts){
     memArr(i) init(initialData)
+    memArr(i).simPublic()
   }
 
 
   // Create a table holding the memory that was most recently written to for each register
   val lvt = Mem(UInt(memIdxBits bits), numRegs)
+  lvt.simPublic()
 
 
   for((port, i) <- io.rp.zipWithIndex) {

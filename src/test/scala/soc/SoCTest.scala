@@ -19,12 +19,24 @@ class CSVLogger(dut: SoC, filePath: String) {
   writer.write(
     "cia,cr,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,r13,r14,r15,r16,r17,r18,r19,r20,r21,r22,r23,r24,r25,r26,r27,r28,r29,r30,r31\n"
   )
+  def getCr : BigInt = {
+    val cra = dut.cpu.cr.mem.getBigInt(0)
+    val crb = dut.cpu.cr.mem.getBigInt(1)
+    var result = BigInt(0)
+    for(i <- 0 until 4){
+      val mask = 0xf << (i*4)
+      val cra_field = (cra & mask) >> (i*4)
+      val crb_field = (crb & mask) >> (i*4)
+      result = result | (cra_field << ((i*2+1)*4)) | (crb_field << (i*2*4))
+    }
+    result
+  }
   var iteration = 0
   dut.clockDomain.onSamplings {
 
     if (dut.cpu.write.pipeOutput.valid.toBoolean) {
       val cia = dut.cpu.write.pipeOutput.payload.toBigInt
-      val cr = 0
+      val cr = getCr
       writer.write(f"$cia%x,")
       writer.write(f"$cr%x,")
       for (i <- 0 until 32) {

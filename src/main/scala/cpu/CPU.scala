@@ -145,8 +145,7 @@ class CPU extends Component {
   //     new RegfileMasked(2, 16, 2, 2, 4)
   val gpr =  new BRAMMultiRegfile(32, 64, 2, 2)
   val spr =  new BRAMMultiRegfile(1024, 64, 2, 1)
-  val cra  =  new RegfileMasked(1, 16, 1, 1, 4)
-  val crb  =  new RegfileMasked(1, 16, 1, 1, 4)
+  val cr  =  new RegfileMasked(2, 16, 2, 2, 4)
 
   
   // connect the GPR regfile read ports to the read stage,
@@ -157,10 +156,10 @@ class CPU extends Component {
     spr.io.rp(i) <> read.io.spr_rp(i)
     // same for the CR
   }
-  cra.io.rp(0) <> read.io.cr_rp(0)
-  crb.io.rp(0) <> read.io.cr_rp(1)
-  cra.io.wp(0) <> write.io.cr_wp(0)
-  crb.io.wp(0) <> write.io.cr_wp(1)
+  cr.io.rp(0) <> read.io.cr_rp(0)
+  cr.io.rp(1) <> read.io.cr_rp(1)
+  cr.io.wp(0) <> write.io.cr_wp(0)
+  cr.io.wp(1) <> write.io.cr_wp(1)
 
   spr.io.wp(0) <> write.io.spr_wp(0)
 
