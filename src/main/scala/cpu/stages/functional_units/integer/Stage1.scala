@@ -9,7 +9,7 @@ import cpu.shared.memory_state.{TransactionStatus, TransactionType, TransactionS
 import cpu.shared.{XERBits}
 import cpu.uOps.functional_units.Integer.{AdderSelectB, AdderCarryIn, AdderArgs, LogicSelectB, LogicArgs, 
   MultiplierSelectB, MultiplierArgs, ShifterSelectB, ShifterME, ShifterMB, ShifterArgs, 
-  ComparatorSelectB, ComparatorArgs}
+  ComparatorSelectB, ComparatorArgs, ZCntArgs, ZCntDirection, ZCntSize}
 import cpu.uOps.functional_units.Integer.{IntegerFUSub}
 import cpu.uOps.{FunctionalUnit}
 import util.{PipeStage}
@@ -321,6 +321,33 @@ class Stage1 extends PipeStage(new ReadInterface, new FunctionalUnit) {
           }.otherwise {
             o.write_interface.slots(WriteSlotPacking.CRPort2).data := cr_fields.asBits.asUInt.resized
           }
+        }
+      }
+
+      is(IntegerFUSub.ZCnt){
+        if (config.zcnt) {
+          val zCntMod = new ZCnt
+          // def debug_comparator(){
+          //   when (pipeOutput.fire()) {
+          //     printf(p"\tCOMP. IO: ${comparatorMod.io}\n")
+          //   }
+          // }
+          // if (cpu.debug.debug_stage1) {debug_comparator()}
+          val zCntArgs = new ZCntArgs
+          zCntArgs.assignFromBits(i.dec_data.uOps.args)
+
+          zCntMod.io.data := i.slots(ReadSlotPacking.GPRPort1).data(63 downto 0)
+          switch(zCntArgs.direction){
+            is(ZCntDirection.LEADING){zCntMod.io.countLeadingZeros := True}
+            is(ZCntDirection.TRAILING){zCntMod.io.countLeadingZeros := False}
+          }
+          switch(zCntArgs.size){
+            is(ZCntSize.DWORD){zCntMod.io.isWord := False}
+            is(ZCntSize.WORD){zCntMod.io.isWord := True}
+          }
+          o.write_interface.slots(WriteSlotPacking.GPRPort1).data := zCntMod.io.count.resized
+
+
         }
       }
 

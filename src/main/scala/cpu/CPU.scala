@@ -19,6 +19,7 @@ object config {
   val shifter    = true
   val comparator = true
   val multiplier = false
+  val zcnt = true
 }
 
 object debug {
