@@ -77,7 +77,7 @@ class Stage1 extends PipeStage(new ReadInterface, new FunctionalUnit) {
           }
           switch(adderArgs.cIn) {
             is(AdderCarryIn.ZERO) { adderMod.io.carry_in := False}
-            is(AdderCarryIn.ONE) { adderMod.io.carry_in := False}
+            is(AdderCarryIn.ONE) { adderMod.io.carry_in := True}
             // TODO Fix
             is(AdderCarryIn.CA) { adderMod.io.carry_in := False}
           }
