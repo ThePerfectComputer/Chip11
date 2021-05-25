@@ -108,7 +108,7 @@ class uOpAndFormDecoderMux(numStages: Int) extends
 
 class uOpAndFormDecoder extends PipeStage(new FetchOutput, new DecoderData){
 
-  val numStages = 6
+  val numStages = 12
 
 
 

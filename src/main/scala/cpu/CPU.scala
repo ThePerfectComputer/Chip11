@@ -117,8 +117,8 @@ class CPU extends Component {
 
   // connect up pipeline stages
   fetch_resp << fetch_req.pipeOutput
-  fetch_resp >-> decode >-> form_pop >-> hazard >-> read >->
-  s1 >-> s2 >-> s3 >-> ldst_request >-> ldst_response >-> write
+  fetch_resp >/-> decode >-> form_pop >/-> hazard >/-> read >->
+  s1 >-> s2 >-> s3 >/-> ldst_request >/-> ldst_response >/-> write
   
   // instantiate other hardware that isn't pipeline stages
   val branch        = new BranchPredictor                             // branch predictor
