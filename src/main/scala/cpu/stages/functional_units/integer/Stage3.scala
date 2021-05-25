@@ -16,8 +16,17 @@ class Stage3 extends PipeStage(new FunctionalUnit, new FunctionalUnitExit) {
 
   def compare_slot_value(slot : Slot) = {
     val value = slot.data.asSInt
-    (value < S(0)) ## (value > S(0)) ## (value === S(0)) ## U(0)
+    val cmp = UInt(4 bits)
+    when(value < 0){
+      cmp := 8
+    }.elsewhen(value > 0){
+      cmp := 4
+    }.otherwise{
+      cmp := 2
+    }
+    cmp
   }
+    
 
   when (i.compare.activate) {
     // look for the slot containing data to compare
@@ -30,7 +39,7 @@ class Stage3 extends PipeStage(new FunctionalUnit, new FunctionalUnitExit) {
         for ((out_slot, out_index) <- o.write_interface.slots.zipWithIndex) {
           // check if the index matches the out_slot value set during form population
           when (out_index === i.compare.out_slot) {
-            out_slot.data := comparison.asUInt.resized
+            out_slot.data := Cat(comparison, B(0, 12 bits)).asUInt.resized
             if (debug_stage3) {
               // when (pipeOutput.fire()) {
               //   printf(p"STAGE 3: Compared slot ${in_index.U} data 0x${Hexadecimal(in_slot.data)} to 0, got ${Binary(comparison)}\n")
@@ -42,3 +51,4 @@ class Stage3 extends PipeStage(new FunctionalUnit, new FunctionalUnitExit) {
     }
   }
 }
+
