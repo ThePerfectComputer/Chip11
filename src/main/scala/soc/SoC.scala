@@ -18,7 +18,7 @@ class SoC(val mem_file:String = null) extends Component {
 
   // instantiate the CPU and memory
   val cpu = new CPU
-  val ram = new DualPortSram128(depth=64, mem_file=mem_file)
+  val ram = new DualPortSram128(depth=512, mem_file=mem_file)
 
   // use an adaptor to connect the CPU's fetch unit to the RAM's read-only port
   val fetch_adaptor = new MemoryAdaptor
