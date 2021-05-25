@@ -261,6 +261,10 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
     is(FormEnums.MD1){
       o.slots(ReadSlotPacking.GPRPort1).idx := Forms.MD1.RS(i.insn).resized
       o.slots(ReadSlotPacking.GPRPort1).sel := SourceSelect.GPR
+      when(i.opcode === MnemonicEnums.rldimi_dot_){
+        o.slots(ReadSlotPacking.GPRPort3).idx := Forms.MD1.RA(i.insn).resized
+        o.slots(ReadSlotPacking.GPRPort3).sel := SourceSelect.GPR
+      }
       o.imm.valid := True
       o.imm.payload := Cat(Forms.MD1.sh2(i.insn), Forms.MD1.sh1(i.insn)).asUInt.resized
       o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.MD1.RA(i.insn).resized
