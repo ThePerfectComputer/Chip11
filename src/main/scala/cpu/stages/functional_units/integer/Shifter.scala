@@ -30,7 +30,7 @@ class Shifter(val wid: Int) extends Component {
     val cr0_out = out UInt(3 bits)
   }
   val shifter_source = UInt((wid) bits)
-  val shifter_amount = UInt((8) bits)
+  val shifter_amount = UInt(6 bits)
 
   val word_source = UInt((wid/2) bits)
   val word_rotated = UInt((wid/2) bits)
@@ -65,9 +65,9 @@ class Shifter(val wid: Int) extends Component {
   }
 
   when(io.word_op){
-    shifter_amount := io.rb % 32
+    shifter_amount := io.rb(4 downto 0).resized
   }.otherwise{
-    shifter_amount := io.rb % 64
+    shifter_amount := io.rb(5 downto 0).resized
   }
   //mb left, me right
 
@@ -110,32 +110,32 @@ class Shifter(val wid: Int) extends Component {
   .elsewhen(io.word_op){
     word_source := shifter_source(31 downto 0)
     when(io.left){
-      word_rotmask := (~(U(0, 32 bits)) << shifter_amount)
-      word_rotated := ((word_source << shifter_amount) & word_rotmask) | ((word_source >> (32 - shifter_amount)) & ~word_rotmask)
+      word_rotmask := (~(U(0, 32 bits)) |<< shifter_amount)
+      word_rotated := ((word_source |<< shifter_amount) & word_rotmask) | ((word_source |>> (32 - shifter_amount)) & ~word_rotmask)
    //word_rotated := Cat(shifter_source(63, 32+(shifter_amount%32)), shifter_source(31+(shifter_amount%32), 32))
     }.otherwise{
-      word_rotmask := ~(U(0, 32 bits)) >> shifter_amount
-      word_rotated := ((word_source >> shifter_amount) & word_rotmask) | ((word_source << (32 - shifter_amount)) & ~word_rotmask)
+      word_rotmask := ~(U(0, 32 bits)) |>> shifter_amount
+      word_rotated := ((word_source |>> shifter_amount) & word_rotmask) | ((word_source |<< (32 - shifter_amount)) & ~word_rotmask)
       //word_rotated := Cat(shifter_source(63, 64-(shifter_amount%32)), shifter_source(63-(shifter_amount%32), 32))
     }
     shifter_rotated := Cat(word_rotated, word_rotated).asUInt
   }.otherwise{
     when(io.left){
-      rotmask := ~(U(0, 64 bits)) << shifter_amount
-      shifter_rotated := ((shifter_source << shifter_amount) & rotmask) | ((shifter_source >> (64 - shifter_amount)) & ~rotmask)
+      rotmask := ~(U(0, 64 bits)) |<< shifter_amount
+      shifter_rotated := ((shifter_source |<< shifter_amount) & rotmask) | ((shifter_source |>> (64 - shifter_amount)) & ~rotmask)
       //shifter_rotated := Cat(shifter_source(63, shifter_amount), shifter_source(shifter_amount-1, 0))
     }.otherwise{
-      rotmask := ~(U(0, 64 bits)) >> shifter_amount
-      shifter_rotated := ((shifter_source >> shifter_amount) & rotmask) | ((shifter_source << (64 - shifter_amount)) & ~rotmask)
+      rotmask := ~(U(0, 64 bits)) |>> shifter_amount
+      shifter_rotated := ((shifter_source |>> shifter_amount) & rotmask) | ((shifter_source |<< (64 - shifter_amount)) & ~rotmask)
       //shifter_rotated := Cat(shifter_source(63, 64-shifter_amount), shifter_source(63-shifter_amount, 0))
     }
   }
 
   val allBitsSet = UInt(64 bits)
+  allBitsSet.setAllTo(True)
   io.carry_out := False
   when(io.is_shift & io.is_arithmetic){
     when(io.word_op & io.rs(31)){
-      allBitsSet.setAllTo(True)
       when(((allBitsSet >> (shifter_amount + 32)) & shifter_source).orR){
         io.carry_out := True
       }
@@ -145,11 +145,11 @@ class Shifter(val wid: Int) extends Component {
       }
     }
   }
-  val shifter_mask_amt = UInt(8 bits)
+  val shifter_mask_amt = UInt(6 bits)
   shifter_mask_amt := (63 - shifter_me)
 
-  val mr = (allBitsSet >> shifter_mb)
-  val ml = (allBitsSet << shifter_mask_amt)
+  val mr = (allBitsSet |>> shifter_mb)
+  val ml = (allBitsSet |<< shifter_mask_amt)
   when(shifter_mb > shifter_me){
     shifter_mask := mr | ml
   }.otherwise {
