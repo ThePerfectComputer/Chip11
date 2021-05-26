@@ -133,6 +133,9 @@ class Stage1 extends PipeStage(new ReadInterface, new FunctionalUnit) {
           o.write_interface
             .slots(WriteSlotPacking.XERPort1)
             .data(XERBits.OV) := adderMod.io.overflow_out
+          o.write_interface
+            .slots(WriteSlotPacking.XERPort1)
+            .data(XERBits.OV32) := adderMod.io.overflow_out_32
           o.ldst_request.ea := adderMod.io.o
 
           def debug_adder() {

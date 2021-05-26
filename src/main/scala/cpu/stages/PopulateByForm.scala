@@ -572,8 +572,8 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
         o.compare.out_slot := WriteSlotPacking.CRPort1
       }
       when(Forms.XO4.OE(i.insn) === True){
-        o.write_interface.slots(WriteSlotPacking.SPRPort1).idx := SPREnums.XER.asBits.asUInt
-        o.write_interface.slots(WriteSlotPacking.SPRPort1).sel := SourceSelect.SPR
+        o.write_interface.slots(WriteSlotPacking.XERPort1).idx := XERMask.OV | XERMask.OV32 | XERMask.SO
+        o.write_interface.slots(WriteSlotPacking.XERPort1).sel := SourceSelect.XER
       }
       switch(i.opcode){
         is(MnemonicEnums.adde_o__dot_, MnemonicEnums.subfe_o__dot_){
@@ -584,8 +584,14 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
       switch(i.opcode){
         is(MnemonicEnums.addc_o__dot_, MnemonicEnums.subfc_o__dot_,
         MnemonicEnums.adde_o__dot_, MnemonicEnums.subfe_o__dot_){
-          o.write_interface.slots(WriteSlotPacking.XERPort1).idx := XERMask.CA | XERMask.CA32
+
           o.write_interface.slots(WriteSlotPacking.XERPort1).sel := SourceSelect.XER
+          when(Forms.XO4.OE(i.insn) === True){
+            o.write_interface.slots(WriteSlotPacking.XERPort1).idx := XERMask.OV | XERMask.OV32 |
+              XERMask.SO | XERMask.CA | XERMask.CA32
+          }.otherwise{
+            o.write_interface.slots(WriteSlotPacking.XERPort1).idx := XERMask.CA | XERMask.CA32
+          }
         }
       }
     }
