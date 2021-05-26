@@ -399,7 +399,14 @@ mtcr 1
                 'slw. 12, 10, 11',
                 'li 10, -1',
                 f'li 11, {s}',
-                'srad. 12, 10, 11'
+                'srad. 12, 10, 11',
+                'mfxer 21',
+                'sraw. 12, 10, 11',
+                'mfxer 21',
+                f'srawi. 12, 10, {s & 31}',
+                'mfxer 21',
+                f'sradi. 12, 10, {s & 63}',
+                'mfxer 21',
             ])
         for s in range(128):
             insns.extend([

@@ -372,6 +372,14 @@ class Stage1 extends PipeStage(new ReadInterface, new FunctionalUnit) {
           shifterMod.io.is_arithmetic := shifterArgs.is_arithmetic
           shifterMod.io.byte_op := shifterArgs.byte_op
           shifterMod.io.word_op := shifterArgs.word_op
+          when(shifterArgs.is_arithmetic){
+            o.write_interface
+              .slots(WriteSlotPacking.XERPort1)
+              .data(XERBits.CA) := shifterMod.io.carry_out
+            o.write_interface
+              .slots(WriteSlotPacking.XERPort1)
+              .data(XERBits.CA32) := shifterMod.io.carry_out
+          }
 
           o.write_interface
             .slots(WriteSlotPacking.GPRPort1)

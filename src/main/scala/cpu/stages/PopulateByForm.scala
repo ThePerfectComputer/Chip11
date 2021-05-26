@@ -381,6 +381,10 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
       o.slots(ReadSlotPacking.GPRPort1).sel := SourceSelect.GPR
       o.slots(ReadSlotPacking.GPRPort2).idx := Forms.X68.RB(i.insn).resized
       o.slots(ReadSlotPacking.GPRPort2).sel := SourceSelect.GPR
+      when(i.opcode === MnemonicEnums.srad_dot_ || i.opcode === MnemonicEnums.sraw_dot_){
+        o.write_interface.slots(WriteSlotPacking.XERPort1).idx := XERMask.CA | XERMask.CA32
+        o.write_interface.slots(WriteSlotPacking.XERPort1).sel := SourceSelect.XER
+      }
       o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.X68.RA(i.insn).resized
       o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
       when(Forms.X68.Rc(i.insn) === True){
@@ -580,7 +584,7 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
       o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.XS1.RA(i.insn).resized
       o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
       // TODO determine what field is written here
-      o.write_interface.slots(WriteSlotPacking.XERPort1).idx := XERMask.CA
+      o.write_interface.slots(WriteSlotPacking.XERPort1).idx := XERMask.CA | XERMask.CA32
       o.write_interface.slots(WriteSlotPacking.XERPort1).sel := SourceSelect.XER
       when(Forms.XS1.Rc(i.insn) === True){
         addRC()

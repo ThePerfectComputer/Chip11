@@ -140,13 +140,15 @@ class Shifter(val wid: Int) extends Component {
   allBitsSet.setAllTo(True)
   io.carry_out := False
   when(io.is_shift & io.is_arithmetic) {
-    when(io.word_op & io.rs(31)) {
-      when(((allBitsSet >> (shifter_amount + 32)) & shifter_source).orR) {
-        io.carry_out := True
-      }
-    }.elsewhen(~io.word_op & io.rs(63)) {
-      when(((allBitsSet >> shifter_amount) & shifter_source).orR) {
-        io.carry_out := True
+    when(io.rb(6 downto 0) =/= 0) {
+      when(io.word_op & io.rs(31)) {
+        when(((allBitsSet >> (shifter_amount + 32)) & shifter_source).orR) {
+          io.carry_out := True
+        }
+      }.elsewhen(~io.word_op & io.rs(63)) {
+        when(((allBitsSet >> shifter_amount) & shifter_source).orR) {
+          io.carry_out := True
+        }
       }
     }
   }
