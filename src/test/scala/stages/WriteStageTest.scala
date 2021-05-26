@@ -29,6 +29,11 @@ class WriteStageTest extends AnyFlatSpec with should.Matchers {
       dut.pipeOutput.ready #= true
       dut.pipeOutput.flush #= false
       dut.pipeInput.valid #= false
+      for(idx <- 0 until 5){
+          dut.pipeInput.payload.write_interface
+            .slots(idx)
+            .sel #= SourceSelect.NONE
+      }
       //dut.io.gpr_wp.en #= false
       dut.clockDomain.forkStimulus(10)
       dut.clockDomain.waitSampling(10)
@@ -43,6 +48,8 @@ class WriteStageTest extends AnyFlatSpec with should.Matchers {
           dut.pipeInput.payload.write_interface
             .slots(idx)
             .data #= idx * 37 + i * 102
+        }
+        for (idx <- 0 until 2) {
           sleep(1)
           assert(dut.io.gpr_wp(idx).idx.toInt == i * 2 + idx)
           assert(dut.io.gpr_wp(idx).en.toBoolean == true)
@@ -58,6 +65,11 @@ class WriteStageTest extends AnyFlatSpec with should.Matchers {
       dut.pipeOutput.ready #= true
       dut.pipeOutput.flush #= false
       dut.pipeInput.valid #= false
+      for(idx <- 0 until 5){
+          dut.pipeInput.payload.write_interface
+            .slots(idx)
+            .sel #= SourceSelect.NONE
+      }
       //dut.io.gpr_wp.en #= false
       dut.clockDomain.forkStimulus(10)
       for (i <- 0 until 16) {

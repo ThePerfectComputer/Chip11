@@ -75,6 +75,9 @@ class ReadStageTest extends AnyFlatSpec with should.Matchers{
       dut.pipeOutput.flush #= false
       dut.pipeInput.valid #= false
       //dut.io.gpr_wp.en #= false
+      for(idx <- 0 until 5){
+          dut.pipeInput.payload.slots(idx).sel #= SourceSelect.NONE
+      }
       dut.clockDomain.forkStimulus(10)
 
       for(i <- 0 until 4){
@@ -106,6 +109,9 @@ class ReadStageTest extends AnyFlatSpec with should.Matchers{
       dut.pipeOutput.flush #= false
       dut.pipeInput.valid #= false
       //dut.io.gpr_wp.en #= false
+      for(idx <- 0 until 5){
+          dut.pipeInput.payload.slots(idx).sel #= SourceSelect.NONE
+      }
       dut.clockDomain.forkStimulus(10)
 
       for(i <- 0 until 8){
