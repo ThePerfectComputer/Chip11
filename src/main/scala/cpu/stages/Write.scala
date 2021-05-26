@@ -2,6 +2,7 @@ package cpu.stages
 
 import cpu.interfaces.regfile.{SourceSelect, WritePort, WritePortMasked}
 import cpu.interfaces.WriteStageInterface
+import cpu.shared.{RegfileInfo}
 import util._
 import spinal.core._
 import spinal.lib.{master}
@@ -58,16 +59,16 @@ import cpu.debug.debug_write
 
 class WriteStage extends PipeStage(new WriteStageInterface, UInt(64 bits)) {
   val io = new Bundle {
-    val gpr_wp = Vec(master(new WritePort(5, 64)), 2)
-    val vr_wp = Vec(master(new WritePort(5, 128)), 1)
-    val vsr_wp = Vec(master(new WritePort(6, 128)), 1)
-    val fpr_wp = Vec(master(new WritePort(5, 64)), 2)
-    val comb_wp = Vec(master(new WritePort(5, 64)), 1)
-    val bhrb_wp = Vec(master(new WritePort(5, 64)), 1)
-    val spr_wp = Vec(master(new WritePort(10, 64)), 1)
+    val gpr_wp = Vec(master(new WritePort(RegfileInfo.GPR)), 2)
+    val vr_wp = Vec(master(new WritePort(RegfileInfo.VR)), 1)
+    val vsr_wp = Vec(master(new WritePort(RegfileInfo.VSR)), 1)
+    val fpr_wp = Vec(master(new WritePort(RegfileInfo.FPR)), 2)
+    val comb_wp = Vec(master(new WritePort(RegfileInfo.COMB)), 1)
+    val bhrb_wp = Vec(master(new WritePort(RegfileInfo.BHRB)), 1)
+    val spr_wp = Vec(master(new WritePort(RegfileInfo.SPR)), 1)
     val cr_wp = Vec(master(new WritePortMasked(1, 16, 4)), 2)
-    val fpscr_wp = Vec(master(new WritePort(1, 16)), 1)
-    val xer_wp = Vec(master(new WritePortMasked(0, 64, 6)), 1)
+    val fpscr_wp = Vec(master(new WritePort(RegfileInfo.FPSCR)), 1)
+    val xer_wp = Vec(master(new WritePortMasked(RegfileInfo.XER)), 1)
   }
 
   io.vr_wp(0).idx := 0

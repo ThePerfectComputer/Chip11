@@ -1,5 +1,6 @@
 package cpu.interfaces.regfile
 
+import cpu.shared.{RegfileInfo, RegfileInfoMasked}
 import spinal.core._
 import spinal.lib._
 
@@ -16,6 +17,9 @@ case class Slot(val idxWid: Int, val dataWid: Int) extends Bundle {
 }
 
 class ReadPort(val idxWidth: Int, val dataWidth: Int) extends Bundle with IMasterSlave {
+  def this(info: RegfileInfo) {
+    this(info.idxBits, info.regSize)
+  }
   val idx = out UInt(idxWidth bits)
   val data = in UInt(dataWidth bits)
 
@@ -27,6 +31,9 @@ class ReadPort(val idxWidth: Int, val dataWidth: Int) extends Bundle with IMaste
 }
 
 class WritePort(val idxWidth: Int, val dataWidth: Int) extends Bundle with IMasterSlave{
+  def this(info: RegfileInfo) {
+    this(info.idxBits, info.regSize)
+  }
   val idx = out UInt(idxWidth bits)
   val en =  out Bool()
   val data =  out UInt(dataWidth bits)
@@ -41,6 +48,9 @@ class WritePort(val idxWidth: Int, val dataWidth: Int) extends Bundle with IMast
 
 class WritePortMasked(override val idxWidth: Int, override val dataWidth: Int, val maskWidth: Int)
     extends WritePort(idxWidth, dataWidth) {
+  def this(info: RegfileInfoMasked) {
+    this(info.idxBits, info.regSize, info.maskSize)
+  }
   val mask = out Bits(maskWidth bits)
   override def asMaster() : Unit = {
     out(data)

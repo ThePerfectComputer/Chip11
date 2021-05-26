@@ -1,6 +1,7 @@
 package cpu.stages
 
 import cpu.debug.debug_read
+import cpu.shared.{RegfileInfo}
 import cpu.interfaces.regfile.{SourceSelect, ReadPort}
 import cpu.interfaces.{
   ReadInterface,
@@ -61,16 +62,16 @@ object PortCycleMap {
 
 class ReadStage extends PipeStage(new ReadInterface, new ReadInterface) {
   val io = new Bundle {
-    val gpr_rp = Vec(master(new ReadPort(5, 64)), 2)
-    val vr_rp = Vec(master(new ReadPort(5, 128)), 2)
-    val vsr_rp = Vec(master(new ReadPort(6, 128)), 2)
-    val fpr_rp = Vec(master(new ReadPort(5, 64)), 2)
-    val comb_rp = Vec(master(new ReadPort(5, 64)), 2)
-    val bhrb_rp = Vec(master(new ReadPort(5, 64)), 1)
-    val spr_rp = Vec(master(new ReadPort(10, 64)), 2)
+    val gpr_rp = Vec(master(new ReadPort(RegfileInfo.GPR)), 2)
+    val vr_rp = Vec(master(new ReadPort(RegfileInfo.VR)), 2)
+    val vsr_rp = Vec(master(new ReadPort(RegfileInfo.VSR)), 2)
+    val fpr_rp = Vec(master(new ReadPort(RegfileInfo.FPR)), 2)
+    val comb_rp = Vec(master(new ReadPort(RegfileInfo.COMB)), 2)
+    val bhrb_rp = Vec(master(new ReadPort(RegfileInfo.BHRB)), 1)
+    val spr_rp = Vec(master(new ReadPort(RegfileInfo.SPR)), 2)
     val cr_rp = Vec(master(new ReadPort(1, 16)), 2)
-    val fpscr_rp = Vec(master(new ReadPort(1, 16)), 2)
-    val xer_rp = Vec(master(new ReadPort(0, 64)), 1)
+    val fpscr_rp = Vec(master(new ReadPort(RegfileInfo.FPSCR)), 2)
+    val xer_rp = Vec(master(new ReadPort(RegfileInfo.XER)), 1)
   }
   io.cr_rp(0).idx.allowOverride 
   io.cr_rp(1).idx.allowOverride 
