@@ -43,6 +43,7 @@ class Stage1 extends PipeStage(new ReadInterface, new FunctionalUnit) {
   val io = new Bundle {
     val bc = out(new BranchControl)
   }
+  o.so_bit := i.slots(ReadSlotPacking.XERPort1).data(XERBits.SO)
 
   // initialize output data
   o.write_interface := i.write_interface

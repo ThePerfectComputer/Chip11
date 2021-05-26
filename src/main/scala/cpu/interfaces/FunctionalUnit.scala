@@ -7,6 +7,7 @@ class FunctionalUnit extends Bundle {
   val ldst_request    = new LoadStoreRequest
   val write_interface = new WriteInterface
   val compare         = new CompareData
+  val so_bit = Bool
 }
 
 class FunctionalUnitExit extends Bundle {

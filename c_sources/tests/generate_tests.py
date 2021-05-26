@@ -240,41 +240,48 @@ mtcr 1
 
     def test_dot(self):
         insns = []
-        for dot in ['', '.']:
-            insns.extend([
-                f'addc{dot} 17, 1, 1',
-                f'adde{dot} 17, 1, 1',
-                f'addic{dot} 17, 1, 1',
-                f'add{dot} 17, 1, 1',
-                f'addze{dot} 17, 2',
-                f'and{dot} 17, 3, 2',
-                f'cntlzd{dot} 17, 2',
-                f'cntlzw{dot} 17, 3',
-                f'extsb{dot} 17, 4',
-                f'extsw{dot} 17, 5',
-                f'neg{dot} 17, 2',
-                f'nor{dot} 17, 1, 3',
-                f'orc{dot} 17, 8, 7',
-                f'or{dot} 17, 6, 5',
-                f'rldcr{dot} 17, 8, 2, 15',
-                f'rldicl{dot} 17, 8, 18, 20',
-                f'rldicr{dot} 17, 8, 18, 20',
-                f'rldimi{dot} 17, 8, 18, 20',
-                f'rlwimi{dot} 17, 8, 14, 28, 20',
-                f'rlwinm{dot} 17, 8, 14, 28, 20',
-                f'sld{dot} 17, 8, 5',
-                f'slw{dot} 17, 8, 5',
-                f'srad{dot} 17, 8, 5',
-                f'sradi{dot} 17, 8, 0x10',
-                f'sraw{dot} 17, 8, 5',
-                f'srawi{dot} 17, 8, 0x10',
-                f'srd{dot} 17, 8, 5',
-                f'srw{dot} 17, 8, 5',
-                f'subfc{dot} 17, 1, 2',
-                f'subfe{dot} 17, 2, 3',
-                f'subf{dot} 17, 1, 2',
-                f'xor{dot} 17, 4, 7'
-            ])
+        def generate_data():
+            for dot in ['', '.']:
+                insns.extend([
+                    f'addc{dot} 17, 1, 1',
+                    f'adde{dot} 17, 1, 1',
+                    f'addic{dot} 17, 1, 1',
+                    f'add{dot} 17, 1, 1',
+                    f'addze{dot} 17, 2',
+                    f'and{dot} 17, 3, 2',
+                    f'cntlzd{dot} 17, 2',
+                    f'cntlzw{dot} 17, 3',
+                    f'extsb{dot} 17, 4',
+                    f'extsw{dot} 17, 5',
+                    f'neg{dot} 17, 2',
+                    f'nor{dot} 17, 1, 3',
+                    f'orc{dot} 17, 8, 7',
+                    f'or{dot} 17, 6, 5',
+                    f'rldcr{dot} 17, 8, 2, 15',
+                    f'rldicl{dot} 17, 8, 18, 20',
+                    f'rldicr{dot} 17, 8, 18, 20',
+                    f'rldimi{dot} 17, 8, 18, 20',
+                    f'rlwimi{dot} 17, 8, 14, 28, 20',
+                    f'rlwinm{dot} 17, 8, 14, 28, 20',
+                    f'sld{dot} 17, 8, 5',
+                    f'slw{dot} 17, 8, 5',
+                    f'srad{dot} 17, 8, 5',
+                    f'sradi{dot} 17, 8, 0x10',
+                    f'sraw{dot} 17, 8, 5',
+                    f'srawi{dot} 17, 8, 0x10',
+                    f'srd{dot} 17, 8, 5',
+                    f'srw{dot} 17, 8, 5',
+                    f'subfc{dot} 17, 1, 2',
+                    f'subfe{dot} 17, 2, 3',
+                    f'subf{dot} 17, 1, 2',
+                    f'xor{dot} 17, 4, 7'
+                ])
+        generate_data()
+        # set SO bit
+        insns.extend(["lis 17, -0x8000",
+                      "sldi 17, 17, 32",
+                      "addo 19, 17, 17"])
+        generate_data()
         self.add_code(self.id(), insns)
 
     def test_cntlz(self):

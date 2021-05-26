@@ -46,6 +46,16 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
   val spr = UInt(10 bits)
   spr := Cat(spr_fields(4 downto 0), spr_fields(9 downto 5)).asUInt
 
+  def addRC() {
+    o.write_interface.slots(WriteSlotPacking.CRPort1).idx := 8
+    o.write_interface.slots(WriteSlotPacking.CRPort1).sel := SourceSelect.CRA
+    o.compare.activate := True
+    o.compare.in_slot := WriteSlotPacking.GPRPort1
+    o.compare.out_slot := WriteSlotPacking.CRPort1
+    o.slots(ReadSlotPacking.XERPort1).idx := XERMask.SO
+    o.slots(ReadSlotPacking.XERPort1).sel := SourceSelect.XER
+  }
+
   switch(i.form) {
 
     // not sure we actually need this one (just used for fnmsub)
@@ -198,13 +208,7 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
       o.imm.valid := True
       o.imm.payload := Forms.D8.SI(i.insn).resize(64).asUInt
       when(i.opcode === MnemonicEnums.addicdot) {
-        // use an output slot to hold the data to write to CR field 0
-        // Select cr0 (the most significant 4 bits of the data field)
-        o.write_interface.slots(WriteSlotPacking.CRPort1).idx := 0x8
-        o.write_interface.slots(WriteSlotPacking.CRPort1).sel := SourceSelect.CRA
-        o.compare.activate := i.insn(28)
-        o.compare.in_slot := WriteSlotPacking.GPRPort1
-        o.compare.out_slot := WriteSlotPacking.CRPort1
+        addRC()
       }
       when(i.opcode === MnemonicEnums.addic || i.opcode === MnemonicEnums.addicdot){
         o.write_interface.slots(WriteSlotPacking.XERPort1).idx := XERMask.CA | XERMask.CA32
@@ -267,11 +271,7 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
       o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.M2.RA(i.insn).resized
       o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
       when(Forms.M2.Rc(i.insn) === True){
-        o.write_interface.slots(WriteSlotPacking.CRPort1).idx := 8
-        o.write_interface.slots(WriteSlotPacking.CRPort1).sel := SourceSelect.CRA
-        o.compare.activate := True
-        o.compare.in_slot := WriteSlotPacking.GPRPort1
-        o.compare.out_slot := WriteSlotPacking.CRPort1
+        addRC()
       }
     }
 
@@ -287,11 +287,7 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
       o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.MD1.RA(i.insn).resized
       o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
       when(Forms.MD1.Rc(i.insn) === True){
-        o.write_interface.slots(WriteSlotPacking.CRPort1).idx := 8
-        o.write_interface.slots(WriteSlotPacking.CRPort1).sel := SourceSelect.CRA
-        o.compare.activate := True
-        o.compare.in_slot := WriteSlotPacking.GPRPort1
-        o.compare.out_slot := WriteSlotPacking.CRPort1
+        addRC()
       }
     }
 
@@ -303,11 +299,7 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
       o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.MD2.RA(i.insn).resized
       o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
       when(Forms.MD2.Rc(i.insn) === True){
-        o.write_interface.slots(WriteSlotPacking.CRPort1).idx := 8
-        o.write_interface.slots(WriteSlotPacking.CRPort1).sel := SourceSelect.CRA
-        o.compare.activate := True
-        o.compare.in_slot := WriteSlotPacking.GPRPort1
-        o.compare.out_slot := WriteSlotPacking.CRPort1
+        addRC()
       }
     }
 
@@ -319,11 +311,7 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
       o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.MDS2.RA(i.insn).resized
       o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
       when(Forms.MDS2.Rc(i.insn) === True){
-        o.write_interface.slots(WriteSlotPacking.CRPort1).idx := 8
-        o.write_interface.slots(WriteSlotPacking.CRPort1).sel := SourceSelect.CRA
-        o.compare.activate := True
-        o.compare.in_slot := WriteSlotPacking.GPRPort1
-        o.compare.out_slot := WriteSlotPacking.CRPort1
+        addRC()
       }
     }
 
@@ -352,11 +340,7 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
       o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.X62.RA(i.insn).resized
       o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
       when(Forms.X62.Rc(i.insn) === True){
-        o.write_interface.slots(WriteSlotPacking.CRPort1).idx := 8
-        o.write_interface.slots(WriteSlotPacking.CRPort1).sel := SourceSelect.CRA
-        o.compare.activate := True
-        o.compare.in_slot := WriteSlotPacking.GPRPort1
-        o.compare.out_slot := WriteSlotPacking.CRPort1
+        addRC()
       }
     }
     is(FormEnums.X60){
@@ -376,11 +360,7 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
       o.write_interface.slots(WriteSlotPacking.SPRPort1).idx := SPREnums.XER.asBits.asUInt.resized
       o.write_interface.slots(WriteSlotPacking.SPRPort1).sel := SourceSelect.SPR
       when(Forms.X62.Rc(i.insn) === True){
-        o.write_interface.slots(WriteSlotPacking.CRPort1).idx := 8
-        o.write_interface.slots(WriteSlotPacking.CRPort1).sel := SourceSelect.CRA
-        o.compare.activate := True
-        o.compare.in_slot := WriteSlotPacking.GPRPort1
-        o.compare.out_slot := WriteSlotPacking.CRPort1
+        addRC()
       }
     }
 
@@ -404,11 +384,7 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
       o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.X68.RA(i.insn).resized
       o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
       when(Forms.X68.Rc(i.insn) === True){
-        o.write_interface.slots(WriteSlotPacking.CRPort1).idx := 8
-        o.write_interface.slots(WriteSlotPacking.CRPort1).sel := SourceSelect.CRA
-        o.compare.activate := True
-        o.compare.in_slot := WriteSlotPacking.GPRPort1
-        o.compare.out_slot := WriteSlotPacking.CRPort1
+        addRC()
       }
     }
 
@@ -529,11 +505,7 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
         o.write_interface.slots(WriteSlotPacking.SPRPort1).sel := SourceSelect.SPR
       }
       when(Forms.XO1.Rc(i.insn) === True){
-        o.write_interface.slots(WriteSlotPacking.CRPort1).idx := 8
-        o.write_interface.slots(WriteSlotPacking.CRPort1).sel := SourceSelect.CRA
-        o.compare.activate := True
-        o.compare.in_slot := WriteSlotPacking.GPRPort1
-        o.compare.out_slot := WriteSlotPacking.CRPort1
+        addRC()
       }
       switch(i.opcode){
         is(MnemonicEnums.addme_o__dot_, MnemonicEnums.subfme_o__dot_,
@@ -554,11 +526,7 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
       o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.XO3.RT(i.insn).resized
       o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
       when(Forms.XO3.Rc(i.insn) === True){
-        o.write_interface.slots(WriteSlotPacking.CRPort1).idx := 8
-        o.write_interface.slots(WriteSlotPacking.CRPort1).sel := SourceSelect.CRA
-        o.compare.activate := True
-        o.compare.in_slot := WriteSlotPacking.GPRPort1
-        o.compare.out_slot := WriteSlotPacking.CRPort1
+        addRC()
       }
     }
 
@@ -570,11 +538,7 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
       o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.XO4.RT(i.insn).resized
       o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
       when(Forms.XO4.Rc(i.insn) === True){
-        o.write_interface.slots(WriteSlotPacking.CRPort1).idx := 8
-        o.write_interface.slots(WriteSlotPacking.CRPort1).sel := SourceSelect.CRA
-        o.compare.activate := True
-        o.compare.in_slot := WriteSlotPacking.GPRPort1
-        o.compare.out_slot := WriteSlotPacking.CRPort1
+        addRC()
       }
       when(Forms.XO4.OE(i.insn) === True){
         o.write_interface.slots(WriteSlotPacking.XERPort1).idx := XERMask.OV | XERMask.OV32 | XERMask.SO
@@ -584,6 +548,9 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
         is(MnemonicEnums.adde_o__dot_, MnemonicEnums.subfe_o__dot_){
           o.slots(ReadSlotPacking.XERPort1).idx := XERMask.CA
           o.slots(ReadSlotPacking.XERPort1).sel := SourceSelect.XER
+          when(Forms.XO4.Rc(i.insn) === True){
+            o.slots(ReadSlotPacking.XERPort1).idx := XERMask.CA | XERMask.SO
+          }
         }
       }
       switch(i.opcode){
@@ -609,14 +576,10 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
       o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.XS1.RA(i.insn).resized
       o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
       // TODO determine what field is written here
-      o.write_interface.slots(WriteSlotPacking.XERPort1).idx := XERMask.ALL
+      o.write_interface.slots(WriteSlotPacking.XERPort1).idx := XERMask.CA
       o.write_interface.slots(WriteSlotPacking.XERPort1).sel := SourceSelect.XER
       when(Forms.XS1.Rc(i.insn) === True){
-        o.write_interface.slots(WriteSlotPacking.CRPort1).idx := 8
-        o.write_interface.slots(WriteSlotPacking.CRPort1).sel := SourceSelect.CRA
-        o.compare.activate := True
-        o.compare.in_slot := WriteSlotPacking.GPRPort1
-        o.compare.out_slot := WriteSlotPacking.CRPort1
+        addRC()
       }
     }
 

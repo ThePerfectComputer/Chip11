@@ -3,6 +3,9 @@ package cpu.stages.functional_units.integer
 import cpu.interfaces.{FunctionalUnit, FunctionalUnitExit}
 import cpu.interfaces.regfile.Slot
 import util.{PipeStage}
+import cpu.shared.{XERBits, XERMask}
+import cpu.interfaces.regfile.{SourceSelect}
+import isa.{WriteSlotPacking}
 
 import spinal.core._
 //import spinal.lib.
@@ -13,19 +16,25 @@ class Stage3 extends PipeStage(new FunctionalUnit, new FunctionalUnitExit) {
   o.write_interface := i.write_interface
   o.ldst_request := i.ldst_request
   o.cia := i.dec_data.cia
+  val so_bit = Bool
+  so_bit := i.so_bit
+  val xer_slot = i.write_interface.slots(WriteSlotPacking.XERPort1)
+  when(xer_slot.sel === SourceSelect.XER && (xer_slot.idx & XERMask.SO) =/= 0){
+    so_bit := xer_slot.data(XERBits.SO)
+  }
 
   def compare_slot_value(slot : Slot) = {
     val value = SInt(64 bits)
     value := slot.data(63 downto 0).asSInt
-    val cmp = UInt(4 bits)
+    val cmp = UInt(3 bits)
     when(value < 0){
-      cmp := 8
-    }.elsewhen(value > 0){
       cmp := 4
-    }.otherwise{
+    }.elsewhen(value > 0){
       cmp := 2
+    }.otherwise{
+      cmp := 1
     }
-    cmp
+    Cat(cmp, so_bit)
   }
     
 
