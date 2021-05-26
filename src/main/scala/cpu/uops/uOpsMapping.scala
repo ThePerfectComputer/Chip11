@@ -8,8 +8,9 @@ import spinal.core._
 import scala.collection._
 
 import isa.MnemonicEnums
+import cpu.{CPUConfig}
 // should contain the ExecuteArgsMapping
-class UOpsMapping extends Component {
+class UOpsMapping(implicit config: CPUConfig) extends Component {
   import isa.MnemonicEnums._
   import FunctionalUnit._
 
@@ -155,7 +156,6 @@ class UOpsMapping extends Component {
   )
   val default = out(uOps(INTEGER, U(0), U(0)))
 
-  import cpu.config
   val info = Map[MnemonicEnums.E, uOps]()
     .++(if(config.adder) branch else Nil)
     .++(if(config.adder) adder else Nil)

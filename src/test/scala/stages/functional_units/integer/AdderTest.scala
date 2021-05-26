@@ -5,6 +5,7 @@ import cpu.interfaces.{ReadInterface, FunctionalUnit}
 import isa.{FormEnums, MnemonicEnums, ISAPairings}
 import cpu.uOps.functional_units.Integer.{IntegerFUSub, AdderSelectB, AdderCarryIn, AdderArgs, LogicSelectB, LogicArgs, MultiplierSelectB, MultiplierArgs, BranchArgs, ShifterSelectB, ShifterME, ShifterMB, ShifterArgs, ComparatorArgs, ComparatorSelectB}
 import cpu.uOps.{FunctionalUnit, UOpsMapping}
+import cpu.{CPUConfig}
 import util.{PipeStage, PipeData}
 
 import spinal.core._
@@ -22,6 +23,7 @@ class Stage1TestVerilog extends AnyFlatSpec with should.Matchers {
 
 
   it should "create verilog" in {
+    implicit val cpuConfig = new CPUConfig()
     val config = SpinalConfig(mode=Verilog, mergeAsyncProcess=true).withoutEnumString()
     config.generate(new Stage1)
   }
@@ -31,6 +33,7 @@ class Stage1AdderTest extends AnyFlatSpec with should.Matchers {
   behavior of "Stage1"
 
   it should "add shit" in {
+    implicit val cpuConfig = new CPUConfig()
     SimConfig.withWave.doSim(new Stage1) { dut =>
 
       dut.pipeOutput.ready #= true

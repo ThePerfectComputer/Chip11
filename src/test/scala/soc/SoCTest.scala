@@ -3,7 +3,7 @@ package soc
 import spinal.core._
 //import spinal.lib._
 import spinal.sim._
-import cpu.{CPU}
+import cpu.{CPU, CPUConfig}
 
 import spinal.core.sim._
 import org.scalatest._
@@ -21,15 +21,16 @@ class CSVLogger(dut: SoC, filePath: String) {
   writer.write(
     "cia,cr,r0,r1,r2,r3,r4,r5,r6,r7,r8,r9,r10,r11,r12,r13,r14,r15,r16,r17,r18,r19,r20,r21,r22,r23,r24,r25,r26,r27,r28,r29,r30,r31\n"
   )
-  def getCr : BigInt = {
+  def getCr: BigInt = {
     val cra = dut.cpu.cr.mem.getBigInt(0)
     val crb = dut.cpu.cr.mem.getBigInt(1)
     var result = BigInt(0)
-    for(i <- 0 until 4){
-      val mask = 0xf << (i*4)
-      val cra_field = (cra & mask) >> (i*4)
-      val crb_field = (crb & mask) >> (i*4)
-      result = result | (cra_field << ((i*2+1)*4)) | (crb_field << (i*2*4))
+    for (i <- 0 until 4) {
+      val mask = 0xf << (i * 4)
+      val cra_field = (cra & mask) >> (i * 4)
+      val crb_field = (crb & mask) >> (i * 4)
+      result =
+        result | (cra_field << ((i * 2 + 1) * 4)) | (crb_field << (i * 2 * 4))
     }
     result
   }
@@ -50,7 +51,7 @@ class CSVLogger(dut: SoC, filePath: String) {
           writer.write(f"$reg%x,")
       }
       writer.flush()
-      if(iteration >= maxIter || r31 == 1){
+      if (iteration >= maxIter || r31 == 1) {
         finish()
       }
       iteration += 1
@@ -67,6 +68,16 @@ class SoCTestVerilog extends AnyFlatSpec with should.Matchers {
   behavior of "SoC"
 
   it should "create verilog" in {
+    implicit val config = new CPUConfig(
+      adder = false,
+      branch = false,
+      logical = false,
+      shifter = false,
+      comparator = false,
+      multiplier = false,
+      zcnt = false,
+      popcnt = false
+    )
     SpinalVerilog(new CPU)
   }
 
@@ -81,26 +92,33 @@ class SoCTestRun extends AnyFlatSpec with should.Matchers {
   val goldCsvDir = "c_sources/tests"
   csvOutputDir.mkdir()
 
-  def examineDifference(goldLine: String, testLine: String, headerLine: String){
+  def examineDifference(
+      goldLine: String,
+      testLine: String,
+      headerLine: String
+  ) {
     val headerIter = headerLine.split(',')
     val goldIter = goldLine.split(',')
     val testIter = testLine.split(',')
-    val data = (goldIter zip testIter zip headerIter).map(x => (x._1._1, x._1._2, x._2))
-    for((gold, test, header) <- data){
-      if(gold != test){
-        Console.println(s"${RESET}${YELLOW} Difference in $header - expected $gold, found $test${RESET}")
+    val data =
+      (goldIter zip testIter zip headerIter).map(x => (x._1._1, x._1._2, x._2))
+    for ((gold, test, header) <- data) {
+      if (gold != test) {
+        Console.println(
+          s"${RESET}${YELLOW} Difference in $header - expected $gold, found $test${RESET}"
+        )
       }
     }
 
   }
 
-  def compareCsvs(goldCsvFile: String, testCsvFile: String){
+  def compareCsvs(goldCsvFile: String, testCsvFile: String) {
     println(s"compare: $goldCsvFile with $testCsvFile")
     val goldCsvLines = Source.fromFile(goldCsvFile).getLines().toList
     val testCsvLines = Source.fromFile(testCsvFile).getLines().toList
     val csvHeader = goldCsvLines(0)
-    for((gold, test) <- goldCsvLines zip testCsvLines){
-      if(gold != test){
+    for ((gold, test) <- goldCsvLines zip testCsvLines) {
+      if (gold != test) {
         Console.println(s"${RESET}${RED}Found difference:")
         Console.println(s"    $gold")
         Console.println(s"    $test${RESET}")
@@ -125,10 +143,9 @@ class SoCTestRun extends AnyFlatSpec with should.Matchers {
   }
   val testDirFile = new File(testDir)
   val tests = testDirFile.listFiles().filter(_.isDirectory)
-  for(file <- tests){ 
+  for (file <- tests) {
     val testName = file.getName()
     runTest(testName)
   }
-
 
 }

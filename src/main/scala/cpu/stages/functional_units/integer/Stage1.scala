@@ -1,6 +1,6 @@
 package cpu.stages.functional_units.integer
 
-import cpu.config
+import cpu.{CPUConfig}
 import cpu.debug.debug_fetch_request
 import cpu.interfaces.{ReadInterface, FunctionalUnit, BranchControl}
 
@@ -39,7 +39,7 @@ import isa.{ReadSlotPacking, WriteSlotPacking, SPREnums, MnemonicEnums, Forms}
 import spinal.core._
 import spinal.lib._
 
-class Stage1 extends PipeStage(new ReadInterface, new FunctionalUnit) {
+class Stage1(implicit config: CPUConfig) extends PipeStage(new ReadInterface, new FunctionalUnit) {
   val io = new Bundle {
     val bc = out(new BranchControl)
   }

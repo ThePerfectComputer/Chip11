@@ -12,16 +12,16 @@ import spinal.core._
 import spinal.core.sim._
 import spinal.lib._
 
-object config {
-  val adder      = true
-  val branch     = true
-  val logical    = true
-  val shifter    = true
-  val comparator = true
-  val multiplier = false
-  val zcnt = true
-  val popcnt = true
-}
+class CPUConfig( 
+  val adder: Boolean=true,
+  val branch: Boolean=true,
+  val logical: Boolean=true,
+  val shifter: Boolean=true,
+  val comparator: Boolean=true,
+  val multiplier: Boolean=false,
+  val zcnt: Boolean=true,
+  val popcnt: Boolean=true
+){}
 
 object debug {
   val debug = false
@@ -45,7 +45,7 @@ object debug {
   val debug_write                 = false
 }
 
-class CPU extends Component {
+class CPU(implicit val config: CPUConfig) extends Component {
   // create external interfaces to memory from fetch and loadstore
   val io = new Bundle {
     val fetch_request   = master(new LineRequest)

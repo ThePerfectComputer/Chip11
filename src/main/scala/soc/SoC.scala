@@ -1,6 +1,6 @@
 package soc
 
-import cpu.{CPU}
+import cpu.{CPU, CPUConfig}
 import soc.devices.memory_adaptor.MemoryAdaptor
 //import soc.devices.{DualPortSram128, UART, Arbiter, AdaptorPeripheral}
 import soc.devices.{DualPortSram128}
@@ -15,6 +15,7 @@ object debug {
 }
 
 class SoC(val mem_file:String = null) extends Component {
+  implicit val config = new CPUConfig()
 
   // instantiate the CPU and memory
   val cpu = new CPU

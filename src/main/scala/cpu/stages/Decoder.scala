@@ -3,6 +3,7 @@ package cpu.stages
 import cpu.interfaces.regfile.{SourceSelect}
 import cpu.interfaces.{FetchOutput, DecoderData, MultiDecoderData, ReadInterface}
 import cpu.uOps.{FunctionalUnit, UOpsMapping}
+import cpu.{CPUConfig}
 
 import util.{PipeStage, PipeData, Mux1H}
 
@@ -30,7 +31,7 @@ class DecodeInit extends PipeStage(new FetchOutput, new DecoderData) {
 
 // /* Actually matches against the instructions */
 
-class uOpAndFormDecoderBySeq(val instructions: Seq[InstructionInfo]) extends PipeStage(new DecoderData, new DecoderData){
+class uOpAndFormDecoderBySeq(val instructions: Seq[InstructionInfo])(implicit val config: CPUConfig) extends PipeStage(new DecoderData, new DecoderData){
   o <> i
 
   val oneHotMatcher = Bits(instructions.size bits)
@@ -75,7 +76,7 @@ class uOpAndFormDecoderBySeq(val instructions: Seq[InstructionInfo]) extends Pip
   }
 }
 
-class uOpAndFormDecoderMulti(numStages: Int) extends
+class uOpAndFormDecoderMulti(numStages: Int)(implicit val config: CPUConfig) extends
     PipeStage(new DecoderData, new MultiDecoderData(numStages)){
 
   val numitems = (ISAPairings.pairings.size + numStages - 1) / numStages
@@ -106,7 +107,7 @@ class uOpAndFormDecoderMux(numStages: Int) extends
 }
 
 
-class uOpAndFormDecoder extends PipeStage(new FetchOutput, new DecoderData){
+class uOpAndFormDecoder(implicit val config: CPUConfig) extends PipeStage(new FetchOutput, new DecoderData){
 
   val numStages = 12
 

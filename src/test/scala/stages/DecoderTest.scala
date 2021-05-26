@@ -1,4 +1,5 @@
 package cpu.stages
+import cpu.{CPUConfig}
 
 import cpu.interfaces.regfile.{SourceSelect}
 import cpu.interfaces.{DecoderData, ReadInterface, FetchOutput}
@@ -17,6 +18,7 @@ import matchers._
 
 
 class DecoderDUT extends PipeStage(new FetchOutput, new ReadInterface){
+  implicit val config = new CPUConfig()
   val dec = new uOpAndFormDecoder
   val populate = new PopulateByForm
   dec << pipeInput
@@ -28,6 +30,7 @@ class DecoderTestVerilog extends AnyFlatSpec with should.Matchers {
 
 
   it should "create verilog" in {
+    implicit val cpuConfig = new CPUConfig()
     val config = SpinalConfig(mode=Verilog, mergeAsyncProcess=true).withoutEnumString()
     SpinalVerilog(new DecoderDUT)
     SpinalVerilog(new uOpAndFormDecoder)
@@ -40,6 +43,7 @@ class DecoderTest extends AnyFlatSpec with should.Matchers {
 
 
   it should "create verilog" in {
+    implicit val cpuConfig = new CPUConfig()
     val config = SpinalConfig(mode=Verilog, mergeAsyncProcess=true).withoutEnumString()
     SpinalVerilog(new DecoderDUT)
     SpinalVerilog(new uOpAndFormDecoder)
