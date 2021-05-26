@@ -1,0 +1,8 @@
+| Configuration                     |  FMax |  LUTs | critical path stage             |
+|-----------------------------------+-------+-------+---------------------------------|
+| Default(master)                   | 35.47 | 26732 | s1                              |
+| execute disabled                  | 52.88 | 11443 | ready path from write->form_pop |
+| execute disabled, extra s2m pipes | 57.63 | 14488 | hazard detector                 |
+| no hazard detector                | 75.81 | 11510 | decode mux                      |
+| execute, s2m pipes, no retime     | 15.26 |       | WTF                             |
+| no hazard detector, no retime     | 79.48 | 11267 | decoder                         |
