@@ -1,3 +1,4 @@
+* CPU
 | Configuration                     |  FMax |  LUTs | critical path stage             |
 |-----------------------------------+-------+-------+---------------------------------|
 | Default(master)                   | 35.47 | 26732 | s1                              |
@@ -6,3 +7,10 @@
 | no hazard detector                | 75.81 | 11510 | decode mux                      |
 | execute, s2m pipes, no retime     | 15.26 |       | WTF                             |
 | no hazard detector, no retime     | 79.48 | 11267 | decoder                         |
+| better hazard detector            |  65.2 |       |  form_pop somehow?             |
+
+* Hazard Detector
+| Configuration       |  FMAx |
+|---------------------+-------|
+| Stock, 8 stages     | 44.99 |
+| Bitvector and reduc | 58.00 |

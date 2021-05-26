@@ -25,14 +25,24 @@ class HazardDetector(val stages: Seq[String])
   val write_interface_vec = io.write_interface_vec
   val stage_valid_vec = io.stage_valid_vec
 
-  read_slots.foreach { read_slot =>
+  val numReadSlots = read_slots.size
+  val numWriteInterfaces = write_interface_vec.size
+  val numWriteSlots = write_interface_vec(0).slots.size
+
+  val readyBits = Bits(numReadSlots * numWriteInterfaces * numWriteSlots bits)
+  readyBits.setAll()
+  ready.allowOverride
+  ready := readyBits.andR
+
+  for((read_slot, readSlotIdx) <- read_slots.zipWithIndex) {
+
     when((read_slot.sel =/= SourceSelect.NONE)) {
-      write_interface_vec
-        .zip(stage_valid_vec)
-        .zip(stages)
-        .foreach { case ((write_slots, commit_is_valid), name) =>
+      val write_interface_data = write_interface_vec zip stage_valid_vec zip stages
+      for((write_data, writeDataIdx) <- write_interface_data.zipWithIndex) {
+        write_data match {
+          case ((write_slots, commit_is_valid), name) =>
           when(commit_is_valid) {
-            write_slots.slots.foreach { write_slot =>
+            for((write_slot, writeSlotIdx) <- write_slots.slots.zipWithIndex) {
               when(
                 write_slot.sel === SourceSelect.CRA || write_slot.sel === SourceSelect.CRB || write_slot.sel === SourceSelect.XER
               ) {
@@ -40,7 +50,7 @@ class HazardDetector(val stages: Seq[String])
                 val cond2 = (write_slot.idx.resized & read_slot.idx.resized) =/= 0
                 when(cond1 && cond2) {
                   when(pipeInput.valid) {
-                    ready := False
+                    readyBits(writeSlotIdx + writeDataIdx * numWriteSlots + readSlotIdx * numWriteSlots * numWriteInterfaces) := False
                     debug(read_slot, write_slot, name)
                   }
                 }
@@ -50,7 +60,7 @@ class HazardDetector(val stages: Seq[String])
                   val cond2 = (write_slot.idx === read_slot.idx)
                   when(cond1 && cond2) {
                     when(pipeInput.valid) {
-                      ready := False
+                      readyBits(writeSlotIdx + writeDataIdx * numWriteSlots + readSlotIdx * numWriteSlots * numWriteInterfaces) := False
                       debug(read_slot, write_slot, name)
                     }
                   }
@@ -59,6 +69,7 @@ class HazardDetector(val stages: Seq[String])
             }
           }
         }
+      }
     }
   }
 

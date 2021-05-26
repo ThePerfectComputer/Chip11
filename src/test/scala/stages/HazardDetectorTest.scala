@@ -16,7 +16,7 @@ import cpu.interfaces.{ReadInterface, WriteInterface}
 
 
 class HazardDUT extends PipeStage(new ReadInterface, new ReadInterface){
-  val numStages = 8
+  val numStages = 2
   val io = new Bundle {
     // contains all the writeback indexes for stages after
     // hazard detector
