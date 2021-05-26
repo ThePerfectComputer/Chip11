@@ -129,6 +129,9 @@ class Stage1 extends PipeStage(new ReadInterface, new FunctionalUnit) {
             .data(XERBits.CA) := adderMod.io.carry_out
           o.write_interface
             .slots(WriteSlotPacking.XERPort1)
+            .data(XERBits.CA32) := adderMod.io.carry_out_32
+          o.write_interface
+            .slots(WriteSlotPacking.XERPort1)
             .data(XERBits.OV) := adderMod.io.overflow_out
           o.ldst_request.ea := adderMod.io.o
 

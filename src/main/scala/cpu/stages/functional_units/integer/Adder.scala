@@ -20,6 +20,7 @@ class Adder(val wid: Int) extends Component {
     val invert_a = in Bool()
     val o = out UInt(wid bits)
     val carry_out = out Bool()
+    val carry_out_32 = out Bool
     val overflow_out = out Bool
   }
   val adder_a = UInt((wid+1) bits)
@@ -38,6 +39,7 @@ class Adder(val wid: Int) extends Component {
 
   io.o := adder_o(wid downto 1)
   io.carry_out := adder_o(wid+1)
+  io.carry_out_32 := (io.a(32) ^ io.b(32)) =/= io.o(32)
   // sign change
   io.overflow_out := (io.a(wid-1) === io.b(wid-1)) && (io.o(wid-1) =/= io.a(wid-1))
 }

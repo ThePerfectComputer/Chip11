@@ -210,7 +210,6 @@ mtcr 1
             insns.extend([
                 f"addic. {dest}, {src1}, {imm}",
                 "mfxer 20",
-                "mflr 21",
                 f"adde 18, {src2}, {src3}",
                 "mfxer 21",
                 ])

@@ -207,7 +207,7 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
         o.compare.out_slot := WriteSlotPacking.CRPort1
       }
       when(i.opcode === MnemonicEnums.addic || i.opcode === MnemonicEnums.addicdot){
-        o.write_interface.slots(WriteSlotPacking.XERPort1).idx := XERMask.CA
+        o.write_interface.slots(WriteSlotPacking.XERPort1).idx := XERMask.CA | XERMask.CA32
         o.write_interface.slots(WriteSlotPacking.XERPort1).sel := SourceSelect.XER
       }
 
@@ -535,7 +535,7 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
         MnemonicEnums.addze_o__dot_, MnemonicEnums.subfze_o__dot_){
           o.slots(ReadSlotPacking.XERPort1).idx := XERMask.CA
           o.slots(ReadSlotPacking.XERPort1).sel := SourceSelect.XER
-          o.write_interface.slots(WriteSlotPacking.XERPort1).idx := XERMask.CA
+          o.write_interface.slots(WriteSlotPacking.XERPort1).idx := XERMask.CA | XERMask.CA32
           o.write_interface.slots(WriteSlotPacking.XERPort1).sel := SourceSelect.XER
         }
       }
@@ -584,7 +584,7 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
       switch(i.opcode){
         is(MnemonicEnums.addc_o__dot_, MnemonicEnums.subfc_o__dot_,
         MnemonicEnums.adde_o__dot_, MnemonicEnums.subfe_o__dot_){
-          o.write_interface.slots(WriteSlotPacking.XERPort1).idx := XERMask.CA
+          o.write_interface.slots(WriteSlotPacking.XERPort1).idx := XERMask.CA | XERMask.CA32
           o.write_interface.slots(WriteSlotPacking.XERPort1).sel := SourceSelect.XER
         }
       }
@@ -597,6 +597,7 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
       o.imm.payload := Cat(Forms.XS1.sh2(i.insn), Forms.XS1.sh1(i.insn)).asUInt.resized
       o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.XS1.RA(i.insn).resized
       o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
+      // TODO determine what field is written here
       o.write_interface.slots(WriteSlotPacking.XERPort1).idx := XERMask.ALL
       o.write_interface.slots(WriteSlotPacking.XERPort1).sel := SourceSelect.XER
       when(Forms.XS1.Rc(i.insn) === True){

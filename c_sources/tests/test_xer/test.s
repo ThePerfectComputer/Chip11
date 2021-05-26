@@ -22,104 +22,84 @@ mtcr 1
 test_xer:
 addic. 17, 3, 23989                               # 20
 mfxer 20                                          # 21
-mflr 21                                           # 22
-adde 18, 3, 7                                     # 23
-mfxer 21                                          # 24
-addic. 17, 8, -24391                              # 25
-mfxer 20                                          # 26
-mflr 21                                           # 27
-adde 18, 2, 6                                     # 28
-mfxer 21                                          # 29
-addic. 17, 4, 9789                                # 30
-mfxer 20                                          # 31
-mflr 21                                           # 32
-adde 18, 4, 2                                     # 33
-mfxer 21                                          # 34
-addic. 17, 1, -30281                              # 35
-mfxer 20                                          # 36
-mflr 21                                           # 37
-adde 18, 3, 5                                     # 38
+adde 18, 3, 7                                     # 22
+mfxer 21                                          # 23
+addic. 17, 8, -24391                              # 24
+mfxer 20                                          # 25
+adde 18, 2, 6                                     # 26
+mfxer 21                                          # 27
+addic. 17, 4, 9789                                # 28
+mfxer 20                                          # 29
+adde 18, 4, 2                                     # 30
+mfxer 21                                          # 31
+addic. 17, 1, -30281                              # 32
+mfxer 20                                          # 33
+adde 18, 3, 5                                     # 34
+mfxer 21                                          # 35
+addic. 17, 2, -21245                              # 36
+mfxer 20                                          # 37
+adde 18, 7, 6                                     # 38
 mfxer 21                                          # 39
-addic. 17, 2, -21245                              # 40
+addic. 17, 5, 13093                               # 40
 mfxer 20                                          # 41
-mflr 21                                           # 42
-adde 18, 7, 6                                     # 43
-mfxer 21                                          # 44
-addic. 17, 5, 13093                               # 45
-mfxer 20                                          # 46
-mflr 21                                           # 47
-adde 18, 4, 4                                     # 48
-mfxer 21                                          # 49
-addic. 17, 4, 26857                               # 50
-mfxer 20                                          # 51
-mflr 21                                           # 52
-adde 18, 4, 1                                     # 53
-mfxer 21                                          # 54
-addic. 17, 4, 19853                               # 55
-mfxer 20                                          # 56
-mflr 21                                           # 57
-adde 18, 3, 4                                     # 58
+adde 18, 4, 4                                     # 42
+mfxer 21                                          # 43
+addic. 17, 4, 26857                               # 44
+mfxer 20                                          # 45
+adde 18, 4, 1                                     # 46
+mfxer 21                                          # 47
+addic. 17, 4, 19853                               # 48
+mfxer 20                                          # 49
+adde 18, 3, 4                                     # 50
+mfxer 21                                          # 51
+addic. 17, 5, -28409                              # 52
+mfxer 20                                          # 53
+adde 18, 6, 5                                     # 54
+mfxer 21                                          # 55
+addic. 17, 7, -22081                              # 56
+mfxer 20                                          # 57
+adde 18, 7, 1                                     # 58
 mfxer 21                                          # 59
-addic. 17, 5, -28409                              # 60
+addic. 17, 2, -8005                               # 60
 mfxer 20                                          # 61
-mflr 21                                           # 62
-adde 18, 6, 5                                     # 63
-mfxer 21                                          # 64
-addic. 17, 7, -22081                              # 65
-mfxer 20                                          # 66
-mflr 21                                           # 67
-adde 18, 7, 1                                     # 68
-mfxer 21                                          # 69
-addic. 17, 2, -8005                               # 70
-mfxer 20                                          # 71
-mflr 21                                           # 72
-adde 18, 1, 1                                     # 73
-mfxer 21                                          # 74
-addic. 17, 3, 30906                               # 75
-mfxer 20                                          # 76
-mflr 21                                           # 77
-adde 18, 5, 1                                     # 78
+adde 18, 1, 1                                     # 62
+mfxer 21                                          # 63
+addic. 17, 3, 30906                               # 64
+mfxer 20                                          # 65
+adde 18, 5, 1                                     # 66
+mfxer 21                                          # 67
+addic. 17, 8, -7388                               # 68
+mfxer 20                                          # 69
+adde 18, 5, 8                                     # 70
+mfxer 21                                          # 71
+addic. 17, 4, -9555                               # 72
+mfxer 20                                          # 73
+adde 18, 3, 5                                     # 74
+mfxer 21                                          # 75
+addic. 17, 1, 9085                                # 76
+mfxer 20                                          # 77
+adde 18, 8, 2                                     # 78
 mfxer 21                                          # 79
-addic. 17, 8, -7388                               # 80
+addic. 17, 5, 4435                                # 80
 mfxer 20                                          # 81
-mflr 21                                           # 82
-adde 18, 5, 8                                     # 83
-mfxer 21                                          # 84
-addic. 17, 4, -9555                               # 85
-mfxer 20                                          # 86
-mflr 21                                           # 87
-adde 18, 3, 5                                     # 88
-mfxer 21                                          # 89
-addic. 17, 1, 9085                                # 90
-mfxer 20                                          # 91
-mflr 21                                           # 92
-adde 18, 8, 2                                     # 93
-mfxer 21                                          # 94
-addic. 17, 5, 4435                                # 95
-mfxer 20                                          # 96
-mflr 21                                           # 97
-adde 18, 1, 3                                     # 98
+adde 18, 1, 3                                     # 82
+mfxer 21                                          # 83
+addic. 17, 2, 24039                               # 84
+mfxer 20                                          # 85
+adde 18, 8, 1                                     # 86
+mfxer 21                                          # 87
+addic. 17, 3, 4864                                # 88
+mfxer 20                                          # 89
+adde 18, 5, 2                                     # 90
+mfxer 21                                          # 91
+addic. 17, 8, -20779                              # 92
+mfxer 20                                          # 93
+adde 18, 7, 2                                     # 94
+mfxer 21                                          # 95
+addic. 17, 6, 17337                               # 96
+mfxer 20                                          # 97
+adde 18, 5, 4                                     # 98
 mfxer 21                                          # 99
-addic. 17, 2, 24039                               # 100
-mfxer 20                                          # 101
-mflr 21                                           # 102
-adde 18, 8, 1                                     # 103
-mfxer 21                                          # 104
-addic. 17, 3, 4864                                # 105
-mfxer 20                                          # 106
-mflr 21                                           # 107
-adde 18, 5, 2                                     # 108
-mfxer 21                                          # 109
-addic. 17, 8, -20779                              # 110
-mfxer 20                                          # 111
-mflr 21                                           # 112
-adde 18, 7, 2                                     # 113
-mfxer 21                                          # 114
-addic. 17, 6, 17337                               # 115
-mfxer 20                                          # 116
-mflr 21                                           # 117
-adde 18, 5, 4                                     # 118
-mfxer 21                                          # 119
 nop
 li 31, 1
 hang: b hang
