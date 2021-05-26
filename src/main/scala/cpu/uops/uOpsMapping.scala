@@ -27,6 +27,10 @@ class UOpsMapping extends Component {
     subfic        -> out(uOps(INTEGER, IntegerFUSub.Adder, AdderArgs(AdderSelectB.Imm, AdderCarryIn.ONE, true))),
     subfe_o__dot_ -> out(uOps(INTEGER, IntegerFUSub.Adder, AdderArgs(AdderSelectB.Slot2, AdderCarryIn.CA, true))),
     neg_o__dot_   -> out(uOps(INTEGER, IntegerFUSub.Adder, AdderArgs(AdderSelectB.ZERO, AdderCarryIn.ONE, true))),
+    addme_o__dot_ -> out(uOps(INTEGER, IntegerFUSub.Adder, AdderArgs(AdderSelectB.NEGATIVE_ONE, AdderCarryIn.CA, false))),
+    subfme_o__dot_ -> out(uOps(INTEGER, IntegerFUSub.Adder, AdderArgs(AdderSelectB.NEGATIVE_ONE, AdderCarryIn.CA, true))),
+    subfze_o__dot_ -> out(uOps(INTEGER, IntegerFUSub.Adder, AdderArgs(AdderSelectB.ZERO, AdderCarryIn.CA, true))),
+    addze_o__dot_ -> out(uOps(INTEGER, IntegerFUSub.Adder, AdderArgs(AdderSelectB.ZERO, AdderCarryIn.CA, false))),
     // Loadstore instructions use the adder to calculate effective addresses
     ld            -> out(uOps(INTEGER, IntegerFUSub.Adder, AdderArgs(AdderSelectB.ImmShift2, AdderCarryIn.ZERO, false))),
     lbz           -> out(uOps(INTEGER, IntegerFUSub.Adder, AdderArgs(AdderSelectB.Imm, AdderCarryIn.ZERO, false))),

@@ -110,11 +110,30 @@ mtcr 1
     # r8: 123456789abcdef0
 
     def test_add(self):
-        self.add_code(self.id(), [
-            "addis 17, 2, 0xa5a5",
-            "addis 17, 0, 0x0001",
-            "addis 17, 0, 0xffff",
-            "addi 17, 3, -1"])
+        insns = []
+        for i in range(20):
+            src1 = self.rand.randrange(1,8+1)
+            src2 = self.rand.randrange(1,8+1)
+            imm = self.rand.randrange(-0x8000, 0x7fff)
+            dest = 17
+            insns.extend([
+                f"addi {dest}, {src1}, {imm}",
+                f"addis {dest}, {src1}, {imm}",
+                f"addic {dest}, {src1}, {imm}",
+                f"addic. {dest}, {src1}, {imm}",
+                f"subfic {dest}, {src1}, {imm}",
+                f"add {dest}, {src1}, {src2}",
+                f"subf {dest}, {src1}, {src2}",
+                f"addc {dest}, {src1}, {src2}",
+                f"subfc {dest}, {src1}, {src2}",
+                f"adde {dest}, {src1}, {src2}",
+                f"subfe {dest}, {src1}, {src2}",
+                f"addme {dest}, {src1}",
+                f"subfme {dest}, {src1}",
+                f"subfze {dest}, {src1}",
+                f"addze {dest}, {src1}",
+                ])
+        self.add_code(self.id(), insns)
 
     def test_rldicl(self):
         insns = []

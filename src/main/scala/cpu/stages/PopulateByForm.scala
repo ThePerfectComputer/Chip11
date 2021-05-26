@@ -519,6 +519,15 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
         o.compare.in_slot := WriteSlotPacking.GPRPort1
         o.compare.out_slot := WriteSlotPacking.CRPort1
       }
+      switch(i.opcode){
+        is(MnemonicEnums.addme_o__dot_, MnemonicEnums.subfme_o__dot_,
+        MnemonicEnums.addze_o__dot_, MnemonicEnums.subfze_o__dot_){
+          o.slots(ReadSlotPacking.XERPort1).idx := XERMask.CA
+          o.slots(ReadSlotPacking.XERPort1).sel := SourceSelect.XER
+          o.write_interface.slots(WriteSlotPacking.XERPort1).idx := XERMask.CA
+          o.write_interface.slots(WriteSlotPacking.XERPort1).sel := SourceSelect.XER
+        }
+      }
     }
 
     is(FormEnums.XO3){
@@ -555,15 +564,19 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
         o.write_interface.slots(WriteSlotPacking.SPRPort1).idx := SPREnums.XER.asBits.asUInt
         o.write_interface.slots(WriteSlotPacking.SPRPort1).sel := SourceSelect.SPR
       }
-      when(i.opcode === MnemonicEnums.adde_o__dot_){
-        o.slots(ReadSlotPacking.XERPort1).idx := XERMask.CA
-        o.slots(ReadSlotPacking.XERPort1).sel := SourceSelect.XER
+      switch(i.opcode){
+        is(MnemonicEnums.adde_o__dot_, MnemonicEnums.subfe_o__dot_){
+          o.slots(ReadSlotPacking.XERPort1).idx := XERMask.CA
+          o.slots(ReadSlotPacking.XERPort1).sel := SourceSelect.XER
+        }
       }
-      when(i.opcode === MnemonicEnums.addc_o__dot_ || i.opcode === MnemonicEnums.adde_o__dot_){
-        o.write_interface.slots(WriteSlotPacking.XERPort1).idx := XERMask.CA
-        o.write_interface.slots(WriteSlotPacking.XERPort1).sel := SourceSelect.XER
+      switch(i.opcode){
+        is(MnemonicEnums.addc_o__dot_, MnemonicEnums.subfc_o__dot_,
+        MnemonicEnums.adde_o__dot_, MnemonicEnums.subfe_o__dot_){
+          o.write_interface.slots(WriteSlotPacking.XERPort1).idx := XERMask.CA
+          o.write_interface.slots(WriteSlotPacking.XERPort1).sel := SourceSelect.XER
+        }
       }
-
     }
 
     is(FormEnums.XS1){

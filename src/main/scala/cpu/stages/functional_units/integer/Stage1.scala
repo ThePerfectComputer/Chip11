@@ -75,6 +75,7 @@ class Stage1 extends PipeStage(new ReadInterface, new FunctionalUnit) {
             is(AdderSelectB.ImmShift) { adderMod.io.b := (i.imm.payload |<< 16)}
             is(AdderSelectB.ImmShift2) { adderMod.io.b := (i.imm.payload |<< 2)}
             is(AdderSelectB.ZERO) { adderMod.io.b := 0}
+            is(AdderSelectB.NEGATIVE_ONE) { adderMod.io.b := ~U(0, 64 bits)}
           }
           switch(adderArgs.cIn) {
             is(AdderCarryIn.ZERO) { adderMod.io.carry_in := False}

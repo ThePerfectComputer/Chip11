@@ -25,6 +25,7 @@ object AdderSelectB extends SpinalEnum {
   val ImmShift = newElement()
   val ImmShift2 = newElement()
   val ZERO = newElement()
+  val NEGATIVE_ONE = newElement()
 }
 
 object AdderCarryIn extends SpinalEnum {
