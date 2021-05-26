@@ -10,7 +10,7 @@ import cpu.shared.memory_state.{
   TransactionType,
   TransactionSize
 }
-import cpu.shared.{XERBits}
+import cpu.shared.{XERBits, XERMask}
 import cpu.uOps.functional_units.Integer.{
   AdderSelectB,
   AdderCarryIn,
@@ -137,6 +137,15 @@ class Stage1 extends PipeStage(new ReadInterface, new FunctionalUnit) {
             .slots(WriteSlotPacking.XERPort1)
             .data(XERBits.OV32) := adderMod.io.overflow_out_32
           o.ldst_request.ea := adderMod.io.o
+
+          // SO handling
+          o.write_interface
+            .slots(WriteSlotPacking.XERPort1)
+            .data(XERBits.SO) := adderMod.io.overflow_out
+          when(!adderMod.io.overflow_out){
+            o.write_interface.slots(WriteSlotPacking.XERPort1).idx :=
+              i.write_interface.slots(WriteSlotPacking.XERPort1).idx & ((~XERMask.SO) & XERMask.ALL)
+          }
 
           def debug_adder() {
             // when (pipeOutput.fire()) {

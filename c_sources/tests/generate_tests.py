@@ -216,12 +216,23 @@ mtcr 1
         self.add_code(self.id(), insns)
 
     def test_overflow(self):
-        insns = ["lis 17, -0x8000"]
+        insns = ["lis 17, -0x8000",
+                 "sldi 19, 17, 32",
+                 "li 0, 0"]
+
         for insn in ["add", "addc", "adde", "subf", "subfc", "subfe"]:
             insns.extend([
                  f"{insn}o 18, 17, 17",
                  "mfxer 21",
                 "mtxer 0"])
+            insns.extend([
+                 f"{insn}o 18, 19, 19",
+                 "mfxer 21",
+                "mtxer 0"])
+        insns.extend([
+            "addo 18, 19, 19",
+            "addo 18, 0, 0",
+            "mfxer 21"])
         self.add_code(self.id(), insns)
 
 
