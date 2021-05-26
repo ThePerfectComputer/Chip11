@@ -199,11 +199,22 @@ mtcr 1
             insns.append(f"rlwinm. {dest}, {src}, {sh}, {mb}, {me}")
         self.add_code(self.id(), insns)
 
-    def test_adde(self):
-        self.add_code(self.id(), [
-            'addic.  17, 7, 0x20',
-            'adde 17, 2, 1',
-            'addze 17, 5'])
+    def test_xer(self):
+        insns = []
+        for i in range(20):
+            src1 = self.rand.randrange(1,8+1)
+            src2 = self.rand.randrange(1,8+1)
+            src3 = self.rand.randrange(1,8+1)
+            imm = self.rand.randrange(-0x8000, 0x7fff)
+            dest = 17
+            insns.extend([
+                f"addic. {dest}, {src1}, {imm}",
+                "mfxer 20",
+                "mflr 21",
+                f"adde 18, {src2}, {src3}",
+                "mfxer 21",
+                ])
+        self.add_code(self.id(), insns)
 
     def test_dot(self):
         insns = []

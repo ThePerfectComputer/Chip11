@@ -42,6 +42,9 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
       // printf(p"FORM: Populated info for form ${i.form.asUInt}\n")
     }
   }
+  val spr_fields = Forms.XFX8.spr(i.insn)
+  val spr = UInt(10 bits)
+  spr := Cat(spr_fields(4 downto 0), spr_fields(9 downto 5)).asUInt
 
   switch(i.form) {
 
@@ -478,13 +481,21 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
 
     // TODO check if the address returned from XFX8.spr is properly encoded
     is(FormEnums.XFX8){
-      val spr_fields = Forms.XFX8.spr(i.insn)
-      val spr = UInt(10 bits)
-      spr := Cat(spr_fields(5 downto 0), spr_fields(9 downto 6)).asUInt
-      o.slots(ReadSlotPacking.SPRPort1).idx := spr
-      o.slots(ReadSlotPacking.SPRPort1).sel := SourceSelect.SPR
-      o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.XFX8.RT(i.insn).resized
-      o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
+      // val spr_fields = Forms.XFX8.spr(i.insn)
+      // val spr = UInt(10 bits)
+      // spr := Cat(spr_fields(5 downto 0), spr_fields(9 downto 6)).asUInt
+      when(spr === SPREnums.XER.asBits.asUInt){
+        o.dec_data.opcode := MnemonicEnums.mfxer
+        o.slots(ReadSlotPacking.XERPort1).idx := XERMask.ALL
+        o.slots(ReadSlotPacking.XERPort1).sel := SourceSelect.XER
+        o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.XFX8.RT(i.insn).resized
+        o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
+      }.otherwise{
+        o.slots(ReadSlotPacking.SPRPort1).idx := spr
+        o.slots(ReadSlotPacking.SPRPort1).sel := SourceSelect.SPR
+        o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.XFX8.RT(i.insn).resized
+        o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
+      }
     }
 
     // TODO revisit this one to determine if further sub-forms are necesarry

@@ -1,4 +1,4 @@
-//generated 2021-05-18 00:04:54.218333
+//generated 2021-05-26 10:20:09.450787
 
 package isa
 import spinal.core._
@@ -6,7 +6,6 @@ import spinal.lib._
 
 // Enumerate all the opcodes
 object MnemonicEnums extends SpinalEnum {
-
 
   val add_o__dot_ = newElement()
   val addc_o__dot_ = newElement()
@@ -939,4 +938,6 @@ object MnemonicEnums extends SpinalEnum {
   val xxsldwi = newElement()
   val xxspltib = newElement()
   val xxspltw = newElement()
+  val mfxer = newElement()
+  val mtxer = newElement()
 }

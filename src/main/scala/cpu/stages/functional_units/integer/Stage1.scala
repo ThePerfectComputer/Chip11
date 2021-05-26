@@ -5,11 +5,32 @@ import cpu.debug.debug_fetch_request
 import cpu.interfaces.{ReadInterface, FunctionalUnit, BranchControl}
 
 import cpu.interfaces.regfile.{SourceSelect}
-import cpu.shared.memory_state.{TransactionStatus, TransactionType, TransactionSize}
+import cpu.shared.memory_state.{
+  TransactionStatus,
+  TransactionType,
+  TransactionSize
+}
 import cpu.shared.{XERBits}
-import cpu.uOps.functional_units.Integer.{AdderSelectB, AdderCarryIn, AdderArgs, LogicSelectB, LogicArgs, 
-  MultiplierSelectB, MultiplierArgs, ShifterSelectB, ShifterME, ShifterMB, ShifterArgs, 
-  ComparatorSelectB, ComparatorArgs, ZCntArgs, ZCntDirection, ZCntSize, PopcntArgs, PopcntSize}
+import cpu.uOps.functional_units.Integer.{
+  AdderSelectB,
+  AdderCarryIn,
+  AdderArgs,
+  LogicSelectB,
+  LogicArgs,
+  MultiplierSelectB,
+  MultiplierArgs,
+  ShifterSelectB,
+  ShifterME,
+  ShifterMB,
+  ShifterArgs,
+  ComparatorSelectB,
+  ComparatorArgs,
+  ZCntArgs,
+  ZCntDirection,
+  ZCntSize,
+  PopcntArgs,
+  PopcntSize
+}
 import cpu.uOps.functional_units.Integer.{IntegerFUSub}
 import cpu.uOps.{FunctionalUnit}
 import util.{PipeStage}
@@ -17,7 +38,6 @@ import isa.{ReadSlotPacking, WriteSlotPacking, SPREnums, MnemonicEnums, Forms}
 
 import spinal.core._
 import spinal.lib._
-
 
 class Stage1 extends PipeStage(new ReadInterface, new FunctionalUnit) {
   val io = new Bundle {
@@ -32,9 +52,12 @@ class Stage1 extends PipeStage(new ReadInterface, new FunctionalUnit) {
 
   // if necessary, load up the ldst_request with popuated data from the read stage
   // TODO: determine whether this should be done here, in read, or somewhere else
-  for((s, i) <- pipeInput.payload.slots.zipWithIndex) {
+  for ((s, i) <- pipeInput.payload.slots.zipWithIndex) {
     when(pipeInput.payload.ldst_request.store_src_slot === i) {
-      pipeOutput.payload.ldst_request.store_data := pipeInput.payload.slots(i).data.resized
+      pipeOutput.payload.ldst_request.store_data := pipeInput.payload
+        .slots(i)
+        .data
+        .resized
     }
   }
 
@@ -46,53 +69,70 @@ class Stage1 extends PipeStage(new ReadInterface, new FunctionalUnit) {
 
   val sub_function = i.dec_data.uOps.sub_function
 
+  val sub_unit = IntegerFUSub().keep()
+  sub_unit.assignFromBits(sub_function(sub_unit.getBitsWidth - 1 downto 0))
   // this stage activates when execute.args.functional_unit === Integer
-  when(i.dec_data.uOps.functional_unit === FunctionalUnit.INTEGER){
+  when(i.dec_data.uOps.functional_unit === FunctionalUnit.INTEGER) {
 
     //if (cpu.debug.debug_stage1) {when (pipeOutput.fire()) {printf("IFU STAGE1:\n")}}
 
-    val sub_unit = IntegerFUSub()
-    sub_unit.assignFromBits(sub_function(sub_unit.getBitsWidth-1 downto 0))
 
     // also need a switch statement here to select particular subfunction
     // to route to
-    switch(sub_unit){
+    switch(sub_unit) {
 
-      is(IntegerFUSub.Adder){
+      is(IntegerFUSub.Adder) {
         if (config.adder) {
           val adderMod = new Adder(64)
-
 
           val adderArgs = new AdderArgs
           adderArgs.assignFromBits(i.dec_data.uOps.args)
 
           adderMod.io.a := i.slots(ReadSlotPacking.GPRPort1).data.resize(64)
-          switch(adderArgs.slotB){
-            is(AdderSelectB.Slot1) { adderMod.io.b := i.slots(ReadSlotPacking.GPRPort1).data.resize(64)}
-            is(AdderSelectB.Slot2) { adderMod.io.b := i.slots(ReadSlotPacking.GPRPort2).data.resize(64)}
-            is(AdderSelectB.Slot3) { adderMod.io.b := i.slots(ReadSlotPacking.GPRPort3).data.resize(64)}
-            is(AdderSelectB.Imm) { adderMod.io.b := i.imm.payload}
-            is(AdderSelectB.ImmShift) { adderMod.io.b := (i.imm.payload |<< 16)}
-            is(AdderSelectB.ImmShift2) { adderMod.io.b := (i.imm.payload |<< 2)}
-            is(AdderSelectB.ZERO) { adderMod.io.b := 0}
-            is(AdderSelectB.NEGATIVE_ONE) { adderMod.io.b := ~U(0, 64 bits)}
+          switch(adderArgs.slotB) {
+            is(AdderSelectB.Slot1) {
+              adderMod.io.b := i.slots(ReadSlotPacking.GPRPort1).data.resize(64)
+            }
+            is(AdderSelectB.Slot2) {
+              adderMod.io.b := i.slots(ReadSlotPacking.GPRPort2).data.resize(64)
+            }
+            is(AdderSelectB.Slot3) {
+              adderMod.io.b := i.slots(ReadSlotPacking.GPRPort3).data.resize(64)
+            }
+            is(AdderSelectB.Imm) { adderMod.io.b := i.imm.payload }
+            is(AdderSelectB.ImmShift) {
+              adderMod.io.b := (i.imm.payload |<< 16)
+            }
+            is(AdderSelectB.ImmShift2) {
+              adderMod.io.b := (i.imm.payload |<< 2)
+            }
+            is(AdderSelectB.ZERO) { adderMod.io.b := 0 }
+            is(AdderSelectB.NEGATIVE_ONE) { adderMod.io.b := ~U(0, 64 bits) }
           }
           switch(adderArgs.cIn) {
-            is(AdderCarryIn.ZERO) { adderMod.io.carry_in := False}
-            is(AdderCarryIn.ONE) { adderMod.io.carry_in := True}
+            is(AdderCarryIn.ZERO) { adderMod.io.carry_in := False }
+            is(AdderCarryIn.ONE) { adderMod.io.carry_in := True }
             // TODO Fix
             is(AdderCarryIn.CA) {
-              adderMod.io.carry_in := i.slots(ReadSlotPacking.XERPort1).data(XERBits.CA)
+              adderMod.io.carry_in := i
+                .slots(ReadSlotPacking.XERPort1)
+                .data(XERBits.CA)
             }
           }
           adderMod.io.invert_a := adderArgs.invertA
 
-          o.write_interface.slots(WriteSlotPacking.GPRPort1).data := adderMod.io.o.resized
-          o.write_interface.slots(WriteSlotPacking.XERPort1).data(XERBits.CA) := adderMod.io.carry_out
-          o.write_interface.slots(WriteSlotPacking.XERPort1).data(XERBits.OV) := adderMod.io.overflow_out
+          o.write_interface
+            .slots(WriteSlotPacking.GPRPort1)
+            .data := adderMod.io.o.resized
+          o.write_interface
+            .slots(WriteSlotPacking.XERPort1)
+            .data(XERBits.CA) := adderMod.io.carry_out
+          o.write_interface
+            .slots(WriteSlotPacking.XERPort1)
+            .data(XERBits.OV) := adderMod.io.overflow_out
           o.ldst_request.ea := adderMod.io.o
 
-          def debug_adder(){
+          def debug_adder() {
             // when (pipeOutput.fire()) {
             //   printf(p"\tADDER IO:\n")
             //   printf(p"\t\tInput A: ${adderMod.io.a}\n")
@@ -104,7 +144,7 @@ class Stage1 extends PipeStage(new ReadInterface, new FunctionalUnit) {
         }
       }
 
-      is(IntegerFUSub.Branch){
+      is(IntegerFUSub.Branch) {
         if (config.branch) {
           val branchMod = new Branch
           branchMod.io.ri := i
@@ -120,9 +160,9 @@ class Stage1 extends PipeStage(new ReadInterface, new FunctionalUnit) {
           // }
           // if (cpu.debug.debug_stage1_ifu_branch) {debug_branch()}
 
-          when(pipeOutput.valid){
+          when(pipeOutput.valid) {
             io.bc := branchMod.io.bc
-            when (branchMod.io.bc.branch_taken) {
+            when(branchMod.io.bc.branch_taken) {
               pipeInput.flush := True
             }
           }
@@ -131,26 +171,42 @@ class Stage1 extends PipeStage(new ReadInterface, new FunctionalUnit) {
           // should be tied off up top.
 
           // By default don't write to the SPRs
-          o.write_interface.slots(WriteSlotPacking.SPRPort1).sel := SourceSelect.NONE
-          o.write_interface.slots(WriteSlotPacking.SPRPort2).sel := SourceSelect.NONE
+          o.write_interface
+            .slots(WriteSlotPacking.SPRPort1)
+            .sel := SourceSelect.NONE
+          o.write_interface
+            .slots(WriteSlotPacking.SPRPort2)
+            .sel := SourceSelect.NONE
 
           // If the branch unit outputs a valid ctr, then write that to ctr SPR
-          when(branchMod.io.ctr_w.valid){
-            o.write_interface.slots(WriteSlotPacking.SPRPort1).data := branchMod.io.ctr_w.payload
-            o.write_interface.slots(WriteSlotPacking.SPRPort1).sel := SourceSelect.SPR
-            o.write_interface.slots(WriteSlotPacking.SPRPort1).idx := SPREnums.CTR.asBits.asUInt
+          when(branchMod.io.ctr_w.valid) {
+            o.write_interface
+              .slots(WriteSlotPacking.SPRPort1)
+              .data := branchMod.io.ctr_w.payload
+            o.write_interface
+              .slots(WriteSlotPacking.SPRPort1)
+              .sel := SourceSelect.SPR
+            o.write_interface
+              .slots(WriteSlotPacking.SPRPort1)
+              .idx := SPREnums.CTR.asBits.asUInt
           }
           // Same with LR
-          when(branchMod.io.lr_w.valid){
-            o.write_interface.slots(WriteSlotPacking.SPRPort2).data := branchMod.io.lr_w.payload
-            o.write_interface.slots(WriteSlotPacking.SPRPort2).sel := SourceSelect.SPR
-            o.write_interface.slots(WriteSlotPacking.SPRPort2).idx := SPREnums.LR.asBits.asUInt
+          when(branchMod.io.lr_w.valid) {
+            o.write_interface
+              .slots(WriteSlotPacking.SPRPort2)
+              .data := branchMod.io.lr_w.payload
+            o.write_interface
+              .slots(WriteSlotPacking.SPRPort2)
+              .sel := SourceSelect.SPR
+            o.write_interface
+              .slots(WriteSlotPacking.SPRPort2)
+              .idx := SPREnums.LR.asBits.asUInt
           }
         }
       }
 
-      is(IntegerFUSub.LogicUnit){
-        if(config.logical) {
+      is(IntegerFUSub.LogicUnit) {
+        if (config.logical) {
           val logicMod = new LogicUnit(64)
 
           // def debug_logic(){
@@ -167,12 +223,20 @@ class Stage1 extends PipeStage(new ReadInterface, new FunctionalUnit) {
           logicArgs.assignFromBits(i.dec_data.uOps.args)
 
           logicMod.io.a := i.slots(ReadSlotPacking.GPRPort1).data.resize(64)
-          switch(logicArgs.slotB){
-            is(LogicSelectB.Slot1) { logicMod.io.b := i.slots(ReadSlotPacking.GPRPort1).data.resize(64)}
-            is(LogicSelectB.Slot2) { logicMod.io.b := i.slots(ReadSlotPacking.GPRPort2).data.resize(64)}
-            is(LogicSelectB.Slot3) { logicMod.io.b := i.slots(ReadSlotPacking.GPRPort3).data.resize(64)}
-            is(LogicSelectB.Imm) { logicMod.io.b := i.imm.payload}
-            is(LogicSelectB.ImmShift) { logicMod.io.b := (i.imm.payload |<< 16)}
+          switch(logicArgs.slotB) {
+            is(LogicSelectB.Slot1) {
+              logicMod.io.b := i.slots(ReadSlotPacking.GPRPort1).data.resize(64)
+            }
+            is(LogicSelectB.Slot2) {
+              logicMod.io.b := i.slots(ReadSlotPacking.GPRPort2).data.resize(64)
+            }
+            is(LogicSelectB.Slot3) {
+              logicMod.io.b := i.slots(ReadSlotPacking.GPRPort3).data.resize(64)
+            }
+            is(LogicSelectB.Imm) { logicMod.io.b := i.imm.payload }
+            is(LogicSelectB.ImmShift) {
+              logicMod.io.b := (i.imm.payload |<< 16)
+            }
           }
 
           logicMod.io.invert_a := logicArgs.invertA
@@ -180,7 +244,9 @@ class Stage1 extends PipeStage(new ReadInterface, new FunctionalUnit) {
           logicMod.io.invert_o := logicArgs.invertO
           logicMod.io.xor := logicArgs.xor
 
-          o.write_interface.slots(WriteSlotPacking.GPRPort1).data := logicMod.io.o.resized
+          o.write_interface
+            .slots(WriteSlotPacking.GPRPort1)
+            .data := logicMod.io.o.resized
         }
       }
 
@@ -225,7 +291,7 @@ class Stage1 extends PipeStage(new ReadInterface, new FunctionalUnit) {
       //   }
       // }
 
-      is(IntegerFUSub.Shifter){
+      is(IntegerFUSub.Shifter) {
         if (config.shifter) {
           val shifterMod = new Shifter(64)
 
@@ -238,18 +304,24 @@ class Stage1 extends PipeStage(new ReadInterface, new FunctionalUnit) {
 
           val shifterArgs = new ShifterArgs
           shifterArgs.assignFromBits(i.dec_data.uOps.args)
-        
+
           shifterMod.io.rs := i.slots(ReadSlotPacking.GPRPort1).data.resized
-          switch(shifterArgs.slotB){
-            is(ShifterSelectB.Slot1) { shifterMod.io.rb := i.slots(ReadSlotPacking.GPRPort1).data.resized}
-            is(ShifterSelectB.Slot2) { shifterMod.io.rb := i.slots(ReadSlotPacking.GPRPort2).data.resized}
-            is(ShifterSelectB.Slot3) { shifterMod.io.rb := i.slots(ReadSlotPacking.GPRPort3).data.resized}
-            is(ShifterSelectB.Imm) { shifterMod.io.rb := i.imm.payload}
-            is(ShifterSelectB.ZERO) { shifterMod.io.rb := 0}
+          switch(shifterArgs.slotB) {
+            is(ShifterSelectB.Slot1) {
+              shifterMod.io.rb := i.slots(ReadSlotPacking.GPRPort1).data.resized
+            }
+            is(ShifterSelectB.Slot2) {
+              shifterMod.io.rb := i.slots(ReadSlotPacking.GPRPort2).data.resized
+            }
+            is(ShifterSelectB.Slot3) {
+              shifterMod.io.rb := i.slots(ReadSlotPacking.GPRPort3).data.resized
+            }
+            is(ShifterSelectB.Imm) { shifterMod.io.rb := i.imm.payload }
+            is(ShifterSelectB.ZERO) { shifterMod.io.rb := 0 }
           }
-          switch(shifterArgs.me){
-            is(ShifterME.LSB) { shifterMod.io.me := 63}
-            is(ShifterME.LSB_32) { shifterMod.io.me := 31}
+          switch(shifterArgs.me) {
+            is(ShifterME.LSB) { shifterMod.io.me := 63 }
+            is(ShifterME.LSB_32) { shifterMod.io.me := 31 }
             is(ShifterME.ME) {
               val me = Forms.MD2.me(i.dec_data.insn)
               shifterMod.io.me := Cat(me(0), me(5 downto 1)).asUInt
@@ -257,13 +329,15 @@ class Stage1 extends PipeStage(new ReadInterface, new FunctionalUnit) {
             is(ShifterME.ME_32) {
               shifterMod.io.me := Forms.M2.ME(i.dec_data.insn).resized
             }
-            is(ShifterME.IMM_REV) { shifterMod.io.me := (63 - i.imm.payload(5 downto 0))}
-            is(ShifterME.WORD) { shifterMod.io.me := 31}
+            is(ShifterME.IMM_REV) {
+              shifterMod.io.me := (63 - i.imm.payload(5 downto 0))
+            }
+            is(ShifterME.WORD) { shifterMod.io.me := 31 }
           }
           val argsMb = ShifterMB()
           argsMb.assignFromBits(shifterArgs.mb.asBits)
-          switch(argsMb){
-            is(ShifterMB.MSB) { shifterMod.io.mb := 0}
+          switch(argsMb) {
+            is(ShifterMB.MSB) { shifterMod.io.mb := 0 }
             is(ShifterMB.MB) {
               val mb = Forms.MDS1.mb(i.dec_data.insn)
               shifterMod.io.mb := Cat(mb(0), mb(5 downto 1)).asUInt
@@ -272,7 +346,9 @@ class Stage1 extends PipeStage(new ReadInterface, new FunctionalUnit) {
               shifterMod.io.mb := Forms.M2.MB(i.dec_data.insn).resized
             }
           }
-          shifterMod.io.ra := i.slots(ReadSlotPacking.GPRPort3).data(63 downto 0)
+          shifterMod.io.ra := i
+            .slots(ReadSlotPacking.GPRPort3)
+            .data(63 downto 0)
           shifterMod.io.left := shifterArgs.left
           shifterMod.io.keep_source := shifterArgs.keep_source
           shifterMod.io.is_shift := shifterArgs.is_shift
@@ -280,11 +356,13 @@ class Stage1 extends PipeStage(new ReadInterface, new FunctionalUnit) {
           shifterMod.io.byte_op := shifterArgs.byte_op
           shifterMod.io.word_op := shifterArgs.word_op
 
-          o.write_interface.slots(WriteSlotPacking.GPRPort1).data := shifterMod.io.o.resized
+          o.write_interface
+            .slots(WriteSlotPacking.GPRPort1)
+            .data := shifterMod.io.o.resized
         }
       }
 
-      is(IntegerFUSub.Comparator){
+      is(IntegerFUSub.Comparator) {
         if (config.comparator) {
           val comparatorMod = new Comparator(64)
           // def debug_comparator(){
@@ -297,13 +375,18 @@ class Stage1 extends PipeStage(new ReadInterface, new FunctionalUnit) {
           comparatorArgs.assignFromBits(i.dec_data.uOps.args)
 
           comparatorMod.io.a := i.slots(0).data.resize(64)
-          switch(comparatorArgs.slotB){
-            is(ComparatorSelectB.Slot1) { comparatorMod.io.b := i.slots(0).data.resize(64)}
-            is(ComparatorSelectB.Slot2) { comparatorMod.io.b := i.slots(1).data.resize(64)}
-            is(ComparatorSelectB.Slot3) { comparatorMod.io.b:= i.slots(2).data.resize(64)}
-            is(ComparatorSelectB.Imm)   { comparatorMod.io.b := i.imm.payload}
+          switch(comparatorArgs.slotB) {
+            is(ComparatorSelectB.Slot1) {
+              comparatorMod.io.b := i.slots(0).data.resize(64)
+            }
+            is(ComparatorSelectB.Slot2) {
+              comparatorMod.io.b := i.slots(1).data.resize(64)
+            }
+            is(ComparatorSelectB.Slot3) {
+              comparatorMod.io.b := i.slots(2).data.resize(64)
+            }
+            is(ComparatorSelectB.Imm) { comparatorMod.io.b := i.imm.payload }
           }
-
 
           val l = Forms.D1.L(i.dec_data.insn)
           comparatorMod.io.is_64b := l
@@ -319,14 +402,18 @@ class Stage1 extends PipeStage(new ReadInterface, new FunctionalUnit) {
           cr_fields(field_select) := Cat(comparatorMod.io.o, xer_so).asUInt
 
           when(bf(0) === False) {
-            o.write_interface.slots(WriteSlotPacking.CRPort1).data := cr_fields.asBits.asUInt.resized
+            o.write_interface
+              .slots(WriteSlotPacking.CRPort1)
+              .data := cr_fields.asBits.asUInt.resized
           }.otherwise {
-            o.write_interface.slots(WriteSlotPacking.CRPort2).data := cr_fields.asBits.asUInt.resized
+            o.write_interface
+              .slots(WriteSlotPacking.CRPort2)
+              .data := cr_fields.asBits.asUInt.resized
           }
         }
       }
 
-      is(IntegerFUSub.ZCnt){
+      is(IntegerFUSub.ZCnt) {
         if (config.zcnt) {
           val zCntMod = new ZCnt
           // def debug_comparator(){
@@ -339,21 +426,22 @@ class Stage1 extends PipeStage(new ReadInterface, new FunctionalUnit) {
           zCntArgs.assignFromBits(i.dec_data.uOps.args)
 
           zCntMod.io.data := i.slots(ReadSlotPacking.GPRPort1).data(63 downto 0)
-          switch(zCntArgs.direction){
-            is(ZCntDirection.LEADING){zCntMod.io.countLeadingZeros := True}
-            is(ZCntDirection.TRAILING){zCntMod.io.countLeadingZeros := False}
+          switch(zCntArgs.direction) {
+            is(ZCntDirection.LEADING) { zCntMod.io.countLeadingZeros := True }
+            is(ZCntDirection.TRAILING) { zCntMod.io.countLeadingZeros := False }
           }
-          switch(zCntArgs.size){
-            is(ZCntSize.DWORD){zCntMod.io.isWord := False}
-            is(ZCntSize.WORD){zCntMod.io.isWord := True}
+          switch(zCntArgs.size) {
+            is(ZCntSize.DWORD) { zCntMod.io.isWord := False }
+            is(ZCntSize.WORD) { zCntMod.io.isWord := True }
           }
-          o.write_interface.slots(WriteSlotPacking.GPRPort1).data := zCntMod.io.count.resized
-
+          o.write_interface
+            .slots(WriteSlotPacking.GPRPort1)
+            .data := zCntMod.io.count.resized
 
         }
       }
 
-      is(IntegerFUSub.Popcnt){
+      is(IntegerFUSub.Popcnt) {
         if (config.zcnt) {
           val popcntMod = new PopcntB
           // def debug_comparator(){
@@ -365,88 +453,123 @@ class Stage1 extends PipeStage(new ReadInterface, new FunctionalUnit) {
           val popcntArgs = new PopcntArgs
           popcntArgs.assignFromBits(i.dec_data.uOps.args)
 
-          
-          popcntMod.io.data := i.slots(ReadSlotPacking.GPRPort1).data(63 downto 0).asBits.resized
-          switch(popcntArgs.size){
-            is(PopcntSize.DWORD){
-              o.write_interface.slots(WriteSlotPacking.GPRPort1).data := popcntMod.io.count.resized
+          popcntMod.io.data := i
+            .slots(ReadSlotPacking.GPRPort1)
+            .data(63 downto 0)
+            .asBits
+            .resized
+          switch(popcntArgs.size) {
+            is(PopcntSize.DWORD) {
+              o.write_interface
+                .slots(WriteSlotPacking.GPRPort1)
+                .data := popcntMod.io.count.resized
             }
-            is(PopcntSize.WORD){
-              o.write_interface.slots(WriteSlotPacking.GPRPort1).data := popcntMod.io.count32.resized
+            is(PopcntSize.WORD) {
+              o.write_interface
+                .slots(WriteSlotPacking.GPRPort1)
+                .data := popcntMod.io.count32.resized
             }
-            is(PopcntSize.BYTE){
-              o.write_interface.slots(WriteSlotPacking.GPRPort1).data := popcntMod.io.count8.resized
+            is(PopcntSize.BYTE) {
+              o.write_interface
+                .slots(WriteSlotPacking.GPRPort1)
+                .data := popcntMod.io.count8.resized
             }
           }
         }
       }
 
-
-      is(IntegerFUSub.Move){
+      is(IntegerFUSub.Move) {
         if (config.adder) {
-          o.write_interface.slots(0).data := 0
+          // o.write_interface.slots(0).data := 0
           o.ldst_request.ea := 0
 
-          when(i.dec_data.opcode === MnemonicEnums.mtspr) {
-            o.write_interface.slots(WriteSlotPacking.SPRPort1).data := 
-              i.slots(ReadSlotPacking.GPRPort1).data.resize(64)
-          }
-          when(i.dec_data.opcode === MnemonicEnums.mfspr) {
-            o.write_interface.slots(WriteSlotPacking.GPRPort1).data := 
-              i.slots(ReadSlotPacking.SPRPort1).data.resized
-          }
-          when(i.dec_data.opcode === MnemonicEnums.mtcrf || i.dec_data.opcode === MnemonicEnums.mtocrf) {
-            val fxm = Forms.XFX3.FXM(i.dec_data.insn)
-            val maska = Cat(fxm(7), fxm(5), fxm(3), fxm(1))
-            val maskb = Cat(fxm(6), fxm(4), fxm(2), fxm(0))
-            val datain = i.slots(ReadSlotPacking.GPRPort1).data(31 downto 0)
-            when(maska =/= 0){
-              val dataa = Cat(datain(31 downto 28), datain(23 downto 20), datain(15 downto 12), datain(7 downto 4))
-              o.write_interface.slots(WriteSlotPacking.CRPort1).data := dataa.asUInt.resized
+          switch(i.dec_data.opcode) {
+            is(MnemonicEnums.mtspr) {
+              o.write_interface.slots(WriteSlotPacking.SPRPort1).data :=
+                i.slots(ReadSlotPacking.GPRPort1).data.resize(64)
             }
-            when(maskb =/= 0){
-              val datab = Cat(datain(27 downto 24), datain(19 downto 16), datain(11 downto 8), datain(3 downto 0))
-              o.write_interface.slots(WriteSlotPacking.CRPort2).data := datab.asUInt.resized
+            is(MnemonicEnums.mfspr) {
+              o.write_interface.slots(WriteSlotPacking.GPRPort1).data :=
+                i.slots(ReadSlotPacking.SPRPort1).data.resized
             }
-          }
-          when(i.dec_data.opcode === MnemonicEnums.mfcr) {
-            val cra = i.slots(ReadSlotPacking.CRPort1).data
-            val crb = i.slots(ReadSlotPacking.CRPort2).data
-            val dataout = Vec(UInt(4 bits), 8)
-            dataout(7) := cra(15 downto 12)
-            dataout(5) := cra(11 downto 8)
-            dataout(3) := cra(7 downto 4)
-            dataout(1) := cra(3 downto 0)
-            dataout(6) := crb(15 downto 12)
-            dataout(4) := crb(11 downto 8)
-            dataout(2) := crb(7 downto 4)
-            dataout(0) := crb(3 downto 0)
-            o.write_interface.slots(WriteSlotPacking.GPRPort1).data := dataout.asBits.asUInt.resized
-          }
-          when(i.dec_data.opcode === MnemonicEnums.mfocrf) {
-            val cra = i.slots(ReadSlotPacking.CRPort1).data
-            val crb = i.slots(ReadSlotPacking.CRPort2).data
-            val dataout = Vec(UInt(4 bits), 8)
-            val fxm = Forms.XFX6.FXM(i.dec_data.insn)
-            dataout(7) := cra(15 downto 12)
-            dataout(5) := cra(11 downto 8)
-            dataout(3) := cra(7 downto 4)
-            dataout(1) := cra(3 downto 0)
-            dataout(6) := crb(15 downto 12)
-            dataout(4) := crb(11 downto 8)
-            dataout(2) := crb(7 downto 4)
-            dataout(0) := crb(3 downto 0)
-            val datamask = Vec(UInt(4 bits), 8)
-            for(i <- 0 until 8){
-              datamask(i) := 0
-              when(fxm(i)){
-                datamask(i) := 0xF
+            is(MnemonicEnums.mfxer) {
+              o.write_interface.slots(WriteSlotPacking.GPRPort1).data :=
+                i.slots(ReadSlotPacking.XERPort1).data.resized
+            }
+            is(MnemonicEnums.mtxer) {
+              o.write_interface.slots(WriteSlotPacking.XERPort1).data :=
+                i.slots(ReadSlotPacking.GPRPort1).data.resize(64)
+            }
+            is(MnemonicEnums.mtcrf, MnemonicEnums.mtocrf) {
+              val fxm = Forms.XFX3.FXM(i.dec_data.insn)
+              val maska = Cat(fxm(7), fxm(5), fxm(3), fxm(1))
+              val maskb = Cat(fxm(6), fxm(4), fxm(2), fxm(0))
+              val datain = i.slots(ReadSlotPacking.GPRPort1).data(31 downto 0)
+              when(maska =/= 0) {
+                val dataa = Cat(
+                  datain(31 downto 28),
+                  datain(23 downto 20),
+                  datain(15 downto 12),
+                  datain(7 downto 4)
+                )
+                o.write_interface
+                  .slots(WriteSlotPacking.CRPort1)
+                  .data := dataa.asUInt.resized
+              }
+              when(maskb =/= 0) {
+                val datab = Cat(
+                  datain(27 downto 24),
+                  datain(19 downto 16),
+                  datain(11 downto 8),
+                  datain(3 downto 0)
+                )
+                o.write_interface
+                  .slots(WriteSlotPacking.CRPort2)
+                  .data := datab.asUInt.resized
               }
             }
-            val data_masked = dataout.asBits.asUInt & datamask.asBits.asUInt
-            o.write_interface.slots(WriteSlotPacking.GPRPort1).data := data_masked.resized
+            is(MnemonicEnums.mfcr) {
+              val cra = i.slots(ReadSlotPacking.CRPort1).data
+              val crb = i.slots(ReadSlotPacking.CRPort2).data
+              val dataout = Vec(UInt(4 bits), 8)
+              dataout(7) := cra(15 downto 12)
+              dataout(5) := cra(11 downto 8)
+              dataout(3) := cra(7 downto 4)
+              dataout(1) := cra(3 downto 0)
+              dataout(6) := crb(15 downto 12)
+              dataout(4) := crb(11 downto 8)
+              dataout(2) := crb(7 downto 4)
+              dataout(0) := crb(3 downto 0)
+              o.write_interface
+                .slots(WriteSlotPacking.GPRPort1)
+                .data := dataout.asBits.asUInt.resized
+            }
+            is(MnemonicEnums.mfocrf) {
+              val cra = i.slots(ReadSlotPacking.CRPort1).data
+              val crb = i.slots(ReadSlotPacking.CRPort2).data
+              val dataout = Vec(UInt(4 bits), 8)
+              val fxm = Forms.XFX6.FXM(i.dec_data.insn)
+              dataout(7) := cra(15 downto 12)
+              dataout(5) := cra(11 downto 8)
+              dataout(3) := cra(7 downto 4)
+              dataout(1) := cra(3 downto 0)
+              dataout(6) := crb(15 downto 12)
+              dataout(4) := crb(11 downto 8)
+              dataout(2) := crb(7 downto 4)
+              dataout(0) := crb(3 downto 0)
+              val datamask = Vec(UInt(4 bits), 8)
+              for (i <- 0 until 8) {
+                datamask(i) := 0
+                when(fxm(i)) {
+                  datamask(i) := 0xf
+                }
+              }
+              val data_masked = dataout.asBits.asUInt & datamask.asBits.asUInt
+              o.write_interface
+                .slots(WriteSlotPacking.GPRPort1)
+                .data := data_masked.resized
+            }
           }
-
 
         }
       }
