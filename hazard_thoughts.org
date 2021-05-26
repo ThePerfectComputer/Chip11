@@ -1,0 +1,5 @@
+* New hazard detector design
+
+Build bit-vector with a bit set for each register that is in use
+Possibly pipeline
+For registers that aren't accessed often, just track usage based on register file
