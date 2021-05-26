@@ -15,6 +15,8 @@
 | just shifter                      |  34.8 | 28257 | s1                              |
 | no shifter, popcnt and zcnt       |  49.5 |       |                                 |
 | branch                            |  51.9 |       |                                 |
+| full cpu without shifter, retimed |  55.6 |       |                                 |
+| full cpu with shifter, retimed    |  45.7 |       |                                 |
 
 * Hazard Detector
 | Configuration       |  FMAx |

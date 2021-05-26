@@ -121,11 +121,11 @@ class SoCTestVerilog extends AnyFlatSpec with should.Matchers {
       adder = true,
       branch = true,
       logical = true,
-      shifter = false,
+      shifter = true,
       comparator = true,
       multiplier = false,
-      zcnt = false,
-      popcnt = false
+      zcnt = true,
+      popcnt = true
     )
     SpinalVerilog(new CPU)
     SpinalVerilog(new CPUShiftRegDUT)
