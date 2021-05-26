@@ -7,7 +7,14 @@
 | no hazard detector                | 75.81 | 11510 | decode mux                      |
 | execute, s2m pipes, no retime     | 15.26 |       | WTF                             |
 | no hazard detector, no retime     | 79.48 | 11267 | decoder                         |
-| better hazard detector            |  65.2 |       |  form_pop somehow?             |
+| better hazard detector            |  65.2 |       | form_pop somehow?               |
+| enable adder                      |  64.5 | 18579 | hazard?                         |
+| enable logical                    |  60.3 | 19268 |                                 |
+| enable comparator                 |  50.5 | 20601 | s1                              |
+| enable shifter                    | 32.26 | 31388 | s1                              |
+| just shifter                      |  34.8 | 28257 | s1                              |
+| no shifter, popcnt and zcnt       |  49.5 |       |                                 |
+| branch                            |  51.9 |       |                                 |
 
 * Hazard Detector
 | Configuration       |  FMAx |

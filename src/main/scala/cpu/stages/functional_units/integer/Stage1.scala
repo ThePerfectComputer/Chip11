@@ -465,7 +465,7 @@ class Stage1(implicit config: CPUConfig) extends PipeStage(new ReadInterface, ne
       }
 
       is(IntegerFUSub.Popcnt) {
-        if (config.zcnt) {
+        if (config.popcnt) {
           val popcntMod = new PopcntB
           // def debug_comparator(){
           //   when (pipeOutput.fire()) {
@@ -502,7 +502,7 @@ class Stage1(implicit config: CPUConfig) extends PipeStage(new ReadInterface, ne
       }
 
       is(IntegerFUSub.Move) {
-        if (config.adder) {
+        if (true) {
           // o.write_interface.slots(0).data := 0
           o.ldst_request.ea := 0
 
