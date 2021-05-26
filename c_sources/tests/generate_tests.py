@@ -317,30 +317,39 @@ mtcr 1
 
     
     def test_cmp(self):
-        self.add_code(self.id(), [
-            'li 10, -5',
-            'cmpi 0, 1, 10, -6',
-            'cmpi 1, 1, 10, -4',
-            'cmpi 2, 1, 10, -5',
-            'li 10, -5',
-            'li 11, -6',
-            'cmp 0, 1, 10, 11',
-            'li 11, -6',
-            'cmp 1, 1, 10, 11',
-            'li 11, -6',
-            'cmp 2, 1, 10, 11',
-            'li 10, -5',
-            'cmpli 0, 1, 10, -6',
-            'cmpli 1, 1, 10, -4',
-            'cmpli 2, 1, 10, -5',
-            'li 10, -5',
-            'li 11, -6',
-            'cmpl 0, 1, 10, 11',
-            'li 11, -6',
-            'cmpl 1, 1, 10, 11',
-            'li 11, -6',
-            'cmpl 2, 1, 10, 11',
-        ])
+        insns = []
+        def do_compare():
+            insns.extend([
+                'li 10, -5',
+                'cmpi 0, 1, 10, -6',
+                'cmpi 1, 1, 10, -4',
+                'cmpi 2, 1, 10, -5',
+                'li 10, -5',
+                'li 11, -6',
+                'cmp 0, 1, 10, 11',
+                'li 11, -6',
+                'cmp 1, 1, 10, 11',
+                'li 11, -6',
+                'cmp 2, 1, 10, 11',
+                'li 10, -5',
+                'cmpli 0, 1, 10, -6',
+                'cmpli 1, 1, 10, -4',
+                'cmpli 2, 1, 10, -5',
+                'li 10, -5',
+                'li 11, -6',
+                'cmpl 0, 1, 10, 11',
+                'li 11, -6',
+                'cmpl 1, 1, 10, 11',
+                'li 11, -6',
+                'cmpl 2, 1, 10, 11',
+            ])
+        do_compare()
+        # set SO bit
+        insns.extend(["lis 17, -0x8000",
+                      "sldi 17, 17, 32",
+                      "addo 19, 17, 17"])
+        do_compare()
+        self.add_code(self.id(), insns)
 
 
     def test_exts(self):

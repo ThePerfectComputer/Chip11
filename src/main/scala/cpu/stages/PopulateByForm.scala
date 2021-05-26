@@ -107,7 +107,7 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
     is(FormEnums.D1){
       o.slots(ReadSlotPacking.GPRPort1).idx := Forms.D1.RA(i.insn).resized
       o.slots(ReadSlotPacking.GPRPort1).sel := SourceSelect.GPR
-      o.slots(ReadSlotPacking.XERPort1).idx := XERMask.ALL
+      o.slots(ReadSlotPacking.XERPort1).idx := XERMask.SO
       o.slots(ReadSlotPacking.XERPort1).sel := SourceSelect.XER
 
       val bf = Forms.D1.BF(i.insn)
@@ -127,7 +127,7 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
     is(FormEnums.D2){
       o.slots(ReadSlotPacking.GPRPort1).idx := Forms.D2.RA(i.insn).resized
       o.slots(ReadSlotPacking.GPRPort1).sel := SourceSelect.GPR
-      o.slots(ReadSlotPacking.XERPort1).idx := XERMask.ALL
+      o.slots(ReadSlotPacking.XERPort1).idx := XERMask.SO
       o.slots(ReadSlotPacking.XERPort1).sel := SourceSelect.XER
       val bf = Forms.D1.BF(i.insn)
       val field_select = 3 - bf(2 downto 1)
@@ -320,8 +320,8 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
       o.slots(ReadSlotPacking.GPRPort1).sel := SourceSelect.GPR
       o.slots(ReadSlotPacking.GPRPort2).idx := Forms.X30.RB(i.insn).resized
       o.slots(ReadSlotPacking.GPRPort2).sel := SourceSelect.GPR
-      o.slots(ReadSlotPacking.SPRPort1).idx := SPREnums.XER.asBits.asUInt
-      o.slots(ReadSlotPacking.SPRPort1).sel := SourceSelect.SPR
+      o.slots(ReadSlotPacking.XERPort1).idx := XERMask.SO
+      o.slots(ReadSlotPacking.XERPort1).sel := SourceSelect.XER
       val bf = Forms.X30.BF(i.insn)
       val field_select = 3 - bf(2 downto 1)
       val mask = U(1) << field_select
@@ -357,8 +357,8 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
       o.imm.payload := Forms.X65.SH(i.insn).resized
       o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.X65.RA(i.insn).resized
       o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
-      o.write_interface.slots(WriteSlotPacking.SPRPort1).idx := SPREnums.XER.asBits.asUInt.resized
-      o.write_interface.slots(WriteSlotPacking.SPRPort1).sel := SourceSelect.SPR
+      o.write_interface.slots(WriteSlotPacking.XERPort1).idx := XERMask.CA | XERMask.CA32
+      o.write_interface.slots(WriteSlotPacking.XERPort1).sel := SourceSelect.XER
       when(Forms.X62.Rc(i.insn) === True){
         addRC()
       }
@@ -501,8 +501,8 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
       o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.XO1.RT(i.insn).resized
       o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
       when(Forms.XO1.OE(i.insn) === True){
-        o.write_interface.slots(WriteSlotPacking.SPRPort1).idx := SPREnums.XER.asBits.asUInt
-        o.write_interface.slots(WriteSlotPacking.SPRPort1).sel := SourceSelect.SPR
+        o.write_interface.slots(WriteSlotPacking.XERPort1).idx := XERMask.SO | XERMask.OV | XERMask.OV32
+        o.write_interface.slots(WriteSlotPacking.XERPort1).sel := SourceSelect.XER
       }
       when(Forms.XO1.Rc(i.insn) === True){
         addRC()
@@ -514,6 +514,10 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
           o.slots(ReadSlotPacking.XERPort1).sel := SourceSelect.XER
           o.write_interface.slots(WriteSlotPacking.XERPort1).idx := XERMask.CA | XERMask.CA32
           o.write_interface.slots(WriteSlotPacking.XERPort1).sel := SourceSelect.XER
+          when(Forms.XO1.OE(i.insn) === True){
+            o.write_interface.slots(WriteSlotPacking.XERPort1).idx := XERMask.SO | XERMask.OV | XERMask.OV32 | XERMask.CA | XERMask.CA32
+            o.write_interface.slots(WriteSlotPacking.XERPort1).sel := SourceSelect.XER
+          }
         }
       }
     }

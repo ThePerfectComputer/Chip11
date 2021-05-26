@@ -43,7 +43,8 @@ class Stage1 extends PipeStage(new ReadInterface, new FunctionalUnit) {
   val io = new Bundle {
     val bc = out(new BranchControl)
   }
-  o.so_bit := i.slots(ReadSlotPacking.XERPort1).data(XERBits.SO)
+  val so_bit = i.slots(ReadSlotPacking.XERPort1).data(XERBits.SO)
+  o.so_bit := so_bit
 
   // initialize output data
   o.write_interface := i.write_interface
@@ -410,12 +411,10 @@ class Stage1 extends PipeStage(new ReadInterface, new FunctionalUnit) {
           val bf = Forms.D1.BF(i.dec_data.insn)
           val field_select = 3 - bf(2 downto 1)
 
-          val cr_fields = Vec(UInt(4 bits), 4)
+          val cr_fields = Vec(UInt(4 bits), 4).keep()
 
-          val xer = i.slots(ReadSlotPacking.SPRPort1).data
-          val xer_so = xer(31)
           cr_fields := cr_fields.getZero
-          cr_fields(field_select) := Cat(comparatorMod.io.o, xer_so).asUInt
+          cr_fields(field_select) := Cat(comparatorMod.io.o, so_bit).asUInt
 
           when(bf(0) === False) {
             o.write_interface
