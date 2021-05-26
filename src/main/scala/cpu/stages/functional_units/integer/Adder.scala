@@ -28,11 +28,14 @@ class Adder(val wid: Int) extends Component {
   val adder_b = UInt((wid+1) bits)
   val adder_o = UInt((wid+2) bits)
 
+  val a_inv = UInt(wid bits)
+
   when(io.invert_a) {
-    adder_a := Cat(~io.a, io.carry_in).asUInt
+    a_inv := ~io.a
   }.otherwise {
-    adder_a := Cat(io.a, io.carry_in).asUInt
+    a_inv := io.a
   }
+  adder_a := Cat(a_inv, io.carry_in).asUInt
   adder_b := Cat(io.b, io.carry_in).asUInt
 
   // Add, and widen for carry bit
@@ -40,8 +43,8 @@ class Adder(val wid: Int) extends Component {
 
   io.o := adder_o(wid downto 1)
   io.carry_out := adder_o(wid+1)
-  io.carry_out_32 := (io.a(32) ^ io.b(32)) =/= io.o(32)
+  io.carry_out_32 := (a_inv(32) ^ io.b(32)) =/= io.o(32)
   // sign change
-  io.overflow_out := (io.a(wid-1) === io.b(wid-1)) && (io.o(wid-1) =/= io.a(wid-1))
-  io.overflow_out_32 := (io.a(31) === io.b(31)) && (io.o(31) =/= io.a(31))
+  io.overflow_out := (a_inv(wid-1) === io.b(wid-1)) && (io.o(wid-1) =/= a_inv(wid-1))
+  io.overflow_out_32 := (a_inv(31) === io.b(31)) && (io.o(31) =/= a_inv(31))
 }

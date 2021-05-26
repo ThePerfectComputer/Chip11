@@ -215,6 +215,18 @@ mtcr 1
                 ])
         self.add_code(self.id(), insns)
 
+    def test_overflow(self):
+        insns = ["lis 17, -0x8000"]
+        for insn in ["add", "addc", "adde", "subf", "subfc", "subfe"]:
+            insns.extend([
+                 f"{insn}o 18, 17, 17",
+                 "mfxer 21",
+                "mtxer 0"])
+        self.add_code(self.id(), insns)
+
+
+            
+
     def test_dot(self):
         insns = []
         for dot in ['', '.']:

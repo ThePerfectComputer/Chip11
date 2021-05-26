@@ -446,13 +446,18 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
     }
     is(FormEnums.XFX4){
       val rs = Forms.XFX4.RS(i.insn)
-      val spr_fields = Forms.XFX4.spr(i.insn)
-      val spr = UInt(10 bits)
-      spr := Cat(spr_fields(5 downto 0), spr_fields(9 downto 6)).asUInt
-      o.slots(ReadSlotPacking.GPRPort1).idx := rs.resized
-      o.slots(ReadSlotPacking.GPRPort1).sel := SourceSelect.GPR
-      o.write_interface.slots(WriteSlotPacking.SPRPort1).idx := spr.resized
-      o.write_interface.slots(WriteSlotPacking.SPRPort1).sel := SourceSelect.SPR
+      when(spr === SPREnums.XER.asBits.asUInt){
+        o.dec_data.opcode := MnemonicEnums.mtxer
+        o.slots(ReadSlotPacking.GPRPort1).idx := rs.resized
+        o.slots(ReadSlotPacking.GPRPort1).sel := SourceSelect.GPR
+        o.write_interface.slots(WriteSlotPacking.XERPort1).idx := XERMask.ALL
+        o.write_interface.slots(WriteSlotPacking.XERPort1).sel := SourceSelect.XER
+      }.otherwise{
+        o.slots(ReadSlotPacking.GPRPort1).idx := rs.resized
+        o.slots(ReadSlotPacking.GPRPort1).sel := SourceSelect.GPR
+        o.write_interface.slots(WriteSlotPacking.SPRPort1).idx := spr.resized
+        o.write_interface.slots(WriteSlotPacking.SPRPort1).sel := SourceSelect.SPR
+      }
     }
 
     is(FormEnums.XFX5){
