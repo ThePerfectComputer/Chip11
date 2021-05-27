@@ -31,12 +31,60 @@ class Shifter(val wid: Int) extends Component {
 
   val shifter_source = UInt((wid) bits)
   val shifter_amount = UInt(6 bits)
+  val shifter_rotated = UInt(64 bits)
 
   val shifter_backing = UInt(wid bits)
   val shifter_mask = UInt(wid bits)
   val shifter_mb = UInt(6 bits)
   val shifter_me = UInt(6 bits)
 
+
+  val word_source = UInt((wid / 2) bits)
+  val word_rotated = UInt((wid / 2) bits)
+  val word_rotmask = UInt((wid / 2) bits)
+  val rotmask = UInt(wid bits)
+
+  word_rotmask := 0
+  word_source := 0
+  word_rotated := 0
+  rotmask := 0
+
+  val pre_shifter_amount = UInt(2 bits)
+  pre_shifter_amount := shifter_amount(1 downto 0)
+  shifter_rotated := shifter_source
+  when(pre_shifter_amount === 0) {
+    shifter_rotated := shifter_source
+    when(io.pipedata.word_op) {
+      shifter_rotated := Cat(
+        shifter_source(31 downto 0),
+        shifter_source(31 downto 0)
+      ).asUInt
+    }
+  }
+    .elsewhen(io.pipedata.word_op) {
+      word_source := shifter_source(31 downto 0)
+      when(io.pipedata.left) {
+        word_rotmask := (~(U(0, 32 bits)) |<< pre_shifter_amount)
+        word_rotated := ((word_source |<< pre_shifter_amount) & word_rotmask) | ((word_source |>> (32 - pre_shifter_amount)) & ~word_rotmask)
+        //word_rotated := Cat(shifter_source(63, 32+(pre_shifter_amount%32)), shifter_source(31+(pre_shifter_amount%32), 32))
+      }.otherwise {
+        word_rotmask := ~(U(0, 32 bits)) |>> pre_shifter_amount
+        word_rotated := ((word_source |>> pre_shifter_amount) & word_rotmask) | ((word_source |<< (32 - pre_shifter_amount)) & ~word_rotmask)
+        //word_rotated := Cat(shifter_source(63, 64-(pre_shifter_amount%32)), shifter_source(63-(pre_shifter_amount%32), 32))
+      }
+      shifter_rotated := Cat(word_rotated, word_rotated).asUInt
+    }
+    .otherwise {
+      when(io.pipedata.left) {
+        rotmask := ~(U(0, 64 bits)) |<< pre_shifter_amount
+        shifter_rotated := ((shifter_source |<< pre_shifter_amount) & rotmask) | ((shifter_source |>> (64 - pre_shifter_amount)) & ~rotmask)
+        //shifter_rotated := Cat(shifter_source(63, pre_shifter_amount), shifter_source(pre_shifter_amount-1, 0))
+      }.otherwise {
+        rotmask := ~(U(0, 64 bits)) |>> pre_shifter_amount
+        shifter_rotated := ((shifter_source |>> pre_shifter_amount) & rotmask) | ((shifter_source |<< (64 - pre_shifter_amount)) & ~rotmask)
+        //shifter_rotated := Cat(shifter_source(63, 64-pre_shifter_amount), shifter_source(63-pre_shifter_amount, 0))
+      }
+    }
 
   when(io.keep_source) {
     shifter_backing := io.ra
@@ -134,7 +182,7 @@ class Shifter(val wid: Int) extends Component {
   io.pipedata.shifter_mask := shifter_mask
   io.pipedata.shifter_backing := shifter_backing
   io.pipedata.shifter_amount := io.rb(6 downto 0)
-  io.pipedata.shifter_source := shifter_source
+  io.pipedata.shifter_source := shifter_rotated
   io.pipedata.left := io.left
   io.pipedata.word_op := io.word_op
   io.pipedata.is_shift := io.is_shift
@@ -159,9 +207,9 @@ class ShifterStage2 extends Component {
 
 
   when(io.pipedata.word_op) {
-    shifter_amount := io.pipedata.shifter_amount(4 downto 0).resized
+    shifter_amount := Cat(io.pipedata.shifter_amount(4 downto 2), U(0, 2 bits)).asUInt.resized
   }.otherwise {
-    shifter_amount := io.pipedata.shifter_amount(5 downto 0).resized
+    shifter_amount := Cat(io.pipedata.shifter_amount(5 downto 2), U(0, 2 bits)).asUInt
   }
 
   val word_source = UInt((wid / 2) bits)
@@ -175,12 +223,6 @@ class ShifterStage2 extends Component {
   rotmask := 0
   when(shifter_amount === 0) {
     shifter_rotated := shifter_source
-    when(io.pipedata.word_op) {
-      shifter_rotated := Cat(
-        shifter_source(31 downto 0),
-        shifter_source(31 downto 0)
-      ).asUInt
-    }
   }
     .elsewhen(io.pipedata.word_op) {
       word_source := shifter_source(31 downto 0)
