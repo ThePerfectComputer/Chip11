@@ -328,6 +328,10 @@ class Stage1(implicit config: CPUConfig) extends PipeStage(new ReadInterface, ne
       is(IntegerFUSub.Shifter) {
         if (config.shifter) {
           val shifterMod = new Shifter(64)
+          val shifterData = new ShifterPipeData
+          shifterData := shifterMod.io.pipedata
+
+          o.additionalData(shifterData.getBitsWidth-1 downto 0).assignFromBits(shifterData.asBits)
 
           // def debug_shifter(){
           //   when (pipeOutput.fire()) {
@@ -389,18 +393,6 @@ class Stage1(implicit config: CPUConfig) extends PipeStage(new ReadInterface, ne
           shifterMod.io.is_arithmetic := shifterArgs.is_arithmetic
           shifterMod.io.byte_op := shifterArgs.byte_op
           shifterMod.io.word_op := shifterArgs.word_op
-          when(shifterArgs.is_arithmetic){
-            o.write_interface
-              .slots(WriteSlotPacking.XERPort1)
-              .data(XERBits.CA) := shifterMod.io.carry_out
-            o.write_interface
-              .slots(WriteSlotPacking.XERPort1)
-              .data(XERBits.CA32) := shifterMod.io.carry_out
-          }
-
-          o.write_interface
-            .slots(WriteSlotPacking.GPRPort1)
-            .data := shifterMod.io.o.resized
         }
       }
 

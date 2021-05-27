@@ -55,6 +55,25 @@ class Stage2 extends PipeStage(new ExecuteData, new ExecuteData) {
               .slots(WriteSlotPacking.XERPort1)
               .idx & ((~XERMask.SO) & XERMask.ALL)
         }
+        is(IntegerFUSub.Shifter){
+
+          val shifterMod2 = new ShifterStage2
+          val shifterData = new ShifterPipeData
+          shifterData.assignFromBits(i.additionalData)
+          shifterMod2.io.pipedata := shifterData
+          when(shifterData.is_arithmetic){
+            o.write_interface
+              .slots(WriteSlotPacking.XERPort1)
+              .data(XERBits.CA) := shifterMod2.io.carry_out
+            o.write_interface
+              .slots(WriteSlotPacking.XERPort1)
+              .data(XERBits.CA32) := shifterMod2.io.carry_out
+          }
+
+          o.write_interface
+            .slots(WriteSlotPacking.GPRPort1)
+            .data := shifterMod2.io.o.resized
+        }
 
       }
     }
