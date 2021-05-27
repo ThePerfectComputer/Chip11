@@ -86,31 +86,39 @@ class Stage1(implicit config: CPUConfig) extends PipeStage(new ReadInterface, ne
 
       is(IntegerFUSub.Adder) {
         if (config.adder) {
-          val adderMod = new Adder(64)
+          val adderMod = new Adder(32)
+
+          val adderData = new AdderPipeData
 
           val adderArgs = new AdderArgs
           adderArgs.assignFromBits(i.dec_data.uOps.args)
 
-          adderMod.io.a := i.slots(ReadSlotPacking.GPRPort1).data.resize(64)
+          val addA = UInt(64 bits)
+          val addB = UInt(64 bits)
+
+          adderMod.io.a := addA(31 downto 0)
+          adderMod.io.b := addB(31 downto 0)
+
+          addA := i.slots(ReadSlotPacking.GPRPort1).data.resize(64)
           switch(adderArgs.slotB) {
             is(AdderSelectB.Slot1) {
-              adderMod.io.b := i.slots(ReadSlotPacking.GPRPort1).data.resize(64)
+              addB := i.slots(ReadSlotPacking.GPRPort1).data.resize(64)
             }
             is(AdderSelectB.Slot2) {
-              adderMod.io.b := i.slots(ReadSlotPacking.GPRPort2).data.resize(64)
+              addB := i.slots(ReadSlotPacking.GPRPort2).data.resize(64)
             }
             is(AdderSelectB.Slot3) {
-              adderMod.io.b := i.slots(ReadSlotPacking.GPRPort3).data.resize(64)
+              addB := i.slots(ReadSlotPacking.GPRPort3).data.resize(64)
             }
-            is(AdderSelectB.Imm) { adderMod.io.b := i.imm.payload }
+            is(AdderSelectB.Imm) { addB := i.imm.payload }
             is(AdderSelectB.ImmShift) {
-              adderMod.io.b := (i.imm.payload |<< 16)
+              addB := (i.imm.payload |<< 16)
             }
             is(AdderSelectB.ImmShift2) {
-              adderMod.io.b := (i.imm.payload |<< 2)
+              addB := (i.imm.payload |<< 2)
             }
-            is(AdderSelectB.ZERO) { adderMod.io.b := 0 }
-            is(AdderSelectB.NEGATIVE_ONE) { adderMod.io.b := ~U(0, 64 bits) }
+            is(AdderSelectB.ZERO) { addB := 0 }
+            is(AdderSelectB.NEGATIVE_ONE) { addB := ~U(0, 64 bits) }
           }
           switch(adderArgs.cIn) {
             is(AdderCarryIn.ZERO) { adderMod.io.carry_in := False }
@@ -124,31 +132,39 @@ class Stage1(implicit config: CPUConfig) extends PipeStage(new ReadInterface, ne
           }
           adderMod.io.invert_a := adderArgs.invertA
 
+          adderData.upperA := addA(63 downto 32)
+          adderData.upperB := addB(63 downto 32)
+          adderData.carry_32 := adderMod.io.carry_out
+          adderData.overflow_32 := adderMod.io.overflow_out
+          adderData.invert_a := adderArgs.invertA
+
+          o.additionalData(adderData.getBitsWidth - 1 downto 0).assignFromBits(adderData.asBits)
+
           o.write_interface
             .slots(WriteSlotPacking.GPRPort1)
             .data := adderMod.io.o.resized
+          // o.write_interface
+          //   .slots(WriteSlotPacking.XERPort1)
+          //   .data(XERBits.CA) := adderMod.io.carry_out
           o.write_interface
             .slots(WriteSlotPacking.XERPort1)
-            .data(XERBits.CA) := adderMod.io.carry_out
+            .data(XERBits.CA32) := adderMod.io.carry_out
+          // o.write_interface
+          //   .slots(WriteSlotPacking.XERPort1)
+          //   .data(XERBits.OV) := adderMod.io.overflow_out
           o.write_interface
             .slots(WriteSlotPacking.XERPort1)
-            .data(XERBits.CA32) := adderMod.io.carry_out_32
-          o.write_interface
-            .slots(WriteSlotPacking.XERPort1)
-            .data(XERBits.OV) := adderMod.io.overflow_out
-          o.write_interface
-            .slots(WriteSlotPacking.XERPort1)
-            .data(XERBits.OV32) := adderMod.io.overflow_out_32
-          o.ldst_request.ea := adderMod.io.o
+            .data(XERBits.OV32) := adderMod.io.overflow_out
+          o.ldst_request.ea := adderMod.io.o.resized
 
           // SO handling
-          o.write_interface
-            .slots(WriteSlotPacking.XERPort1)
-            .data(XERBits.SO) := adderMod.io.overflow_out
-          when(!adderMod.io.overflow_out){
-            o.write_interface.slots(WriteSlotPacking.XERPort1).idx :=
-              i.write_interface.slots(WriteSlotPacking.XERPort1).idx & ((~XERMask.SO) & XERMask.ALL)
-          }
+          // o.write_interface
+          //   .slots(WriteSlotPacking.XERPort1)
+          //   .data(XERBits.SO) := adderMod.io.overflow_out
+          // when(!adderMod.io.overflow_out){
+          //   o.write_interface.slots(WriteSlotPacking.XERPort1).idx :=
+          //     i.write_interface.slots(WriteSlotPacking.XERPort1).idx & ((~XERMask.SO) & XERMask.ALL)
+          // }
 
           def debug_adder() {
             // when (pipeOutput.fire()) {
