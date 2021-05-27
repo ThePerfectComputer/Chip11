@@ -7,6 +7,10 @@ import isa.MnemonicEnums
 import spinal.core._
 import spinal.lib._
 
+object PartialShift{
+  val bits = 2
+}
+
 // contains implementation of POWER shifter class which is derived from a Chisel module
 
 class Shifter(val wid: Int) extends Component {
@@ -49,8 +53,8 @@ class Shifter(val wid: Int) extends Component {
   word_rotated := 0
   rotmask := 0
 
-  val pre_shifter_amount = UInt(2 bits)
-  pre_shifter_amount := shifter_amount(1 downto 0)
+  val pre_shifter_amount = UInt(PartialShift.bits bits)
+  pre_shifter_amount := shifter_amount(PartialShift.bits-1 downto 0)
   shifter_rotated := shifter_source
   when(pre_shifter_amount === 0) {
     shifter_rotated := shifter_source
@@ -207,9 +211,9 @@ class ShifterStage2 extends Component {
 
 
   when(io.pipedata.word_op) {
-    shifter_amount := Cat(io.pipedata.shifter_amount(4 downto 2), U(0, 2 bits)).asUInt.resized
+    shifter_amount := Cat(io.pipedata.shifter_amount(4 downto PartialShift.bits), U(0, PartialShift.bits bits)).asUInt.resized
   }.otherwise {
-    shifter_amount := Cat(io.pipedata.shifter_amount(5 downto 2), U(0, 2 bits)).asUInt
+    shifter_amount := Cat(io.pipedata.shifter_amount(5 downto PartialShift.bits), U(0, PartialShift.bits bits)).asUInt
   }
 
   val word_source = UInt((wid / 2) bits)

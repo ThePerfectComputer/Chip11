@@ -1,22 +1,26 @@
 * CPU
-| Configuration                     |  FMax |  LUTs | critical path stage             |
-|-----------------------------------+-------+-------+---------------------------------|
-| Default(master)                   | 35.47 | 26732 | s1                              |
-| execute disabled                  | 52.88 | 11443 | ready path from write->form_pop |
-| execute disabled, extra s2m pipes | 57.63 | 14488 | hazard detector                 |
-| no hazard detector                | 75.81 | 11510 | decode mux                      |
-| execute, s2m pipes, no retime     | 15.26 |       | WTF                             |
-| no hazard detector, no retime     | 79.48 | 11267 | decoder                         |
-| better hazard detector            |  65.2 |       | form_pop somehow?               |
-| enable adder                      |  64.5 | 18579 | hazard?                         |
-| enable logical                    |  60.3 | 19268 |                                 |
-| enable comparator                 |  50.5 | 20601 | s1                              |
-| enable shifter                    | 32.26 | 31388 | s1                              |
-| just shifter                      |  34.8 | 28257 | s1                              |
-| no shifter, popcnt and zcnt       |  49.5 |       |                                 |
-| branch                            |  51.9 |       |                                 |
-| full cpu without shifter, retimed |  55.6 |       |                                 |
-| full cpu with shifter, retimed    |  45.7 |       |                                 |
+| Configuration                                 |  FMax |  LUTs | critical path stage             |
+|-----------------------------------------------+-------+-------+---------------------------------|
+| Default(master)                               | 35.47 | 26732 | s1                              |
+| execute disabled                              | 52.88 | 11443 | ready path from write->form_pop |
+| execute disabled, extra s2m pipes             | 57.63 | 14488 | hazard detector                 |
+| no hazard detector                            | 75.81 | 11510 | decode mux                      |
+| execute, s2m pipes, no retime                 | 15.26 |       | WTF                             |
+| no hazard detector, no retime                 | 79.48 | 11267 | decoder                         |
+| better hazard detector                        |  65.2 |       | form_pop somehow?               |
+| enable adder                                  |  64.5 | 18579 | hazard?                         |
+| enable logical                                |  60.3 | 19268 |                                 |
+| enable comparator                             |  50.5 | 20601 | s1                              |
+| enable shifter                                | 32.26 | 31388 | s1                              |
+| just shifter                                  |  34.8 | 28257 | s1                              |
+| no shifter, popcnt and zcnt                   |  49.5 |       |                                 |
+| branch                                        |  51.9 |       |                                 |
+| full cpu without shifter, retimed             |  55.6 |       |                                 |
+| full cpu with shifter, retimed                |  45.7 |       |                                 |
+| pipelined shifter                             | 47.34 |       |                                 |
+| pipelined shifter with partial shift (2 bits) | 51.98 |       |                                 |
+| pipelined shifter with partial shift (3 bits) | 40.1 |       |                                 |
+| pipelined shifter with partial shift (1 bits) | 47.9 |       |                                 |
 
 * Hazard Detector
 | Configuration       |  FMAx |
