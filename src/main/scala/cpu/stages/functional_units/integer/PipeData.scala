@@ -25,3 +25,4 @@ class ShifterPipeData extends Bundle {
   val is_arithmetic = Bool
 
 }
+

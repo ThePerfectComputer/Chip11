@@ -39,7 +39,8 @@ import isa.{ReadSlotPacking, WriteSlotPacking, SPREnums, MnemonicEnums, Forms}
 import spinal.core._
 import spinal.lib._
 
-class Stage1(implicit config: CPUConfig) extends PipeStage(new ReadInterface, new ExecuteData) {
+class Stage1(implicit config: CPUConfig)
+    extends PipeStage(new ReadInterface, new ExecuteData) {
   val io = new Bundle {
     val bc = out(new BranchControl)
   }
@@ -78,7 +79,6 @@ class Stage1(implicit config: CPUConfig) extends PipeStage(new ReadInterface, ne
   when(i.dec_data.uOps.functional_unit === FunctionalUnit.INTEGER) {
 
     //if (cpu.debug.debug_stage1) {when (pipeOutput.fire()) {printf("IFU STAGE1:\n")}}
-
 
     // also need a switch statement here to select particular subfunction
     // to route to
@@ -138,7 +138,8 @@ class Stage1(implicit config: CPUConfig) extends PipeStage(new ReadInterface, ne
           adderData.overflow_32 := adderMod.io.overflow_out
           adderData.invert_a := adderArgs.invertA
 
-          o.additionalData(adderData.getBitsWidth - 1 downto 0).assignFromBits(adderData.asBits)
+          o.additionalData(adderData.getBitsWidth - 1 downto 0)
+            .assignFromBits(adderData.asBits)
 
           o.write_interface
             .slots(WriteSlotPacking.GPRPort1)
@@ -331,7 +332,8 @@ class Stage1(implicit config: CPUConfig) extends PipeStage(new ReadInterface, ne
           val shifterData = new ShifterPipeData
           shifterData := shifterMod.io.pipedata
 
-          o.additionalData(shifterData.getBitsWidth-1 downto 0).assignFromBits(shifterData.asBits)
+          o.additionalData(shifterData.getBitsWidth - 1 downto 0)
+            .assignFromBits(shifterData.asBits)
 
           // def debug_shifter(){
           //   when (pipeOutput.fire()) {
@@ -475,7 +477,7 @@ class Stage1(implicit config: CPUConfig) extends PipeStage(new ReadInterface, ne
 
       is(IntegerFUSub.Popcnt) {
         if (config.popcnt) {
-          val popcntMod = new PopcntB
+          val popcntMod = new PopcntStage1
           // def debug_comparator(){
           //   when (pipeOutput.fire()) {
           //     printf(p"\tCOMP. IO: ${comparatorMod.io}\n")
@@ -490,23 +492,10 @@ class Stage1(implicit config: CPUConfig) extends PipeStage(new ReadInterface, ne
             .data(63 downto 0)
             .asBits
             .resized
-          switch(popcntArgs.size) {
-            is(PopcntSize.DWORD) {
-              o.write_interface
-                .slots(WriteSlotPacking.GPRPort1)
-                .data := popcntMod.io.count.resized
-            }
-            is(PopcntSize.WORD) {
-              o.write_interface
-                .slots(WriteSlotPacking.GPRPort1)
-                .data := popcntMod.io.count32.resized
-            }
-            is(PopcntSize.BYTE) {
-              o.write_interface
-                .slots(WriteSlotPacking.GPRPort1)
-                .data := popcntMod.io.count8.resized
-            }
-          }
+
+          o.write_interface
+            .slots(WriteSlotPacking.GPRPort1)
+            .data := popcntMod.io.count8.resized
         }
       }
 

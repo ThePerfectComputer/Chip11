@@ -8,7 +8,7 @@ import spinal.core._
 import spinal.lib._
 
 object PartialShift{
-  val bits = 0
+  val bits = 1
 }
 
 // contains implementation of POWER shifter class which is derived from a Chisel module

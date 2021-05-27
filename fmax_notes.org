@@ -26,7 +26,11 @@
 | pipelined shifter with partial shift (1 bits) no retiming | 51.89 |       |                                 |
 | full cpu, pipelined partial 1 bits                        |  47.8 |       |                                 |
 | full cpu, pipelined partial 0 bits                        |  48.9 |       |                                 |
-| full cpu, pipelined partial 2 bits                        | 46.74 |       |                                 |
+| full cpu, pipelined partial 2 bits                        | 46.74 |       | popcnt                          |
+| just popcnt                                               | 58.04 |       |                                 |
+| just popcnt                                               | 61.59 |       |                                 |
+| full cpu, pipelined partial 0 bits                        |  47.2 |       | s2 adder                        |
+| full cpu, pipelined partial 1 bits                        |  47.0 |       | hazard                          |
 
 * Hazard Detector
 | Configuration       |  FMAx |
