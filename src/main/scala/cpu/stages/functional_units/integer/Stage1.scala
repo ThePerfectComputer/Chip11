@@ -39,7 +39,7 @@ import isa.{ReadSlotPacking, WriteSlotPacking, SPREnums, MnemonicEnums, Forms}
 import spinal.core._
 import spinal.lib._
 
-class Stage1(implicit config: CPUConfig) extends PipeStage(new ReadInterface, new FunctionalUnit) {
+class Stage1(implicit config: CPUConfig) extends PipeStage(new ReadInterface, new ExecuteData) {
   val io = new Bundle {
     val bc = out(new BranchControl)
   }
@@ -51,6 +51,7 @@ class Stage1(implicit config: CPUConfig) extends PipeStage(new ReadInterface, ne
   o.dec_data := i.dec_data
   o.ldst_request := i.ldst_request
   o.compare := i.compare
+  o.additionalData := 0
 
   // if necessary, load up the ldst_request with popuated data from the read stage
   // TODO: determine whether this should be done here, in read, or somewhere else

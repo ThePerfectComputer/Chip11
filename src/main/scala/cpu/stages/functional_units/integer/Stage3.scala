@@ -12,7 +12,7 @@ import spinal.core._
 
 import cpu.debug.debug_stage3
 
-class Stage3 extends PipeStage(new FunctionalUnit, new FunctionalUnitExit) {
+class Stage3 extends PipeStage(new ExecuteData, new FunctionalUnitExit) {
   o.write_interface := i.write_interface
   o.ldst_request := i.ldst_request
   o.cia := i.dec_data.cia
