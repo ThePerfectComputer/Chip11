@@ -4,7 +4,7 @@ import cpu.interfaces.{FunctionalUnit, FunctionalUnitExit}
 import cpu.interfaces.regfile.Slot
 import util.{PipeStage}
 import cpu.shared.{XERBits, XERMask}
-import cpu.interfaces.regfile.{SourceSelect}
+import isa.{SourceSelect}
 import isa.{WriteSlotPacking}
 
 import spinal.core._

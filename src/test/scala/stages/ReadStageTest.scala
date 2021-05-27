@@ -14,7 +14,8 @@ import util._
 
 import cpu.interfaces.{ReadInterface, WriteInterface, DecoderData, LoadStoreRequest}
 import cpu.shared.{Regfile, RegfileMasked, BRAMMultiRegfile}
-import cpu.interfaces.regfile.{SourceSelect, ReadPort}
+import cpu.interfaces.regfile.{ReadPort}
+import isa.{SourceSelect}
 
 class ReadStageWrapper extends PipeStage(new ReadInterface, new ReadInterface){
 

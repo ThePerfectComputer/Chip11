@@ -1,7 +1,7 @@
 package cpu.shared
 import spinal.core._
 
-import cpu.interfaces.regfile.{SourceSelect}
+import isa.{SourceSelect}
 
 class RegfileInfo(
   val numRegisters: Int,
@@ -44,5 +44,5 @@ object RegfileInfo {
   map += (SourceSelect.BHRB -> BHRB)
   map += (SourceSelect.FPSCR -> FPSCR)
   map += (SourceSelect.XER -> XER)
-  def apply(sel: SourceSelect.E) = map.get(sel)
+  def apply(sel: SourceSelect.E) : RegfileInfo = map(sel)
 }

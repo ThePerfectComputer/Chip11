@@ -1,9 +1,8 @@
 package cpu.stages
 import cpu.{CPUConfig}
 
-import cpu.interfaces.regfile.{SourceSelect}
 import cpu.interfaces.{DecoderData, ReadInterface, FetchOutput}
-import isa.{FormEnums, MnemonicEnums, ISAPairings}
+import isa.{FormEnums, MnemonicEnums, ISAPairings, SourceSelect}
 import cpu.uOps.functional_units.Integer.{IntegerFUSub, AdderSelectB, AdderCarryIn, AdderArgs, LogicSelectB, LogicArgs, MultiplierSelectB, MultiplierArgs, BranchArgs, ShifterSelectB, ShifterME, ShifterMB, ShifterArgs, ComparatorArgs, ComparatorSelectB}
 import util.{PipeStage, PipeData}
 

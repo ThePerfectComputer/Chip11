@@ -1,6 +1,6 @@
 package cpu.stages
 
-import cpu.interfaces.regfile.{SourceSelect}
+import isa.{SourceSelect}
 import cpu.interfaces.{DecoderData, ReadInterface}
 import cpu.shared.memory_state.{TransactionType, TransactionSize}
 import cpu.shared.{XERMask}

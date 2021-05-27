@@ -1,6 +1,5 @@
 package cpu.stages
 
-import cpu.interfaces.regfile.{SourceSelect}
 import cpu.interfaces.{FetchOutput, DecoderData, MultiDecoderData, ReadInterface}
 import cpu.uOps.{FunctionalUnit, UOpsMapping}
 import cpu.{CPUConfig}
@@ -8,7 +7,7 @@ import cpu.{CPUConfig}
 import util.{PipeStage, PipeData, Mux1H}
 
 import isa.{MnemonicEnums, FormEnums, SPREnums, Forms}
-import isa.{ISAPairings, InstructionInfo}
+import isa.{ISAPairings, InstructionInfo, SourceSelect}
 
 import spinal.core._
 import spinal.lib.{MuxOH}

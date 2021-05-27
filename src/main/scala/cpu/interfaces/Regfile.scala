@@ -1,6 +1,7 @@
 package cpu.interfaces.regfile
 
 import cpu.shared.{RegfileInfo, RegfileInfoMasked}
+import isa.{SourceSelect}
 import spinal.core._
 import spinal.lib._
 
@@ -61,23 +62,3 @@ class WritePortMasked(override val idxWidth: Int, override val dataWidth: Int, v
   override def clone = new WritePortMasked(idxWidth, dataWidth, maskWidth)
 }
 
-// Register file selector for source 1-2
-object SourceSelect extends SpinalEnum {
-  val NONE     = newElement()
-  val GPR      = newElement()
-  val FPR      = newElement()
-
-  val VR       = newElement()
-  val VSR      = newElement()
-
-  val COMBINED = newElement()
-
-  val SPR      = newElement()
-
-  val FPSCR    = newElement()
-  val CRA      = newElement()
-  val CRB      = newElement()
-
-  val BHRB     = newElement()
-  val XER      = newElement()
-}

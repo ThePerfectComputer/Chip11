@@ -2,7 +2,7 @@ package cpu.stages
 
 import cpu.debug.debug_read
 import cpu.shared.{RegfileInfo}
-import cpu.interfaces.regfile.{SourceSelect, ReadPort}
+import cpu.interfaces.regfile.{ReadPort}
 import cpu.interfaces.{
   ReadInterface,
   WriteInterface,
@@ -12,7 +12,7 @@ import cpu.interfaces.{
 import util._
 import spinal.core._
 import spinal.lib.{master}
-import isa.ReadSlotPacking
+import isa.{SourceSelect, ReadSlotPacking}
 
 import scala.collection._
 

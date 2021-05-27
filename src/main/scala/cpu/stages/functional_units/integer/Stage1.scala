@@ -4,7 +4,7 @@ import cpu.{CPUConfig}
 import cpu.debug.debug_fetch_request
 import cpu.interfaces.{ReadInterface, FunctionalUnit, BranchControl}
 
-import cpu.interfaces.regfile.{SourceSelect}
+import isa.{SourceSelect}
 import cpu.shared.memory_state.{
   TransactionStatus,
   TransactionType,

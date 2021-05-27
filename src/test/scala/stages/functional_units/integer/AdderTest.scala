@@ -1,6 +1,5 @@
 package cpu.stages.functional_units.integer
 
-import cpu.interfaces.regfile.{SourceSelect}
 import cpu.interfaces.{ReadInterface, FunctionalUnit}
 import isa.{FormEnums, MnemonicEnums, ISAPairings}
 import cpu.uOps.functional_units.Integer.{IntegerFUSub, AdderSelectB, AdderCarryIn, AdderArgs, LogicSelectB, LogicArgs, MultiplierSelectB, MultiplierArgs, BranchArgs, ShifterSelectB, ShifterME, ShifterMB, ShifterArgs, ComparatorArgs, ComparatorSelectB}

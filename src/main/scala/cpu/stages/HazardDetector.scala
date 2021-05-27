@@ -1,9 +1,9 @@
 package cpu.stages
 
 import cpu.interfaces.{ReadInterface, WriteInterface, WriteStageInterface}
-import cpu.interfaces.regfile.{SourceSelect, Slot}
+import cpu.interfaces.regfile.{Slot}
 import util.{PipeStage}
-import isa.MnemonicEnums
+import isa.{MnemonicEnums, SourceSelect}
 
 import spinal.core._
 import spinal.lib._

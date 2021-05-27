@@ -19,7 +19,8 @@ import cpu.interfaces.{
   LoadStoreRequest
 }
 import cpu.shared.{Regfile, RegfileMasked, BRAMMultiRegfile}
-import cpu.interfaces.regfile.{SourceSelect, ReadPort}
+import cpu.interfaces.regfile.{ReadPort}
+import isa.{SourceSelect}
 
 class WriteStageTest extends AnyFlatSpec with should.Matchers {
   behavior of "WriteStage"

@@ -1,12 +1,12 @@
 package cpu.stages
 
-import cpu.interfaces.regfile.{SourceSelect, WritePort, WritePortMasked}
+import cpu.interfaces.regfile.{WritePort, WritePortMasked}
 import cpu.interfaces.WriteStageInterface
 import cpu.shared.{RegfileInfo}
 import util._
 import spinal.core._
 import spinal.lib.{master}
-import isa.WriteSlotPacking
+import isa.{WriteSlotPacking, SourceSelect}
 
 import scala.collection._
 
