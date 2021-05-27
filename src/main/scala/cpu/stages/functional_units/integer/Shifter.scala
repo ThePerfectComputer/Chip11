@@ -26,8 +26,8 @@ class Shifter(val wid: Int) extends Component {
 
     val o = out UInt (wid bits)
     val carry_out = out Bool ()
-    val cr0_out = out UInt (3 bits)
   }
+
   val shifter_source = UInt((wid) bits)
   val shifter_amount = UInt(6 bits)
 
@@ -175,13 +175,5 @@ class Shifter(val wid: Int) extends Component {
   }
   shifter_o := (shifter_rotated & shifter_mask) | (shifter_backing & ~shifter_mask)
   io.o := shifter_o
-
-  when(shifter_o.asSInt > 0) {
-    io.cr0_out := 2
-  }.elsewhen(shifter_o.asSInt < 0) {
-    io.cr0_out := 4
-  }.otherwise {
-    io.cr0_out := 1
-  }
 
 }

@@ -121,7 +121,7 @@ class SoCTestVerilog extends AnyFlatSpec with should.Matchers {
       adder = true,
       branch = false,
       logical = false,
-      shifter = false,
+      shifter = true,
       comparator = false,
       multiplier = false,
       zcnt = false,
