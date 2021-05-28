@@ -462,7 +462,7 @@ mtcr 1
         self.generate_test_load(1, "lbz")
         
 
-    def test_store1(self):
+    def generate_test_store(self, nbytes, load_insn, store_insn):
         insns = []
         data = []
         data_items = 8
@@ -470,66 +470,27 @@ mtcr 1
                       "ori 17, 17, ld_data@l"])
         for i in range(data_items):
             source = self.rand.randint(1, 8)
-            insns.append(f"stb {source}, {i}(17)")
+            insns.append(f"{store_insn} {source}, {i*nbytes}(17)")
         for i in range(data_items):
-            insns.append(f"lbz 18, {i}(17)")
+            insns.append(f"{load_insn} 18, {i*nbytes}(17)")
 
         data.append("ld_data:")
+        directive = data_directives[nbytes]
         for i in range(data_items):
-            data.append(f".byte 0")
+            data.append(f"{directive} 0")
         self.add_code(self.id(), insns, data)
+
+    def test_store1(self):
+        self.generate_test_store(1, "lbz", "stb")
 
     def test_store8(self):
-        insns = []
-        data = []
-        data_items = 8
-        insns.extend(["lis 17, ld_data@h",
-                      "ori 17, 17, ld_data@l"])
-        for i in range(data_items):
-            source = self.rand.randint(1, 8)
-            insns.append(f"std {source}, {i*8}(17)")
-        for i in range(data_items):
-            insns.append(f"ld 18, {i*8}(17)")
-
-        data.append("ld_data:")
-        for i in range(data_items):
-            data.append(f".quad 0")
-        self.add_code(self.id(), insns, data)
+        self.generate_test_store(8, "ld", "std")
 
     def test_store4(self):
-        insns = []
-        data = []
-        data_items = 8
-        insns.extend(["lis 17, ld_data@h",
-                      "ori 17, 17, ld_data@l"])
-        for i in range(data_items):
-            source = self.rand.randint(1, 8)
-            insns.append(f"stw {source}, {i*4}(17)")
-        for i in range(data_items):
-            insns.append(f"lwz 18, {i*4}(17)")
-
-        data.append("ld_data:")
-        for i in range(data_items):
-            data.append(f".long 0")
-        self.add_code(self.id(), insns, data)
+        self.generate_test_store(4, "lwz", "stw")
 
     def test_store2(self):
-        insns = []
-        data = []
-        data_items = 8
-        insns.extend(["lis 17, ld_data@h",
-                      "ori 17, 17, ld_data@l"])
-        for i in range(data_items):
-            source = self.rand.randint(1, 8)
-            insns.append(f"sth {source}, {i*2}(17)")
-        for i in range(data_items):
-            insns.append(f"lhz 18, {i*2}(17)")
-
-        data.append("ld_data:")
-        for i in range(data_items):
-            data.append(f".short 0")
-        self.add_code(self.id(), insns, data)
-
+        self.generate_test_store(2, "lhz", "sth")
 
 if __name__ == '__main__':
     unittest.main()
