@@ -111,6 +111,32 @@ class Stage2(implicit config: CPUConfig)
           }
         }
       }
+      is(IntegerFUSub.Comparator) {
+        if (config.comparator) {
+          val comparatorMod = new ComparatorStage2
+          val comparatorData = new ComparatorPipeData
+          comparatorData.assignFromBits(i.additionalData)
+          comparatorMod.io.pipedata := comparatorData
+
+          val bf = Forms.D1.BF(i.dec_data.insn)
+          val field_select = 3 - bf(2 downto 1)
+
+          val cr_fields = Vec(UInt(4 bits), 4).keep()
+
+          cr_fields := cr_fields.getZero
+          cr_fields(field_select) := comparatorMod.io.o
+
+          when(bf(0) === False) {
+            o.write_interface
+              .slots(WriteSlotPacking.CRPort1)
+              .data := cr_fields.asBits.asUInt.resized
+          }.otherwise {
+            o.write_interface
+              .slots(WriteSlotPacking.CRPort2)
+              .data := cr_fields.asBits.asUInt.resized
+          }
+        }
+      }
     }
   }
 }

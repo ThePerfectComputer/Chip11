@@ -26,3 +26,12 @@ class ShifterPipeData extends Bundle {
 
 }
 
+
+class ComparatorPipeData extends Bundle {
+  val a = UInt(32 bits)
+  val b = UInt(32 bits)
+  val carry = Bool
+  val lower_is_not_equal = Bool
+  val logical = Bool
+  val so_bit = Bool
+}

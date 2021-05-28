@@ -401,6 +401,11 @@ class Stage1(implicit config: CPUConfig)
       is(IntegerFUSub.Comparator) {
         if (config.comparator) {
           val comparatorMod = new Comparator(64)
+
+          val comparatorData = new ComparatorPipeData
+          comparatorData := comparatorMod.io.pipedata
+          o.additionalData(comparatorData.getBitsWidth - 1 downto 0)
+            .assignFromBits(comparatorData.asBits)
           // def debug_comparator(){
           //   when (pipeOutput.fire()) {
           //     printf(p"\tCOMP. IO: ${comparatorMod.io}\n")
@@ -427,23 +432,7 @@ class Stage1(implicit config: CPUConfig)
           val l = Forms.D1.L(i.dec_data.insn)
           comparatorMod.io.is_64b := l
           comparatorMod.io.logical := comparatorArgs.logical
-          val bf = Forms.D1.BF(i.dec_data.insn)
-          val field_select = 3 - bf(2 downto 1)
-
-          val cr_fields = Vec(UInt(4 bits), 4).keep()
-
-          cr_fields := cr_fields.getZero
-          cr_fields(field_select) := Cat(comparatorMod.io.o, so_bit).asUInt
-
-          when(bf(0) === False) {
-            o.write_interface
-              .slots(WriteSlotPacking.CRPort1)
-              .data := cr_fields.asBits.asUInt.resized
-          }.otherwise {
-            o.write_interface
-              .slots(WriteSlotPacking.CRPort2)
-              .data := cr_fields.asBits.asUInt.resized
-          }
+          comparatorMod.io.so_bit := so_bit
         }
       }
 
