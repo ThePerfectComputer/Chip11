@@ -707,7 +707,29 @@ mtcr 1
             "add 18, 18, 17",
             "bdnz loop"])
 
+    def test_branch_link(self):
+        self.add_code(self.id(), [
+            "li 17, 1",
+            "bl 1f",
+            "b 2f",
+            "1: li 17, 2",
+            "mflr 18",
+            "blr",
+            "2: li 17, 3"])
+    def test_branch_to_ctr(self):
+        self.add_code(self.id(), [
+            "lis 17, 1f@h",
+            "ori 17, 17, 1f@l",
+            "mtctr 17",
+            "bctrl",
+            "b 2f",
+            "li 18, 1",
+            "1: li 19, 2",
+            "mflr 17",
+            "blr",
+            "2: li 18, 5"])
 
+            
 
 
 if __name__ == '__main__':
