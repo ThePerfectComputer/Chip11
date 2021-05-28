@@ -265,7 +265,26 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface) {
     }
 
     // TODO revisit these and come up with a resolution for e.g. std and stdu sharing a form but having different R/W behavior
-    is(FormEnums.DS3) {}
+    is(FormEnums.DS3) {
+      // printf("Populating fields for form DS5\n")
+      val ra = Forms.DS3.RA(i.insn)
+      when(ra =/= 0) {
+        o.slots(ReadSlotPacking.GPRPort1).idx := ra.resized
+        o.slots(ReadSlotPacking.GPRPort1).sel := SourceSelect.GPR
+      }
+      val rs = Forms.DS3.RS(i.insn)
+      o.slots(ReadSlotPacking.GPRPort2).idx := rs.resized
+      o.slots(ReadSlotPacking.GPRPort2).sel := SourceSelect.GPR
+
+      o.imm.valid := True
+      o.imm.payload := Forms.DS3.DS(i.insn).resize(64).asUInt
+      // handle doubleword load to RT, without update
+      when(i.opcode === MnemonicEnums.std) {
+        o.ldst_request.req_type := TransactionType.STORE
+        o.ldst_request.size := TransactionSize.DOUBLEWORD
+        o.ldst_request.store_src_slot := 1
+      }
+    }
     is(FormEnums.DS5) {
       // printf("Populating fields for form DS5\n")
       val ra = Forms.DS5.RA(i.insn)

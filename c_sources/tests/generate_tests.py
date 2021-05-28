@@ -390,8 +390,11 @@ mtcr 1
                     'nor. 12, 10, 11',
                     'or. 12, 10, 11',
                     'orc. 12, 10, 11',
+                    'xor. 12, 10, 11',
                     f'ori 12, 10, {j+2}',
-                    f'oris 12, 10, {j+2}'
+                    f'oris 12, 10, {j+2}',
+                    f'xori 12, 10, {j+2}',
+                    f'xoris 12, 10, {j+2}'
                 ])
         self.add_code(self.id(), insns)
 
@@ -479,6 +482,39 @@ mtcr 1
             data.append(f".byte 0x{rand:x}")
         self.add_code(self.id(), insns, data)
 
+    def test_store1(self):
+        insns = []
+        data = []
+        data_items = 8
+        insns.extend(["lis 17, ld_data@h",
+                      "ori 17, 17, ld_data@l"])
+        for i in range(data_items):
+            source = self.rand.randint(1, 8)
+            insns.append(f"stb {source}, {i}(17)")
+        for i in range(data_items):
+            insns.append(f"lbz 18, {i}(17)")
+
+        data.append("ld_data:")
+        for i in range(data_items):
+            data.append(f".byte 0")
+        self.add_code(self.id(), insns, data)
+
+    def test_store8(self):
+        insns = []
+        data = []
+        data_items = 8
+        insns.extend(["lis 17, ld_data@h",
+                      "ori 17, 17, ld_data@l"])
+        for i in range(data_items):
+            source = self.rand.randint(1, 8)
+            insns.append(f"std {source}, {i*8}(17)")
+        for i in range(data_items):
+            insns.append(f"ld 18, {i*8}(17)")
+
+        data.append("ld_data:")
+        for i in range(data_items):
+            data.append(f".quad 0")
+        self.add_code(self.id(), insns, data)
 
 
 if __name__ == '__main__':
