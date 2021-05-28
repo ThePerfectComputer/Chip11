@@ -33,6 +33,9 @@
 | full cpu, pipelined partial 1 bits                        |  47.0 |       | hazard                          |
 | post rebase                                               | 47.59 |       | comparator                      |
 | no comparator                                             | 52.54 |       | hazard? not sure                |
+| pipelined comparator                                      | 49.08 |       | branch                          |
+| pipelined add,cmp,logic, nothing else                     | 66.91 |       |                                 |
+| pipelined comparator, no branch                           | 55.79 |       | shifter                         |
 
 * Hazard Detector
 | Configuration       |  FMAx |
