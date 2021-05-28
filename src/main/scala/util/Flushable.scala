@@ -133,7 +133,8 @@ class Flushable[T <: Data](private val gen: HardType[T])
       rValid := False
       ret.valid := False
     }
-    this.flush := rFlush
+    // TODO figure out how to register flush
+    this.flush := ret.flush
     ret
   }
 
