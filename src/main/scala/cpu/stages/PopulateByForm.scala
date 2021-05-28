@@ -169,7 +169,7 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface) {
       o.slots(ReadSlotPacking.GPRPort2).sel := SourceSelect.GPR
       o.imm.valid := True
       o.imm.payload := Forms.D5.D(i.insn).resize(64).asUInt
-      switch(i.opcode){
+      switch(i.opcode) {
         is(MnemonicEnums.stb) {
           o.ldst_request.req_type := TransactionType.STORE
           o.ldst_request.size := TransactionSize.BYTE
@@ -181,7 +181,9 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface) {
           o.ldst_request.store_src_slot := 1
           // Write for updated address
           o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := ra.resized
-          o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
+          o.write_interface
+            .slots(WriteSlotPacking.GPRPort1)
+            .sel := SourceSelect.GPR
         }
         is(MnemonicEnums.stw) {
           o.ldst_request.req_type := TransactionType.STORE
@@ -194,7 +196,9 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface) {
           o.ldst_request.store_src_slot := 1
           // Write for updated address
           o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := ra.resized
-          o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
+          o.write_interface
+            .slots(WriteSlotPacking.GPRPort1)
+            .sel := SourceSelect.GPR
         }
         is(MnemonicEnums.sth) {
           o.ldst_request.req_type := TransactionType.STORE
@@ -207,7 +211,9 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface) {
           o.ldst_request.store_src_slot := 1
           // Write for updated address
           o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := ra.resized
-          o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
+          o.write_interface
+            .slots(WriteSlotPacking.GPRPort1)
+            .sel := SourceSelect.GPR
         }
       }
     }
@@ -259,7 +265,9 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface) {
           o.ldst_request.load_dest_slot := WriteSlotPacking.GPRPort2
           // Write slot for update register
           o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := ra.resized
-          o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
+          o.write_interface
+            .slots(WriteSlotPacking.GPRPort1)
+            .sel := SourceSelect.GPR
         }
         is(MnemonicEnums.lwz) {
           o.ldst_request.req_type := TransactionType.LOAD
@@ -272,7 +280,9 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface) {
           o.ldst_request.load_dest_slot := WriteSlotPacking.GPRPort2
           // Write slot for update register
           o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := ra.resized
-          o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
+          o.write_interface
+            .slots(WriteSlotPacking.GPRPort1)
+            .sel := SourceSelect.GPR
         }
         is(MnemonicEnums.lhz) {
           o.ldst_request.req_type := TransactionType.LOAD
@@ -285,7 +295,9 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface) {
           o.ldst_request.load_dest_slot := WriteSlotPacking.GPRPort2
           // Write slot for update register
           o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := ra.resized
-          o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
+          o.write_interface
+            .slots(WriteSlotPacking.GPRPort1)
+            .sel := SourceSelect.GPR
         }
       }
     }
@@ -350,7 +362,9 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface) {
         o.ldst_request.store_src_slot := 1
         // Write for updated address
         o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := ra.resized
-        o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
+        o.write_interface
+          .slots(WriteSlotPacking.GPRPort1)
+          .sel := SourceSelect.GPR
       }
     }
     is(FormEnums.DS5) {
@@ -376,8 +390,10 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface) {
         o.ldst_request.req_type := TransactionType.LOAD
         o.ldst_request.size := TransactionSize.DOUBLEWORD
         o.ldst_request.load_dest_slot := WriteSlotPacking.GPRPort2
-      o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := ra.resized
-      o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
+        o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := ra.resized
+        o.write_interface
+          .slots(WriteSlotPacking.GPRPort1)
+          .sel := SourceSelect.GPR
       }
     }
 
@@ -573,15 +589,61 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface) {
       }
       o.slots(ReadSlotPacking.GPRPort2).idx := Forms.X77.RB(i.insn).resized
       o.slots(ReadSlotPacking.GPRPort2).sel := SourceSelect.GPR
+      val rt = Forms.X77.RT(i.insn).resized
 
-      o.write_interface.slots(ReadSlotPacking.GPRPort1).idx := Forms.X77
-        .RT(i.insn)
-        .resized
-      o.write_interface.slots(ReadSlotPacking.GPRPort1).sel := SourceSelect.GPR
-      o.write_interface.slots(ReadSlotPacking.GPRPort2).idx := Forms.X77
-        .RA(i.insn)
-        .resized
-      o.write_interface.slots(ReadSlotPacking.GPRPort2).sel := SourceSelect.GPR
+      switch(i.opcode) {
+        import MnemonicEnums._
+        is(lbzx, lbzux) {
+          o.write_interface.slots(ReadSlotPacking.GPRPort2).idx := rt.resized
+          o.write_interface
+            .slots(ReadSlotPacking.GPRPort2)
+            .sel := SourceSelect.GPR
+
+          o.ldst_request.req_type := TransactionType.LOAD
+          o.ldst_request.size := TransactionSize.BYTE
+          o.ldst_request.load_dest_slot := WriteSlotPacking.GPRPort2
+        }
+        is(lwzx, lwzux) {
+          o.write_interface.slots(ReadSlotPacking.GPRPort2).idx := rt.resized
+          o.write_interface
+            .slots(ReadSlotPacking.GPRPort2)
+            .sel := SourceSelect.GPR
+
+          o.ldst_request.req_type := TransactionType.LOAD
+          o.ldst_request.size := TransactionSize.WORD
+          o.ldst_request.load_dest_slot := WriteSlotPacking.GPRPort2
+        }
+        is(lhzx, lhzux) {
+          o.write_interface.slots(ReadSlotPacking.GPRPort2).idx := rt.resized
+          o.write_interface
+            .slots(ReadSlotPacking.GPRPort2)
+            .sel := SourceSelect.GPR
+
+          o.ldst_request.req_type := TransactionType.LOAD
+          o.ldst_request.size := TransactionSize.HALFWORD
+          o.ldst_request.load_dest_slot := WriteSlotPacking.GPRPort2
+        }
+        is(ldx, ldux) {
+          o.write_interface.slots(ReadSlotPacking.GPRPort2).idx := rt.resized
+          o.write_interface
+            .slots(ReadSlotPacking.GPRPort2)
+            .sel := SourceSelect.GPR
+
+          o.ldst_request.req_type := TransactionType.LOAD
+          o.ldst_request.size := TransactionSize.DOUBLEWORD
+          o.ldst_request.load_dest_slot := WriteSlotPacking.GPRPort2
+        }
+      }
+
+      switch(i.opcode) {
+        import MnemonicEnums._
+        is(lbzux, lhzux, lwzux, ldux) {
+          o.write_interface.slots(ReadSlotPacking.GPRPort1).idx := ra.resized
+          o.write_interface
+            .slots(ReadSlotPacking.GPRPort1)
+            .sel := SourceSelect.GPR
+        }
+      }
     }
 
     is(FormEnums.XFX2, FormEnums.XFX3) {

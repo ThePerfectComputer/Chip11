@@ -546,5 +546,31 @@ mtcr 1
 
     def test_store8_update(self):
         self.generate_test_store_update(8, "ldu", "stdu")
+
+    def generate_test_load_indexed(self, nbytes, load_insn):
+        insns = []
+        data = []
+        data_items = 8
+        insns.extend(["lis 17, ld_data@h",
+                      "ori 17, 17, ld_data@l",
+                      "li 18, 0"])
+        for i in range(data_items):
+            insns.append(f"{load_insn} 19, 17, 18")
+            insns.append(f"addi 18, 18, {nbytes}")
+        data.append("ld_data:")
+        directive = data_directives[nbytes]
+        for i in range(data_items):
+            rand = self.rand.randint(0, 1<<(8*nbytes)-1)
+            data.append(f"{directive} 0x{rand:x}")
+        self.add_code(self.id(), insns, data)
+
+    def test_load1_indexed(self):
+        self.generate_test_load_indexed(1, "lbzx")
+    def test_load2_indexed(self):
+        self.generate_test_load_indexed(2, "lhzx")
+    def test_load4_indexed(self):
+        self.generate_test_load_indexed(4, "lwzx")
+    def test_load8_indexed(self):
+        self.generate_test_load_indexed(8, "ldx")
 if __name__ == '__main__':
     unittest.main()
