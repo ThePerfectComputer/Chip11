@@ -648,7 +648,7 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface) {
           o.ldst_request.size := TransactionSize.BYTE
           o.ldst_request.load_dest_slot := WriteSlotPacking.GPRPort2
         }
-        is(lwzx, lwzux) {
+        is(lwzx, lwzux, lwax, lwaux) {
           o.write_interface.slots(ReadSlotPacking.GPRPort2).idx := rt.resized
           o.write_interface
             .slots(ReadSlotPacking.GPRPort2)
@@ -658,7 +658,7 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface) {
           o.ldst_request.size := TransactionSize.WORD
           o.ldst_request.load_dest_slot := WriteSlotPacking.GPRPort2
         }
-        is(lhzx, lhzux) {
+        is(lhzx, lhzux, lhax, lhaux) {
           o.write_interface.slots(ReadSlotPacking.GPRPort2).idx := rt.resized
           o.write_interface
             .slots(ReadSlotPacking.GPRPort2)
@@ -679,10 +679,16 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface) {
           o.ldst_request.load_dest_slot := WriteSlotPacking.GPRPort2
         }
       }
+      switch(i.opcode) {
+        import MnemonicEnums._
+        is(lhax, lhaux, lwax, lwaux) {
+          o.ldst_request.arithmetic := True
+        }
+      }
 
       switch(i.opcode) {
         import MnemonicEnums._
-        is(lbzux, lhzux, lwzux, ldux) {
+        is(lbzux, lhzux, lwzux, ldux, lwaux, lhaux) {
           o.write_interface.slots(ReadSlotPacking.GPRPort1).idx := ra.resized
           o.write_interface
             .slots(ReadSlotPacking.GPRPort1)

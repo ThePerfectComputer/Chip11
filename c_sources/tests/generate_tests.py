@@ -576,7 +576,11 @@ mtcr 1
         self.generate_test_load_indexed(1, "lbzx")
     def test_load2_indexed(self):
         self.generate_test_load_indexed(2, "lhzx")
+    def test_load2_indexed_arithmetic(self):
+        self.generate_test_load_indexed(2, "lhax")
     def test_load4_indexed(self):
+        self.generate_test_load_indexed(4, "lwzx")
+    def test_load4_indexed_arithmetic(self):
         self.generate_test_load_indexed(4, "lwzx")
     def test_load8_indexed(self):
         self.generate_test_load_indexed(8, "ldx")
@@ -650,8 +654,12 @@ mtcr 1
         self.generate_test_load_update_indexed(1, "lbzux")
     def test_load2_update_indexed(self):
         self.generate_test_load_update_indexed(2, "lhzux")
+    def test_load2_update_indexed_arithmetic(self):
+        self.generate_test_load_update_indexed(2, "lhaux")
     def test_load4_update_indexed(self):
         self.generate_test_load_update_indexed(4, "lwzux")
+    def test_load4_update_indexed_arithmetic(self):
+        self.generate_test_load_update_indexed(4, "lwaux")
     def test_load8_update_indexed(self):
         self.generate_test_load_update_indexed(8, "ldux")
 
