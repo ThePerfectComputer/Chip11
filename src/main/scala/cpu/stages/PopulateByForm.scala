@@ -162,7 +162,7 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface) {
     is(FormEnums.D5) {
       val ra = Forms.D5.RA(i.insn)
       when(ra =/= 0) {
-        o.slots(ReadSlotPacking.GPRPort1).idx := Forms.D5.RA(i.insn).resized
+        o.slots(ReadSlotPacking.GPRPort1).idx := ra.resized
         o.slots(ReadSlotPacking.GPRPort1).sel := SourceSelect.GPR
       }
       o.slots(ReadSlotPacking.GPRPort2).idx := Forms.D5.RS(i.insn).resized
@@ -170,20 +170,44 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface) {
       o.imm.valid := True
       o.imm.payload := Forms.D5.D(i.insn).resize(64).asUInt
       switch(i.opcode){
-        is(MnemonicEnums.stb, MnemonicEnums.stbu) {
+        is(MnemonicEnums.stb) {
           o.ldst_request.req_type := TransactionType.STORE
           o.ldst_request.size := TransactionSize.BYTE
           o.ldst_request.store_src_slot := 1
         }
-        is(MnemonicEnums.stw, MnemonicEnums.stwu) {
+        is(MnemonicEnums.stbu) {
+          o.ldst_request.req_type := TransactionType.STORE
+          o.ldst_request.size := TransactionSize.BYTE
+          o.ldst_request.store_src_slot := 1
+          // Write for updated address
+          o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := ra.resized
+          o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
+        }
+        is(MnemonicEnums.stw) {
           o.ldst_request.req_type := TransactionType.STORE
           o.ldst_request.size := TransactionSize.WORD
           o.ldst_request.store_src_slot := 1
         }
-        is(MnemonicEnums.sth, MnemonicEnums.sthu) {
+        is(MnemonicEnums.stwu) {
+          o.ldst_request.req_type := TransactionType.STORE
+          o.ldst_request.size := TransactionSize.WORD
+          o.ldst_request.store_src_slot := 1
+          // Write for updated address
+          o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := ra.resized
+          o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
+        }
+        is(MnemonicEnums.sth) {
           o.ldst_request.req_type := TransactionType.STORE
           o.ldst_request.size := TransactionSize.HALFWORD
           o.ldst_request.store_src_slot := 1
+        }
+        is(MnemonicEnums.sthu) {
+          o.ldst_request.req_type := TransactionType.STORE
+          o.ldst_request.size := TransactionSize.HALFWORD
+          o.ldst_request.store_src_slot := 1
+          // Write for updated address
+          o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := ra.resized
+          o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
         }
       }
     }

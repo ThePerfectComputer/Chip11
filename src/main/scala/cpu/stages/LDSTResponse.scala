@@ -25,7 +25,7 @@ class LDSTResponse extends PipeStage(new FunctionalUnitExit, new WriteStageInter
   o.write_interface := i.write_interface
   o.cia := i.cia
 
-  when(io.status === TransactionStatus.DONE) {
+  when(io.status === TransactionStatus.DONE && ldst_req.req_type === TransactionType.LOAD) {
     for((slot, i) <- o.write_interface.slots.zipWithIndex) {
       when(ldst_req.load_dest_slot === i) {
         slot.data := io.data.resized
