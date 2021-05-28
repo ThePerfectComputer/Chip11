@@ -302,7 +302,7 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface) {
 
     // TODO revisit these and come up with a resolution for e.g. std and stdu sharing a form but having different R/W behavior
     is(FormEnums.DS3) {
-      // printf("Populating fields for form DS5\n")
+      // printf("Populating fields for form DS3\n")
       val ra = Forms.DS3.RA(i.insn)
       when(ra =/= 0) {
         o.slots(ReadSlotPacking.GPRPort1).idx := ra.resized
@@ -328,17 +328,24 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface) {
         o.slots(ReadSlotPacking.GPRPort1).idx := ra.resized
         o.slots(ReadSlotPacking.GPRPort1).sel := SourceSelect.GPR
       }
-      o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.DS5
+      o.write_interface.slots(WriteSlotPacking.GPRPort2).idx := Forms.DS5
         .RT(i.insn)
         .resized
-      o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
+      o.write_interface.slots(WriteSlotPacking.GPRPort2).sel := SourceSelect.GPR
       o.imm.valid := True
       o.imm.payload := Forms.DS5.DS(i.insn).resize(64).asUInt
       // handle doubleword load to RT, without update
       when(i.opcode === MnemonicEnums.ld) {
         o.ldst_request.req_type := TransactionType.LOAD
         o.ldst_request.size := TransactionSize.DOUBLEWORD
-        o.ldst_request.load_dest_slot := 0
+        o.ldst_request.load_dest_slot := WriteSlotPacking.GPRPort2
+      }
+      when(i.opcode === MnemonicEnums.ldu) {
+        o.ldst_request.req_type := TransactionType.LOAD
+        o.ldst_request.size := TransactionSize.DOUBLEWORD
+        o.ldst_request.load_dest_slot := WriteSlotPacking.GPRPort2
+      o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := ra.resized
+      o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
       }
     }
 

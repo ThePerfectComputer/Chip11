@@ -33,6 +33,7 @@ class UOpsMapping extends Component {
     addze_o__dot_ -> out(uOps(INTEGER, IntegerFUSub.Adder, AdderArgs(AdderSelectB.ZERO, AdderCarryIn.CA, false))),
     // Loadstore instructions use the adder to calculate effective addresses
     ld            -> out(uOps(INTEGER, IntegerFUSub.Adder, AdderArgs(AdderSelectB.ImmShift2, AdderCarryIn.ZERO, false))),
+    ldu            -> out(uOps(INTEGER, IntegerFUSub.Adder, AdderArgs(AdderSelectB.ImmShift2, AdderCarryIn.ZERO, false))),
     lwz           -> out(uOps(INTEGER, IntegerFUSub.Adder, AdderArgs(AdderSelectB.Imm, AdderCarryIn.ZERO, false))),
     lwzu           -> out(uOps(INTEGER, IntegerFUSub.Adder, AdderArgs(AdderSelectB.Imm, AdderCarryIn.ZERO, false))),
     lhz           -> out(uOps(INTEGER, IntegerFUSub.Adder, AdderArgs(AdderSelectB.Imm, AdderCarryIn.ZERO, false))),

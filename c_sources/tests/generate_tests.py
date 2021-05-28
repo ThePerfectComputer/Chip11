@@ -513,6 +513,8 @@ mtcr 1
         self.generate_test_load_update(2, "lhzu")
     def test_load4_update(self):
         self.generate_test_load_update(4, "lwzu")
+    def test_load8_update(self):
+        self.generate_test_load_update(8, "ldu")
 
 if __name__ == '__main__':
     unittest.main()
