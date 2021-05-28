@@ -7,7 +7,7 @@ object IndentationManager {
   }
 }
 class IndentationManager(val spacesPerLevel: Int=4){
-  val tabs = " ".repeat(spacesPerLevel)
+  val tabs = " " * spacesPerLevel
 
   def getIndent(levels:Int=1)(body: IndentationManager=> Unit) : Unit ={
     val newManager = new IndentationManager(spacesPerLevel)
