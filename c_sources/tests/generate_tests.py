@@ -674,5 +674,19 @@ mtcr 1
 
     def test_store8_update_indexed(self):
         self.generate_test_store_update_indexed(8, "ldux", "stdux")
+
+    def test_branch_unconditional(self):
+        self.add_code(self.id(), [
+            "b 1f",
+            "li 17, 0x100 # should not happen",
+            "1: li 18, 0x200",
+            "b 3f",
+            "2: li 18, 0x4129",
+            "b 4f",
+            "li 17, 0x1234",
+            "3: b 2b",
+            "4: li 18, 0xfff"])
+
+        
 if __name__ == '__main__':
     unittest.main()
