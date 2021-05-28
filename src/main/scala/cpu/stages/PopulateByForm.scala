@@ -578,6 +578,15 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface) {
           o.ldst_request.store_src_slot := ReadSlotPacking.GPRPort3
         }
       }
+      switch(i.opcode) {
+        import MnemonicEnums._
+        is(stbux, sthux, stwux, stdux) {
+          o.write_interface.slots(ReadSlotPacking.GPRPort1).idx := ra.resized
+          o.write_interface
+            .slots(ReadSlotPacking.GPRPort1)
+            .sel := SourceSelect.GPR
+        }
+      }
     }
 
     is(FormEnums.X68) {

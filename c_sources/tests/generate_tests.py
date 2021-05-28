@@ -601,5 +601,62 @@ mtcr 1
         self.generate_test_store_indexed(4, "lwz", "stwx")
     def test_store8_indexed(self):
         self.generate_test_store_indexed(8, "ld", "stdx")
+
+    def generate_test_load_update_indexed(self, nbytes, load_insn):
+        insns = []
+        data = []
+        data_items = 8
+        insns.extend([f"lis 17, (ld_data-{nbytes})@h",
+                      f"ori 17, 17, (ld_data-{nbytes})@l",
+                      f"li 19, {nbytes}"])
+        for i in range(data_items):
+            insns.append(f"{load_insn} 18, 17, 19")
+        data.append("ld_data:")
+        directive = data_directives[nbytes]
+        for i in range(data_items):
+            rand = self.rand.randint(0, 1<<(8*nbytes)-1)
+            data.append(f"{directive} 0x{rand:x}")
+        self.add_code(self.id(), insns, data)
+
+    def generate_test_store_update_indexed(self, nbytes, load_insn, store_insn):
+        insns = []
+        data = []
+        data_items = 8
+        insns.extend([f"lis 17, (ld_data-{nbytes})@h",
+                      f"ori 17, 17, (ld_data-{nbytes})@l",
+                      "mr 19, 17",
+                      f"li 20, {nbytes}"])
+        for i in range(data_items):
+            source = self.rand.randint(1, 8)
+            insns.append(f"{store_insn} {source}, 17, 20")
+        for i in range(data_items):
+            insns.append(f"{load_insn} 18, 19, 20")
+
+        data.append("ld_data:")
+        directive = data_directives[nbytes]
+        for i in range(data_items):
+            data.append(f"{directive} 0")
+        self.add_code(self.id(), insns, data)
+
+    def test_load1_update_indexed(self):
+        self.generate_test_load_update_indexed(1, "lbzux")
+    def test_load2_update_indexed(self):
+        self.generate_test_load_update_indexed(2, "lhzux")
+    def test_load4_update_indexed(self):
+        self.generate_test_load_update_indexed(4, "lwzux")
+    def test_load8_update_indexed(self):
+        self.generate_test_load_update_indexed(8, "ldux")
+
+    def test_store1_update_indexed(self):
+        self.generate_test_store_update_indexed(1, "lbzux", "stbux")
+
+    def test_store2_update_indexed(self):
+        self.generate_test_store_update_indexed(2, "lhzux", "sthux")
+
+    def test_store4_update_indexed(self):
+        self.generate_test_store_update_indexed(4, "lwzux", "stwux")
+
+    def test_store8_update_indexed(self):
+        self.generate_test_store_update_indexed(8, "ldux", "stdux")
 if __name__ == '__main__':
     unittest.main()
