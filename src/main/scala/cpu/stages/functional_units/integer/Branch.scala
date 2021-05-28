@@ -102,10 +102,11 @@ class Branch extends Component {
     }
 
     val ctr = io.ri.slots(ReadSlotPacking.SPRPort1).data(63 downto 0)
-    val ctr_ok = bo(2) | ((ctr =/= 0) ^ bo(3))
+    val ctr_new = ctr - 1
+    val ctr_ok = bo(2) | ((ctr_new =/= 0) ^ bo(3))
 
     when(bo(2) === False) {
-      io.ctr_w.payload := ctr - 1
+      io.ctr_w.payload := ctr_new
       io.ctr_w.valid := True
     }
 

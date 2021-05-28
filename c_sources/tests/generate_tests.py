@@ -698,6 +698,15 @@ mtcr 1
             "cmpwi cr2, 17, 0",
             "bne cr2, loop"])
 
+    def test_branch_ctr(self):
+        self.add_code(self.id(), [
+            "li 17, 0x15",
+            "mtctr 17",
+            "li 18, 0",
+            "loop:",
+            "add 18, 18, 17",
+            "bdnz loop"])
+
 
 
 
