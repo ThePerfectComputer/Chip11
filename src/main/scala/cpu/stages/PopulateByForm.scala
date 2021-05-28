@@ -555,6 +555,29 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface) {
       o.slots(ReadSlotPacking.GPRPort2).sel := SourceSelect.GPR
       o.slots(ReadSlotPacking.GPRPort3).idx := Forms.X66.RS(i.insn).resized
       o.slots(ReadSlotPacking.GPRPort3).sel := SourceSelect.GPR
+      switch(i.opcode) {
+        import MnemonicEnums._
+        is(stbx, stbux) {
+          o.ldst_request.req_type := TransactionType.STORE
+          o.ldst_request.size := TransactionSize.BYTE
+          o.ldst_request.store_src_slot := ReadSlotPacking.GPRPort3
+        }
+        is(sthx, sthux) {
+          o.ldst_request.req_type := TransactionType.STORE
+          o.ldst_request.size := TransactionSize.HALFWORD
+          o.ldst_request.store_src_slot := ReadSlotPacking.GPRPort3
+        }
+        is(stwx, stwux) {
+          o.ldst_request.req_type := TransactionType.STORE
+          o.ldst_request.size := TransactionSize.WORD
+          o.ldst_request.store_src_slot := ReadSlotPacking.GPRPort3
+        }
+        is(stdx, stdux) {
+          o.ldst_request.req_type := TransactionType.STORE
+          o.ldst_request.size := TransactionSize.DOUBLEWORD
+          o.ldst_request.store_src_slot := ReadSlotPacking.GPRPort3
+        }
+      }
     }
 
     is(FormEnums.X68) {
