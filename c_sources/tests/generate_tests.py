@@ -14,13 +14,17 @@ class ASMTestCase(unittest.TestCase):
 
     def setUp(self):
         self.instructions = []
+        self.data = []
+        self.data.extend([".section .data", "data:"])
         self.generate_data()
         global cur_insn
         cur_insn = len(self.instructions[0].splitlines())
         self.rand = Random(self.id())
 
     def generate_data(self):
-        self.instructions.extend([""".org 0
+        self.instructions.extend(["""
+.section .text
+.org 0
 b _start
 .org 0x10
 _start:
@@ -56,6 +60,8 @@ mtcr 1
         with open(test_file, 'w') as asmfile:
             asmfile.write('\n'.join(self.instructions))
             asmfile.write('\n')
+            asmfile.write('\n'.join(self.data))
+            asmfile.write('\n')
 
 
     # def compare_csvs(self, expectedcsv, actualcsv):
@@ -89,7 +95,7 @@ mtcr 1
 
 
 
-    def add_code(self, test_id, instructions):
+    def add_code(self, test_id, instructions, data=[]):
         global cur_insn, insn_list
         test_name = test_id.split('.')[2]
         self.instructions.append(f'{test_name}:')
@@ -97,7 +103,7 @@ mtcr 1
             self.instructions.append(i.ljust(50) + f"# {cur_insn}")
             insn_dict[cur_insn] = i
             cur_insn += 1
-
+        self.data.extend(data)
 
     # r1-8 have data preloaded:
     # r1: ffffffffdeadbeef
@@ -416,6 +422,22 @@ mtcr 1
                 'sld. 12, 10, 11',
             ])
         self.add_code(self.id(), insns)
+
+    def test_load(self):
+        insns = []
+        data = []
+        data_items = 8
+        insns.extend(["lis 17, ld_data@h",
+                      "ori 17, 17, ld_data@l"])
+        for i in range(data_items):
+            insns.append(f"ld 18, {i*8}(17)")
+        data.append("ld_data:")
+        for i in range(data_items):
+            rand = self.rand.randint(0, 256)
+            data.append(f".quad 0x{rand:x}")
+        self.add_code(self.id(), insns, data)
+        
+        
 
 
 
