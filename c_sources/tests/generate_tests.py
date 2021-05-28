@@ -516,6 +516,40 @@ mtcr 1
             data.append(f".quad 0")
         self.add_code(self.id(), insns, data)
 
+    def test_store4(self):
+        insns = []
+        data = []
+        data_items = 8
+        insns.extend(["lis 17, ld_data@h",
+                      "ori 17, 17, ld_data@l"])
+        for i in range(data_items):
+            source = self.rand.randint(1, 8)
+            insns.append(f"stw {source}, {i*4}(17)")
+        for i in range(data_items):
+            insns.append(f"lwz 18, {i*4}(17)")
+
+        data.append("ld_data:")
+        for i in range(data_items):
+            data.append(f".long 0")
+        self.add_code(self.id(), insns, data)
+
+    def test_store2(self):
+        insns = []
+        data = []
+        data_items = 8
+        insns.extend(["lis 17, ld_data@h",
+                      "ori 17, 17, ld_data@l"])
+        for i in range(data_items):
+            source = self.rand.randint(1, 8)
+            insns.append(f"sth {source}, {i*2}(17)")
+        for i in range(data_items):
+            insns.append(f"lhz 18, {i*2}(17)")
+
+        data.append("ld_data:")
+        for i in range(data_items):
+            data.append(f".short 0")
+        self.add_code(self.id(), insns, data)
+
 
 if __name__ == '__main__':
     unittest.main()

@@ -169,10 +169,22 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface) {
       o.slots(ReadSlotPacking.GPRPort2).sel := SourceSelect.GPR
       o.imm.valid := True
       o.imm.payload := Forms.D5.D(i.insn).resize(64).asUInt
-      when(i.opcode === MnemonicEnums.stb) {
-        o.ldst_request.req_type := TransactionType.STORE
-        o.ldst_request.size := TransactionSize.BYTE
-        o.ldst_request.store_src_slot := 1
+      switch(i.opcode){
+        is(MnemonicEnums.stb, MnemonicEnums.stbu) {
+          o.ldst_request.req_type := TransactionType.STORE
+          o.ldst_request.size := TransactionSize.BYTE
+          o.ldst_request.store_src_slot := 1
+        }
+        is(MnemonicEnums.stw, MnemonicEnums.stwu) {
+          o.ldst_request.req_type := TransactionType.STORE
+          o.ldst_request.size := TransactionSize.WORD
+          o.ldst_request.store_src_slot := 1
+        }
+        is(MnemonicEnums.sth, MnemonicEnums.sthu) {
+          o.ldst_request.req_type := TransactionType.STORE
+          o.ldst_request.size := TransactionSize.HALFWORD
+          o.ldst_request.store_src_slot := 1
+        }
       }
     }
 
