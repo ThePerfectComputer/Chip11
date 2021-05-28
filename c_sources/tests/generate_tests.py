@@ -451,7 +451,33 @@ mtcr 1
             data.append(f".long 0x{rand:x}")
         self.add_code(self.id(), insns, data)
         
+    def test_load2(self):
+        insns = []
+        data = []
+        data_items = 8
+        insns.extend(["lis 17, ld_data@h",
+                      "ori 17, 17, ld_data@l"])
+        for i in range(data_items):
+            insns.append(f"lhz 18, {i*2}(17)")
+        data.append("ld_data:")
+        for i in range(data_items):
+            rand = self.rand.randint(0, 1<<16-1)
+            data.append(f".short 0x{rand:x}")
+        self.add_code(self.id(), insns, data)
         
+    def test_load1(self):
+        insns = []
+        data = []
+        data_items = 8
+        insns.extend(["lis 17, ld_data@h",
+                      "ori 17, 17, ld_data@l"])
+        for i in range(data_items):
+            insns.append(f"lbz 18, {i}(17)")
+        data.append("ld_data:")
+        for i in range(data_items):
+            rand = self.rand.randint(0, 1<<8-1)
+            data.append(f".byte 0x{rand:x}")
+        self.add_code(self.id(), insns, data)
 
 
 
