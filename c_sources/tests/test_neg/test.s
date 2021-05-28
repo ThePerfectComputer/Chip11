@@ -1,3 +1,5 @@
+
+.section .text
 .org 0
 b _start
 .org 0x10
@@ -20,10 +22,12 @@ ori 8, 8, 0xdef0
 mtcr 1
 
 test_neg:
-li 10, 0                                          # 20
-neg. 10, 10                                       # 21
-li 10, -1                                         # 22
+li 10, 0                                          # 22
 neg. 10, 10                                       # 23
+li 10, -1                                         # 24
+neg. 10, 10                                       # 25
 nop
 li 31, 1
 hang: b hang
+.section .data
+data:

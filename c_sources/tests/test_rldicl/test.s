@@ -1,3 +1,5 @@
+
+.section .text
 .org 0
 b _start
 .org 0x10
@@ -20,11 +22,13 @@ ori 8, 8, 0xdef0
 mtcr 1
 
 test_rldicl:
-rldicl. 18, 8, 17, 9                              # 20
-rldicl. 18, 5, 25, 21                             # 21
-rldicl. 18, 7, 4, 4                               # 22
-rldicl. 18, 6, 11, 28                             # 23
-rldicl. 18, 4, 4, 30                              # 24
+rldicl. 18, 8, 17, 9                              # 22
+rldicl. 18, 5, 25, 21                             # 23
+rldicl. 18, 7, 4, 4                               # 24
+rldicl. 18, 6, 11, 28                             # 25
+rldicl. 18, 4, 4, 30                              # 26
 nop
 li 31, 1
 hang: b hang
+.section .data
+data:

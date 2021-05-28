@@ -1,3 +1,5 @@
+
+.section .text
 .org 0
 b _start
 .org 0x10
@@ -20,12 +22,14 @@ ori 8, 8, 0xdef0
 mtcr 1
 
 test_rlwimi:
-mr 18, 8                                          # 20
-rlwimi 18, 2, 29, 6, 9                            # 21
-rlwimi 18, 2, 3, 20, 8                            # 22
-rlwimi 18, 7, 31, 29, 21                          # 23
-rlwimi 18, 6, 27, 29, 7                           # 24
-rlwimi 18, 5, 20, 14, 28                          # 25
+mr 18, 8                                          # 22
+rlwimi 18, 2, 29, 6, 9                            # 23
+rlwimi 18, 2, 3, 20, 8                            # 24
+rlwimi 18, 7, 31, 29, 21                          # 25
+rlwimi 18, 6, 27, 29, 7                           # 26
+rlwimi 18, 5, 20, 14, 28                          # 27
 nop
 li 31, 1
 hang: b hang
+.section .data
+data:

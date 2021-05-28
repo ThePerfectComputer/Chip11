@@ -1,3 +1,5 @@
+
+.section .text
 .org 0
 b _start
 .org 0x10
@@ -20,12 +22,14 @@ ori 8, 8, 0xdef0
 mtcr 1
 
 test_rldimi:
-mr 18, 8                                          # 20
-rldimi 18, 7, 4, 5                                # 21
-rldimi 18, 2, 4, 26                               # 22
-rldimi 18, 5, 6, 23                               # 23
-rldimi 18, 3, 3, 21                               # 24
-rldimi 18, 5, 8, 7                                # 25
+mr 18, 8                                          # 22
+rldimi 18, 7, 4, 5                                # 23
+rldimi 18, 2, 4, 26                               # 24
+rldimi 18, 5, 6, 23                               # 25
+rldimi 18, 3, 3, 21                               # 26
+rldimi 18, 5, 8, 7                                # 27
 nop
 li 31, 1
 hang: b hang
+.section .data
+data:

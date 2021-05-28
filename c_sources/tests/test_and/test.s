@@ -1,3 +1,5 @@
+
+.section .text
 .org 0
 b _start
 .org 0x10
@@ -20,9 +22,11 @@ ori 8, 8, 0xdef0
 mtcr 1
 
 test_and:
-andi.  17, 7, 0x20                                # 20
-and. 17, 2, 1                                     # 21
-andc. 17, 5, 1                                    # 22
+andi.  17, 7, 0x20                                # 22
+and. 17, 2, 1                                     # 23
+andc. 17, 5, 1                                    # 24
 nop
 li 31, 1
 hang: b hang
+.section .data
+data:

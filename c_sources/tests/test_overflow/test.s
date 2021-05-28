@@ -1,3 +1,5 @@
+
+.section .text
 .org 0
 b _start
 .org 0x10
@@ -20,48 +22,50 @@ ori 8, 8, 0xdef0
 mtcr 1
 
 test_overflow:
-lis 17, -0x8000                                   # 20
-sldi 19, 17, 32                                   # 21
-li 0, 0                                           # 22
-addo 18, 17, 17                                   # 23
-mfxer 21                                          # 24
-mtxer 0                                           # 25
-addo 18, 19, 19                                   # 26
-mfxer 21                                          # 27
-mtxer 0                                           # 28
-addco 18, 17, 17                                  # 29
-mfxer 21                                          # 30
-mtxer 0                                           # 31
-addco 18, 19, 19                                  # 32
-mfxer 21                                          # 33
-mtxer 0                                           # 34
-addeo 18, 17, 17                                  # 35
-mfxer 21                                          # 36
-mtxer 0                                           # 37
-addeo 18, 19, 19                                  # 38
-mfxer 21                                          # 39
-mtxer 0                                           # 40
-subfo 18, 17, 17                                  # 41
-mfxer 21                                          # 42
-mtxer 0                                           # 43
-subfo 18, 19, 19                                  # 44
-mfxer 21                                          # 45
-mtxer 0                                           # 46
-subfco 18, 17, 17                                 # 47
-mfxer 21                                          # 48
-mtxer 0                                           # 49
-subfco 18, 19, 19                                 # 50
-mfxer 21                                          # 51
-mtxer 0                                           # 52
-subfeo 18, 17, 17                                 # 53
-mfxer 21                                          # 54
-mtxer 0                                           # 55
-subfeo 18, 19, 19                                 # 56
-mfxer 21                                          # 57
-mtxer 0                                           # 58
-addo 18, 19, 19                                   # 59
-addo 18, 0, 0                                     # 60
-mfxer 21                                          # 61
+lis 17, -0x8000                                   # 22
+sldi 19, 17, 32                                   # 23
+li 0, 0                                           # 24
+addo 18, 17, 17                                   # 25
+mfxer 21                                          # 26
+mtxer 0                                           # 27
+addo 18, 19, 19                                   # 28
+mfxer 21                                          # 29
+mtxer 0                                           # 30
+addco 18, 17, 17                                  # 31
+mfxer 21                                          # 32
+mtxer 0                                           # 33
+addco 18, 19, 19                                  # 34
+mfxer 21                                          # 35
+mtxer 0                                           # 36
+addeo 18, 17, 17                                  # 37
+mfxer 21                                          # 38
+mtxer 0                                           # 39
+addeo 18, 19, 19                                  # 40
+mfxer 21                                          # 41
+mtxer 0                                           # 42
+subfo 18, 17, 17                                  # 43
+mfxer 21                                          # 44
+mtxer 0                                           # 45
+subfo 18, 19, 19                                  # 46
+mfxer 21                                          # 47
+mtxer 0                                           # 48
+subfco 18, 17, 17                                 # 49
+mfxer 21                                          # 50
+mtxer 0                                           # 51
+subfco 18, 19, 19                                 # 52
+mfxer 21                                          # 53
+mtxer 0                                           # 54
+subfeo 18, 17, 17                                 # 55
+mfxer 21                                          # 56
+mtxer 0                                           # 57
+subfeo 18, 19, 19                                 # 58
+mfxer 21                                          # 59
+mtxer 0                                           # 60
+addo 18, 19, 19                                   # 61
+addo 18, 0, 0                                     # 62
+mfxer 21                                          # 63
 nop
 li 31, 1
 hang: b hang
+.section .data
+data:
