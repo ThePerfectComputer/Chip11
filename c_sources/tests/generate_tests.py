@@ -333,30 +333,31 @@ mtcr 1
     def test_cmp(self):
         insns = []
         def do_compare():
-            insns.extend([
-                'li 10, -5',
-                'cmpi 0, 1, 10, -6',
-                'cmpi 1, 1, 10, -4',
-                'cmpi 2, 1, 10, -5',
-                'li 10, -5',
-                'li 11, -6',
-                'cmp 0, 1, 10, 11',
-                'li 11, -6',
-                'cmp 1, 1, 10, 11',
-                'li 11, -6',
-                'cmp 2, 1, 10, 11',
-                'li 10, -5',
-                'cmpli 0, 1, 10, -6',
-                'cmpli 1, 1, 10, -4',
-                'cmpli 2, 1, 10, -5',
-                'li 10, -5',
-                'li 11, -6',
-                'cmpl 0, 1, 10, 11',
-                'li 11, -6',
-                'cmpl 1, 1, 10, 11',
-                'li 11, -6',
-                'cmpl 2, 1, 10, 11',
-            ])
+            for i in range(2):
+                insns.extend([
+                    'li 10, -5',
+                    f'cmpi 0, {i}, 10, -6',
+                    f'cmpi 1, {i}, 10, -4',
+                    f'cmpi 2, {i}, 10, -5',
+                    f'li 10, -5',
+                    f'li 11, -6',
+                    f'cmp 0, {i}, 10, 11',
+                    f'li 11, -6',
+                    f'cmp 1, {i}, 10, 11',
+                    f'li 11, -6',
+                    f'cmp 2, {i}, 10, 11',
+                    f'li 10, -5',
+                    f'cmpli 0, {i}, 10, -6',
+                    f'cmpli 1, {i}, 10, -4',
+                    f'cmpli 2, {i}, 10, -5',
+                    f'li 10, -5',
+                    f'li 11, -6',
+                    f'cmpl 0, {i}, 10, 11',
+                    f'li 11, -6',
+                    f'cmpl 1, {i}, 10, 11',
+                    f'li 11, -6',
+                    f'cmpl 2, {i}, 10, 11',
+                ])
         do_compare()
         # set SO bit
         insns.extend(["lis 17, -0x8000",

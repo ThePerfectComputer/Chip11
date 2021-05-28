@@ -33,10 +33,10 @@ class Comparator(val wid: Int) extends Component {
   when(!io.is_64b){
     when(io.logical){
       a := a_32b.asUInt.resize(64).asSInt
-      b := a_32b.asUInt.resize(64).asSInt
+      b := b_32b.asUInt.resize(64).asSInt
     }.otherwise{
       a := a_32b.resize(64)
-      b := a_32b.resize(64)
+      b := b_32b.resize(64)
     }
   }.otherwise{
     a := io.a.asSInt
