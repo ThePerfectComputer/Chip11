@@ -492,5 +492,27 @@ mtcr 1
     def test_store2(self):
         self.generate_test_store(2, "lhz", "sth")
 
+    def generate_test_load_update(self, nbytes, load_insn):
+        insns = []
+        data = []
+        data_items = 8
+        insns.extend([f"lis 17, (ld_data-{nbytes})@h",
+                      f"ori 17, 17, (ld_data-{nbytes})@l"])
+        for i in range(data_items):
+            insns.append(f"{load_insn} 18, {nbytes}(17)")
+        data.append("ld_data:")
+        directive = data_directives[nbytes]
+        for i in range(data_items):
+            rand = self.rand.randint(0, 1<<(8*nbytes)-1)
+            data.append(f"{directive} 0x{rand:x}")
+        self.add_code(self.id(), insns, data)
+
+    def test_load1_update(self):
+        self.generate_test_load_update(1, "lbzu")
+    def test_load2_update(self):
+        self.generate_test_load_update(2, "lhzu")
+    def test_load4_update(self):
+        self.generate_test_load_update(4, "lwzu")
+
 if __name__ == '__main__':
     unittest.main()
