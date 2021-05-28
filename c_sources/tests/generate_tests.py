@@ -728,6 +728,18 @@ mtcr 1
             "mflr 17",
             "blr",
             "2: li 18, 5"])
+    def test_branch_to_tar(self):
+        self.add_code(self.id(), [
+            "lis 17, 1f@h",
+            "ori 17, 17, 1f@l",
+            "mtspr 815, 17 # mttar 17",
+            "bctar 20, lt # branch unconditional",
+            "b 2f",
+            "li 18, 1",
+            "1: li 19, 2",
+            "mflr 17",
+            "blr",
+            "2: li 18, 5"])
 
             
 

@@ -808,7 +808,7 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface) {
         o.slots(ReadSlotPacking.SPRPort1).sel := SourceSelect.SPR
       }
       when(i.opcode === MnemonicEnums.bctar_l_) {
-        o.slots(ReadSlotPacking.SPRPort1).idx := SPREnums.CTR.asBits.asUInt
+        o.slots(ReadSlotPacking.SPRPort1).idx := SPREnums.TAR.asBits.asUInt
         o.slots(ReadSlotPacking.SPRPort1).sel := SourceSelect.SPR
       }
     }
