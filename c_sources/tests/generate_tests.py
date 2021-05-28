@@ -543,5 +543,8 @@ mtcr 1
 
     def test_store4_update(self):
         self.generate_test_store_update(4, "lwzu", "stwu")
+
+    def test_store8_update(self):
+        self.generate_test_store_update(8, "ldu", "stdu")
 if __name__ == '__main__':
     unittest.main()

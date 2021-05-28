@@ -344,6 +344,14 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface) {
         o.ldst_request.size := TransactionSize.DOUBLEWORD
         o.ldst_request.store_src_slot := 1
       }
+      when(i.opcode === MnemonicEnums.stdu) {
+        o.ldst_request.req_type := TransactionType.STORE
+        o.ldst_request.size := TransactionSize.DOUBLEWORD
+        o.ldst_request.store_src_slot := 1
+        // Write for updated address
+        o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := ra.resized
+        o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
+      }
     }
     is(FormEnums.DS5) {
       // printf("Populating fields for form DS5\n")
