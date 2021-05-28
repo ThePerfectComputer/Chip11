@@ -455,8 +455,14 @@ mtcr 1
     def test_load4(self):
         self.generate_test_load(4, "lwz")
 
+    def test_load4_arithmetic(self):
+        self.generate_test_load(4, "lwa")
+
     def test_load2(self):
         self.generate_test_load(2, "lhz")
+
+    def test_load2_arithmetic(self):
+        self.generate_test_load(2, "lha")
 
     def test_load1(self):
         self.generate_test_load(1, "lbz")
@@ -511,6 +517,8 @@ mtcr 1
         self.generate_test_load_update(1, "lbzu")
     def test_load2_update(self):
         self.generate_test_load_update(2, "lhzu")
+    def test_load2_update_arithmetic(self):
+        self.generate_test_load_update(2, "lhau")
     def test_load4_update(self):
         self.generate_test_load_update(4, "lwzu")
     def test_load8_update(self):

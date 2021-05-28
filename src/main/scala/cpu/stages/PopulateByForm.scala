@@ -35,6 +35,7 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface) {
   o.ldst_request.store_data := 0
   o.ldst_request.load_dest_slot := 0
   o.ldst_request.ea := 0
+  o.ldst_request.arithmetic := False
 
   import cpu.debug.debug_form
   if (debug_form) {
@@ -284,12 +285,12 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface) {
             .slots(WriteSlotPacking.GPRPort1)
             .sel := SourceSelect.GPR
         }
-        is(MnemonicEnums.lhz) {
+        is(MnemonicEnums.lhz, MnemonicEnums.lha) {
           o.ldst_request.req_type := TransactionType.LOAD
           o.ldst_request.size := TransactionSize.HALFWORD
           o.ldst_request.load_dest_slot := WriteSlotPacking.GPRPort2
         }
-        is(MnemonicEnums.lhzu) {
+        is(MnemonicEnums.lhzu, MnemonicEnums.lhau) {
           o.ldst_request.req_type := TransactionType.LOAD
           o.ldst_request.size := TransactionSize.HALFWORD
           o.ldst_request.load_dest_slot := WriteSlotPacking.GPRPort2
@@ -298,6 +299,11 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface) {
           o.write_interface
             .slots(WriteSlotPacking.GPRPort1)
             .sel := SourceSelect.GPR
+        }
+      }
+      switch(i.opcode){
+        is(MnemonicEnums.lha, MnemonicEnums.lhau){
+          o.ldst_request.arithmetic := True
         }
       }
     }
@@ -395,6 +401,13 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface) {
           .slots(WriteSlotPacking.GPRPort1)
           .sel := SourceSelect.GPR
       }
+      when(i.opcode === MnemonicEnums.lwa){
+        o.ldst_request.req_type := TransactionType.LOAD
+        o.ldst_request.size := TransactionSize.WORD
+        o.ldst_request.load_dest_slot := WriteSlotPacking.GPRPort2
+        o.ldst_request.arithmetic := True
+      }
+
     }
 
     // TODO make sure this fully supports everything used in b[l][a]

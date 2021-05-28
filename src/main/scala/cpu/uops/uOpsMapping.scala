@@ -35,9 +35,13 @@ class UOpsMapping extends Component {
     ld            -> out(uOps(INTEGER, IntegerFUSub.Adder, AdderArgs(AdderSelectB.ImmShift2, AdderCarryIn.ZERO, false))),
     ldu            -> out(uOps(INTEGER, IntegerFUSub.Adder, AdderArgs(AdderSelectB.ImmShift2, AdderCarryIn.ZERO, false))),
     lwz           -> out(uOps(INTEGER, IntegerFUSub.Adder, AdderArgs(AdderSelectB.Imm, AdderCarryIn.ZERO, false))),
+    // Different form than lwz
+    lwa           -> out(uOps(INTEGER, IntegerFUSub.Adder, AdderArgs(AdderSelectB.ImmShift2, AdderCarryIn.ZERO, false))),
     lwzu           -> out(uOps(INTEGER, IntegerFUSub.Adder, AdderArgs(AdderSelectB.Imm, AdderCarryIn.ZERO, false))),
     lhz           -> out(uOps(INTEGER, IntegerFUSub.Adder, AdderArgs(AdderSelectB.Imm, AdderCarryIn.ZERO, false))),
+    lha           -> out(uOps(INTEGER, IntegerFUSub.Adder, AdderArgs(AdderSelectB.Imm, AdderCarryIn.ZERO, false))),
     lhzu           -> out(uOps(INTEGER, IntegerFUSub.Adder, AdderArgs(AdderSelectB.Imm, AdderCarryIn.ZERO, false))),
+    lhau           -> out(uOps(INTEGER, IntegerFUSub.Adder, AdderArgs(AdderSelectB.Imm, AdderCarryIn.ZERO, false))),
     lbz           -> out(uOps(INTEGER, IntegerFUSub.Adder, AdderArgs(AdderSelectB.Imm, AdderCarryIn.ZERO, false))),
     ldx            -> out(uOps(INTEGER, IntegerFUSub.Adder, AdderArgs(AdderSelectB.Slot2, AdderCarryIn.ZERO, false))),
     lbzx           -> out(uOps(INTEGER, IntegerFUSub.Adder, AdderArgs(AdderSelectB.Slot2, AdderCarryIn.ZERO, false))),

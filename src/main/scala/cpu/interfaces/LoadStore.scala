@@ -15,4 +15,5 @@ class LoadStoreRequest extends Bundle {
   val store_data = UInt(128 bits)
   val load_dest_slot = UInt(3 bits)
 
+  val arithmetic = Bool
 }
