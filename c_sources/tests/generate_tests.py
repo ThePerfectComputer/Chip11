@@ -10,6 +10,14 @@ os.chdir(os.path.dirname(os.path.realpath(__file__)))
 cur_insn = 0
 insn_dict = {}
 
+# Translate between number of bytes and the assembly directive to store a constant
+data_directives = {
+    1: ".byte",
+    2: ".short",
+    4: ".long",
+    8: ".quad"
+}
+
 class ASMTestCase(unittest.TestCase):
 
     def setUp(self):
@@ -426,61 +434,33 @@ mtcr 1
             ])
         self.add_code(self.id(), insns)
 
-    def test_load8(self):
+    def generate_test_load(self, nbytes, load_insn):
         insns = []
         data = []
         data_items = 8
         insns.extend(["lis 17, ld_data@h",
                       "ori 17, 17, ld_data@l"])
         for i in range(data_items):
-            insns.append(f"ld 18, {i*8}(17)")
+            insns.append(f"{load_insn} 18, {i*nbytes}(17)")
         data.append("ld_data:")
+        directive = data_directives[nbytes]
         for i in range(data_items):
-            rand = self.rand.randint(0, 1<<64-1)
-            data.append(f".quad 0x{rand:x}")
+            rand = self.rand.randint(0, 1<<(8*nbytes)-1)
+            data.append(f"{directive} 0x{rand:x}")
         self.add_code(self.id(), insns, data)
 
+    def test_load8(self):
+        self.generate_test_load(8, "ld")
+
     def test_load4(self):
-        insns = []
-        data = []
-        data_items = 8
-        insns.extend(["lis 17, ld_data@h",
-                      "ori 17, 17, ld_data@l"])
-        for i in range(data_items):
-            insns.append(f"lwz 18, {i*4}(17)")
-        data.append("ld_data:")
-        for i in range(data_items):
-            rand = self.rand.randint(0, 1<<32-1)
-            data.append(f".long 0x{rand:x}")
-        self.add_code(self.id(), insns, data)
-        
+        self.generate_test_load(4, "lwz")
+
     def test_load2(self):
-        insns = []
-        data = []
-        data_items = 8
-        insns.extend(["lis 17, ld_data@h",
-                      "ori 17, 17, ld_data@l"])
-        for i in range(data_items):
-            insns.append(f"lhz 18, {i*2}(17)")
-        data.append("ld_data:")
-        for i in range(data_items):
-            rand = self.rand.randint(0, 1<<16-1)
-            data.append(f".short 0x{rand:x}")
-        self.add_code(self.id(), insns, data)
-        
+        self.generate_test_load(2, "lhz")
+
     def test_load1(self):
-        insns = []
-        data = []
-        data_items = 8
-        insns.extend(["lis 17, ld_data@h",
-                      "ori 17, 17, ld_data@l"])
-        for i in range(data_items):
-            insns.append(f"lbz 18, {i}(17)")
-        data.append("ld_data:")
-        for i in range(data_items):
-            rand = self.rand.randint(0, 1<<8-1)
-            data.append(f".byte 0x{rand:x}")
-        self.add_code(self.id(), insns, data)
+        self.generate_test_load(1, "lbz")
+        
 
     def test_store1(self):
         insns = []
