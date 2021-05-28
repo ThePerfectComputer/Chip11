@@ -9,15 +9,16 @@ import isa.{MnemonicEnums, Forms, ReadSlotPacking}
 import spinal.core._
 import spinal.lib._
 
-
 class BIBits extends Bundle {
-  val regfield = UInt(2 bits) // Selects which bit in the CR (eq, gt, lt, so) to use
-  val cr_bank = UInt(1 bits)  // Selects between CRA and CRB
-  val cr_num = UInt(2 bits)   // Selects which cr in CRA or CRB to use
+  val regfield = UInt(
+    2 bits
+  ) // Selects which bit in the CR (eq, gt, lt, so) to use
+  val cr_bank = UInt(1 bits) // Selects between CRA and CRB
+  val cr_num = UInt(2 bits) // Selects which cr in CRA or CRB to use
 }
 
 class Branch extends Component {
-  val io = new Bundle{
+  val io = new Bundle {
     val ri = in(new ReadInterface)
 
     val lr_w = out(Flow(UInt(64 bits)))
@@ -40,40 +41,41 @@ class Branch extends Component {
 
   val branchArgs = new BranchArgs
   branchArgs.assignFromBits(dec_data.uOps.args)
+  val bo = Reverse(Forms.B1.BO(insn))
+  // val bo = Forms.B1.BO(insn)
 
-  when(branchArgs.conditional =/= True){
+  val bi = new BIBits
+  bi.assignFromBits(Forms.B1.BI(insn).asBits)
+
+  // Grab the cr from the correct read port
+  // Similar to above. We're indexing into this so reverse it so the
+  // index selects the correct bit
+  val banked_cr = UInt(16 bits)
+  when(bi.cr_bank === 0) {
+    // banked_cr := Reverse(io.ri.slots(ReadSlotPacking.CRPort1).data(15, 0))
+    banked_cr := io.ri.slots(ReadSlotPacking.CRPort1).data(15 downto 0)
+  }.otherwise {
+    // banked_cr := Reverse(io.ri.slots(ReadSlotPacking.CRPort2).data(15, 0))
+    banked_cr := io.ri.slots(ReadSlotPacking.CRPort2).data(15 downto 0)
+  }
+  val cr_idx = UInt(4 bits)
+  cr_idx := (~Cat(bi.cr_num, bi.regfield)).asUInt
+
+  when(branchArgs.conditional =/= True) {
     io.bc.is_branch := True
     io.bc.branch_taken := True
     io.bc.branch_addr := dec_data.cia
     // absolute address
-    when(Forms.I1.AA(insn) === True){
+    when(Forms.I1.AA(insn) === True) {
       io.bc.target_addr := io.ri.imm.payload |<< 2
-    }.otherwise{
+    }.otherwise {
       io.bc.target_addr := (io.ri.imm.payload |<< 2) + dec_data.cia
     }
-  } .otherwise {
+  }.otherwise {
     // Yep, reverse it because power's bit ordering is weird
-    val bo = Reverse(Forms.B1.BO(insn))
-    // val bo = Forms.B1.BO(insn)
-
-    val bi = new BIBits
-    bi.assignFromBits(Forms.B1.BI(insn).asBits)
-
-    // Grab the cr from the correct read port
-    // Similar to above. We're indexing into this so reverse it so the
-    // index selects the correct bit
-    val banked_cr = UInt(16 bits)
-    when(bi.cr_bank === 0){
-      // banked_cr := Reverse(io.ri.slots(ReadSlotPacking.CRPort1).data(15, 0))
-      banked_cr := io.ri.slots(ReadSlotPacking.CRPort1).data(15 downto 0)
-    }.otherwise{
-      // banked_cr := Reverse(io.ri.slots(ReadSlotPacking.CRPort2).data(15, 0))
-      banked_cr := io.ri.slots(ReadSlotPacking.CRPort2).data(15 downto 0)
-    }
 
     // Generate the index into banked_cr
     // Invert the bits as it indexes backwards due to power's weird bit ordering
-    val cr_idx = (~Cat(bi.regfield, bi.cr_num)).asUInt
 
     // Check the CR condition
     val cond_1 = bo(0)
@@ -102,31 +104,29 @@ class Branch extends Component {
     val ctr = io.ri.slots(ReadSlotPacking.SPRPort1).data(63 downto 0)
     val ctr_ok = bo(2) | ((ctr =/= 0) ^ bo(3))
 
-    when(bo(2) === False){
+    when(bo(2) === False) {
       io.ctr_w.payload := ctr - 1
       io.ctr_w.valid := True
     }
-
 
     io.bc.is_branch := True
     io.bc.branch_taken := cond_ok & ctr_ok
     io.bc.branch_addr := dec_data.cia
     // absolute address
-    when(branchArgs.immediate_address){
-      when(Forms.B1.AA(insn) === True){
+    when(branchArgs.immediate_address) {
+      when(Forms.B1.AA(insn) === True) {
         io.bc.target_addr := io.ri.imm.payload |<< 2
-      }.otherwise{
+      }.otherwise {
         io.bc.target_addr := (io.ri.imm.payload |<< 2) + dec_data.cia
       }
     }.otherwise {
       io.bc.target_addr := io.ri.slots(ReadSlotPacking.SPRPort1).data
     }
 
-
   }
   val lk = Forms.I1.LK(insn)
 
-  when(io.bc.branch_taken & (lk === True)){
+  when(io.bc.branch_taken & (lk === True)) {
     io.lr_w.payload := dec_data.cia + 4
     io.lr_w.valid := True
   }

@@ -54,7 +54,7 @@ ori 8, 8, 0xdef0
 mtcr 1
 """])
 
-    
+
     def tearDown(self):
         # print(cls.instructions)
         self.instructions.append('nop')
@@ -78,7 +78,7 @@ mtcr 1
     #         expected = list(csv.DictReader(exp))[:-1]
     #     with open(actualcsv, 'r') as act:
     #         actual = list(csv.DictReader(act))
-            
+
     #     try:
     #         len_found = len(actual)
     #         len_expected = len(insn_dict)
@@ -250,7 +250,7 @@ mtcr 1
         self.add_code(self.id(), insns)
 
 
-            
+
 
     def test_dot(self):
         insns = []
@@ -329,7 +329,7 @@ mtcr 1
             'andc. 17, 5, 1'
         ])
 
-    
+
     def test_cmp(self):
         insns = []
         def do_compare():
@@ -467,7 +467,7 @@ mtcr 1
 
     def test_load1(self):
         self.generate_test_load(1, "lbz")
-        
+
 
     def generate_test_store(self, nbytes, load_insn, store_insn):
         insns = []
@@ -687,7 +687,19 @@ mtcr 1
             "li 17, 0x1234",
             "3: b 2b",
             "4: li 18, 0xfff"])
+    def test_branch_conditional(self):
 
-        
+        self.add_code(self.id(), [
+            "li 17, 0x15",
+            "li 18, 0",
+            "loop:",
+            "add 18, 18, 17",
+            "addi 17, 17, -1",
+            "cmpwi cr2, 17, 0",
+            "bne cr2, loop"])
+
+
+
+
 if __name__ == '__main__':
     unittest.main()
