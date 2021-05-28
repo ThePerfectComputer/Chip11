@@ -14,9 +14,9 @@ import isa.{ISAPairings, InstructionInfo, ReadSlotPacking, WriteSlotPacking}
 import spinal.core._
 import spinal.lib.{Reverse}
 
-class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
+class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface) {
   o.dec_data := i
-  for(idx <- 0 until 5){
+  for (idx <- 0 until 5) {
     o.slots(idx).idx := 0
     o.slots(idx).sel := SourceSelect.NONE
     o.slots(idx).data := 0
@@ -28,7 +28,7 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
   o.imm.payload := 0
 
   o.compare := o.compare.getZero
-  
+
   o.ldst_request.req_type := TransactionType.NONE
   o.ldst_request.size := TransactionSize.BYTE
   o.ldst_request.store_src_slot := 0
@@ -38,7 +38,7 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
 
   import cpu.debug.debug_form
   if (debug_form) {
-    when(pipeOutput.fire){
+    when(pipeOutput.fire) {
       // printf(p"FORM: Populated info for form ${i.form.asUInt}\n")
     }
   }
@@ -63,7 +63,7 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
     // }
 
     // TODO revisit this one to implement checks for whether the CTR, BD, etc. are actually needed
-    is(FormEnums.B1){
+    is(FormEnums.B1) {
       // So the CR is split up into two pseudo register files:
       // CRA is [cr0, cr2, cr4, cr6] and is on slot 4
       // CRB is [cr1, cr3, cr5, cr7] and is on slot 5
@@ -86,25 +86,33 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
 
       val bo = Reverse(Forms.B1.BO(i.insn))
       // If BO[2] == 0, then we need to read/write ctr
-      when(bo(2) === False){
+      when(bo(2) === False) {
         o.slots(ReadSlotPacking.SPRPort1).idx := SPREnums.CTR.asBits.asUInt
         o.slots(ReadSlotPacking.SPRPort1).sel := SourceSelect.SPR
-        o.write_interface.slots(WriteSlotPacking.SPRPort1).idx := SPREnums.CTR.asBits.asUInt
-        o.write_interface.slots(WriteSlotPacking.SPRPort1).sel := SourceSelect.SPR
+        o.write_interface
+          .slots(WriteSlotPacking.SPRPort1)
+          .idx := SPREnums.CTR.asBits.asUInt
+        o.write_interface
+          .slots(WriteSlotPacking.SPRPort1)
+          .sel := SourceSelect.SPR
       }
 
       // Write to lk if link is enabled
       val lk = Forms.B1.LK(i.insn)
-      when(lk === True){
-        o.write_interface.slots(WriteSlotPacking.SPRPort2).idx := SPREnums.LR.asBits.asUInt
-        o.write_interface.slots(WriteSlotPacking.SPRPort2).sel := SourceSelect.SPR
+      when(lk === True) {
+        o.write_interface
+          .slots(WriteSlotPacking.SPRPort2)
+          .idx := SPREnums.LR.asBits.asUInt
+        o.write_interface
+          .slots(WriteSlotPacking.SPRPort2)
+          .sel := SourceSelect.SPR
       }
 
-      o.imm.valid := True 
+      o.imm.valid := True
       o.imm.payload := Forms.B1.BD(i.insn).resize(64).asUInt
     }
 
-    is(FormEnums.D1){
+    is(FormEnums.D1) {
       o.slots(ReadSlotPacking.GPRPort1).idx := Forms.D1.RA(i.insn).resized
       o.slots(ReadSlotPacking.GPRPort1).sel := SourceSelect.GPR
       o.slots(ReadSlotPacking.XERPort1).idx := XERMask.SO
@@ -115,16 +123,20 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
       val mask = U(1) << field_select
       when(bf(0) === False) {
         o.write_interface.slots(WriteSlotPacking.CRPort1).idx := mask.resized
-        o.write_interface.slots(WriteSlotPacking.CRPort1).sel := SourceSelect.CRA
+        o.write_interface
+          .slots(WriteSlotPacking.CRPort1)
+          .sel := SourceSelect.CRA
       }.otherwise {
         o.write_interface.slots(WriteSlotPacking.CRPort2).idx := mask.resized
-        o.write_interface.slots(WriteSlotPacking.CRPort2).sel := SourceSelect.CRB
+        o.write_interface
+          .slots(WriteSlotPacking.CRPort2)
+          .sel := SourceSelect.CRB
       }
       o.imm.valid := True
       o.imm.payload := Forms.D1.SI(i.insn).resize(64).asUInt
     }
 
-    is(FormEnums.D2){
+    is(FormEnums.D2) {
       o.slots(ReadSlotPacking.GPRPort1).idx := Forms.D2.RA(i.insn).resized
       o.slots(ReadSlotPacking.GPRPort1).sel := SourceSelect.GPR
       o.slots(ReadSlotPacking.XERPort1).idx := XERMask.SO
@@ -134,18 +146,22 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
       val mask = U(1) << field_select
       when(bf(0) === False) {
         o.write_interface.slots(WriteSlotPacking.CRPort1).idx := mask.resized
-        o.write_interface.slots(WriteSlotPacking.CRPort1).sel := SourceSelect.CRA
+        o.write_interface
+          .slots(WriteSlotPacking.CRPort1)
+          .sel := SourceSelect.CRA
       }.otherwise {
         o.write_interface.slots(WriteSlotPacking.CRPort2).idx := mask.resized
-        o.write_interface.slots(WriteSlotPacking.CRPort2).sel := SourceSelect.CRB
+        o.write_interface
+          .slots(WriteSlotPacking.CRPort2)
+          .sel := SourceSelect.CRB
       }
       o.imm.valid := True
       o.imm.payload := Forms.D2.UI(i.insn).resized
     }
 
-    is(FormEnums.D5){
+    is(FormEnums.D5) {
       val ra = Forms.D5.RA(i.insn)
-      when( ra =/= 0) {
+      when(ra =/= 0) {
         o.slots(ReadSlotPacking.GPRPort1).idx := Forms.D5.RA(i.insn).resized
         o.slots(ReadSlotPacking.GPRPort1).sel := SourceSelect.GPR
       }
@@ -160,10 +176,12 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
       }
     }
 
-    is(FormEnums.D6){
+    is(FormEnums.D6) {
       o.slots(ReadSlotPacking.GPRPort1).idx := Forms.D6.RS(i.insn).resized
       o.slots(ReadSlotPacking.GPRPort1).sel := SourceSelect.GPR
-      o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.D6.RA(i.insn).resized
+      o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.D6
+        .RA(i.insn)
+        .resized
       o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
       o.imm.valid := True
       o.imm.payload := Forms.D6.UI(i.insn).resized
@@ -172,33 +190,49 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
         // use an output slot to hold the data to write to CR field 0
         // Select cr0 (the most significant 4 bits of the data field)
         o.write_interface.slots(WriteSlotPacking.CRPort1).idx := 0x8
-        o.write_interface.slots(WriteSlotPacking.CRPort1).sel := SourceSelect.CRA
+        o.write_interface
+          .slots(WriteSlotPacking.CRPort1)
+          .sel := SourceSelect.CRA
         o.compare.activate := i.insn(28)
         o.compare.in_slot := WriteSlotPacking.GPRPort1
         o.compare.out_slot := WriteSlotPacking.CRPort1
       }
     }
 
-    is(FormEnums.D7){
+    is(FormEnums.D7) {
       val ra = Forms.D7.RA(i.insn)
-      when(ra =/= 0){
+      when(ra =/= 0) {
         o.slots(ReadSlotPacking.GPRPort1).idx := ra.resized
         o.slots(ReadSlotPacking.GPRPort1).sel := SourceSelect.GPR
       }
-      o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.D7.RT(i.insn).resized
+      o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.D7
+        .RT(i.insn)
+        .resized
       o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
       o.imm.valid := True
       o.imm.payload := Forms.D7.D(i.insn).resize(64).asUInt
-      when(i.opcode === MnemonicEnums.lbz) {
-        o.ldst_request.req_type := TransactionType.LOAD
-        o.ldst_request.size := TransactionSize.BYTE
-        o.ldst_request.load_dest_slot := 0
+      switch(i.opcode) {
+        is(MnemonicEnums.lbz) {
+          o.ldst_request.req_type := TransactionType.LOAD
+          o.ldst_request.size := TransactionSize.BYTE
+          o.ldst_request.load_dest_slot := 0
+        }
+        is(MnemonicEnums.lwz, MnemonicEnums.lwzu) {
+          o.ldst_request.req_type := TransactionType.LOAD
+          o.ldst_request.size := TransactionSize.WORD
+          o.ldst_request.load_dest_slot := 0
+        }
+        is(MnemonicEnums.lhz, MnemonicEnums.lhzu) {
+          o.ldst_request.req_type := TransactionType.LOAD
+          o.ldst_request.size := TransactionSize.HALFWORD
+          o.ldst_request.load_dest_slot := 0
+        }
       }
     }
 
-    is(FormEnums.D8){
+    is(FormEnums.D8) {
       val ra = Forms.D8.RA(i.insn)
-      when(ra =/= 0){
+      when(ra =/= 0) {
         o.slots(ReadSlotPacking.GPRPort1).idx := ra.resized
         o.slots(ReadSlotPacking.GPRPort1).sel := SourceSelect.GPR
       }
@@ -210,14 +244,20 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
       when(i.opcode === MnemonicEnums.addicdot) {
         addRC()
       }
-      when(i.opcode === MnemonicEnums.addic || i.opcode === MnemonicEnums.addicdot){
-        o.write_interface.slots(WriteSlotPacking.XERPort1).idx := XERMask.CA | XERMask.CA32
-        o.write_interface.slots(WriteSlotPacking.XERPort1).sel := SourceSelect.XER
+      when(
+        i.opcode === MnemonicEnums.addic || i.opcode === MnemonicEnums.addicdot
+      ) {
+        o.write_interface
+          .slots(WriteSlotPacking.XERPort1)
+          .idx := XERMask.CA | XERMask.CA32
+        o.write_interface
+          .slots(WriteSlotPacking.XERPort1)
+          .sel := SourceSelect.XER
       }
 
       if (debug_form) { debug_form_d8 }
       def debug_form_d8 {
-        when (pipeOutput.fire) {
+        when(pipeOutput.fire) {
           // printf(p"\tRA: $ra\n")
           // printf(p"\tRT: $rt\n")
         }
@@ -225,16 +265,17 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
     }
 
     // TODO revisit these and come up with a resolution for e.g. std and stdu sharing a form but having different R/W behavior
-    is(FormEnums.DS3){
-    }
-    is(FormEnums.DS5){
+    is(FormEnums.DS3) {}
+    is(FormEnums.DS5) {
       // printf("Populating fields for form DS5\n")
       val ra = Forms.DS5.RA(i.insn)
       when(ra =/= 0) {
         o.slots(ReadSlotPacking.GPRPort1).idx := ra.resized
         o.slots(ReadSlotPacking.GPRPort1).sel := SourceSelect.GPR
       }
-      o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.DS5.RT(i.insn).resized
+      o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.DS5
+        .RT(i.insn)
+        .resized
       o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
       o.imm.valid := True
       o.imm.payload := Forms.DS5.DS(i.insn).resize(64).asUInt
@@ -247,75 +288,93 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
     }
 
     // TODO make sure this fully supports everything used in b[l][a]
-    is(FormEnums.I1){
+    is(FormEnums.I1) {
       o.imm.valid := True
       val li = Forms.I1.LI(i.insn)
       val li_si = SInt(o.imm.payload.getWidth bits)
       li_si := li.resize(o.imm.payload.getWidth)
       o.imm.payload := li_si.asUInt
-      when(Forms.I1.LK(i.insn) === True){
-        o.write_interface.slots(WriteSlotPacking.SPRPort1).idx := SPREnums.LR.asBits.asUInt
-        o.write_interface.slots(WriteSlotPacking.SPRPort1).sel := SourceSelect.SPR
+      when(Forms.I1.LK(i.insn) === True) {
+        o.write_interface
+          .slots(WriteSlotPacking.SPRPort1)
+          .idx := SPREnums.LR.asBits.asUInt
+        o.write_interface
+          .slots(WriteSlotPacking.SPRPort1)
+          .sel := SourceSelect.SPR
       }
     }
 
-    is(FormEnums.M2){
+    is(FormEnums.M2) {
       o.slots(ReadSlotPacking.GPRPort1).idx := Forms.M2.RS(i.insn).resized
       o.slots(ReadSlotPacking.GPRPort1).sel := SourceSelect.GPR
-      when(i.opcode === MnemonicEnums.rlwimi_dot_){
+      when(i.opcode === MnemonicEnums.rlwimi_dot_) {
         o.slots(ReadSlotPacking.GPRPort3).idx := Forms.M2.RA(i.insn).resized
         o.slots(ReadSlotPacking.GPRPort3).sel := SourceSelect.GPR
       }
       o.imm.valid := True
       o.imm.payload := Forms.M2.SH(i.insn).resized
-      o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.M2.RA(i.insn).resized
+      o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.M2
+        .RA(i.insn)
+        .resized
       o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
-      when(Forms.M2.Rc(i.insn) === True){
+      when(Forms.M2.Rc(i.insn) === True) {
         addRC()
       }
     }
 
-    is(FormEnums.MD1){
+    is(FormEnums.MD1) {
       o.slots(ReadSlotPacking.GPRPort1).idx := Forms.MD1.RS(i.insn).resized
       o.slots(ReadSlotPacking.GPRPort1).sel := SourceSelect.GPR
-      when(i.opcode === MnemonicEnums.rldimi_dot_){
+      when(i.opcode === MnemonicEnums.rldimi_dot_) {
         o.slots(ReadSlotPacking.GPRPort3).idx := Forms.MD1.RA(i.insn).resized
         o.slots(ReadSlotPacking.GPRPort3).sel := SourceSelect.GPR
       }
       o.imm.valid := True
-      o.imm.payload := Cat(Forms.MD1.sh2(i.insn), Forms.MD1.sh1(i.insn)).asUInt.resized
-      o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.MD1.RA(i.insn).resized
+      o.imm.payload := Cat(
+        Forms.MD1.sh2(i.insn),
+        Forms.MD1.sh1(i.insn)
+      ).asUInt.resized
+      o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.MD1
+        .RA(i.insn)
+        .resized
       o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
-      when(Forms.MD1.Rc(i.insn) === True){
+      when(Forms.MD1.Rc(i.insn) === True) {
         addRC()
       }
     }
 
-    is(FormEnums.MD2){
+    is(FormEnums.MD2) {
       o.slots(ReadSlotPacking.GPRPort1).idx := Forms.MD2.RS(i.insn).resized
       o.slots(ReadSlotPacking.GPRPort1).sel := SourceSelect.GPR
       o.imm.valid := True
-      o.imm.payload := Cat(Forms.MD2.sh2(i.insn), Forms.MD2.sh1(i.insn)).asUInt.resized
-      o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.MD2.RA(i.insn).resized
+      o.imm.payload := Cat(
+        Forms.MD2.sh2(i.insn),
+        Forms.MD2.sh1(i.insn)
+      ).asUInt.resized
+      o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.MD2
+        .RA(i.insn)
+        .resized
       o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
-      when(Forms.MD2.Rc(i.insn) === True){
+      when(Forms.MD2.Rc(i.insn) === True) {
         addRC()
       }
     }
 
-    is(FormEnums.MDS2){
+    is(FormEnums.MDS2) {
       o.slots(ReadSlotPacking.GPRPort1).idx := Forms.MDS2.RS(i.insn).resized
       o.slots(ReadSlotPacking.GPRPort1).sel := SourceSelect.GPR
       o.slots(ReadSlotPacking.GPRPort2).idx := Forms.MDS2.RB(i.insn).resized
       o.slots(ReadSlotPacking.GPRPort2).sel := SourceSelect.GPR
-      o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.MDS2.RA(i.insn).resized
+      o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.MDS2
+        .RA(i.insn)
+        .resized
       o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
-      when(Forms.MDS2.Rc(i.insn) === True){
+      when(Forms.MDS2.Rc(i.insn) === True) {
         addRC()
       }
     }
 
-    is(FormEnums.X30){
+    is(FormEnums.X30) {
       o.slots(ReadSlotPacking.GPRPort1).idx := Forms.X30.RA(i.insn).resized
       o.slots(ReadSlotPacking.GPRPort1).sel := SourceSelect.GPR
       o.slots(ReadSlotPacking.GPRPort2).idx := Forms.X30.RB(i.insn).resized
@@ -327,46 +386,58 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
       val mask = U(1) << field_select
       when(bf(0) === False) {
         o.write_interface.slots(WriteSlotPacking.CRPort1).idx := mask.resized
-        o.write_interface.slots(WriteSlotPacking.CRPort1).sel := SourceSelect.CRA
+        o.write_interface
+          .slots(WriteSlotPacking.CRPort1)
+          .sel := SourceSelect.CRA
       }.otherwise {
         o.write_interface.slots(WriteSlotPacking.CRPort2).idx := mask.resized
-        o.write_interface.slots(WriteSlotPacking.CRPort2).sel := SourceSelect.CRB
+        o.write_interface
+          .slots(WriteSlotPacking.CRPort2)
+          .sel := SourceSelect.CRB
       }
     }
 
-    is(FormEnums.X62){
+    is(FormEnums.X62) {
       o.slots(ReadSlotPacking.GPRPort1).idx := Forms.X62.RS(i.insn).resized
       o.slots(ReadSlotPacking.GPRPort1).sel := SourceSelect.GPR
-      o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.X62.RA(i.insn).resized
+      o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.X62
+        .RA(i.insn)
+        .resized
       o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
-      when(Forms.X62.Rc(i.insn) === True){
+      when(Forms.X62.Rc(i.insn) === True) {
         addRC()
       }
     }
-    is(FormEnums.X60){
+    is(FormEnums.X60) {
       o.slots(ReadSlotPacking.GPRPort1).idx := Forms.X62.RS(i.insn).resized
       o.slots(ReadSlotPacking.GPRPort1).sel := SourceSelect.GPR
-      o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.X62.RA(i.insn).resized
+      o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.X62
+        .RA(i.insn)
+        .resized
       o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
     }
 
-    is(FormEnums.X65){
+    is(FormEnums.X65) {
       o.slots(ReadSlotPacking.GPRPort1).idx := Forms.X65.RS(i.insn).resized
       o.slots(ReadSlotPacking.GPRPort1).sel := SourceSelect.GPR
       o.imm.valid := True
       o.imm.payload := Forms.X65.SH(i.insn).resized
-      o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.X65.RA(i.insn).resized
+      o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.X65
+        .RA(i.insn)
+        .resized
       o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
-      o.write_interface.slots(WriteSlotPacking.XERPort1).idx := XERMask.CA | XERMask.CA32
+      o.write_interface
+        .slots(WriteSlotPacking.XERPort1)
+        .idx := XERMask.CA | XERMask.CA32
       o.write_interface.slots(WriteSlotPacking.XERPort1).sel := SourceSelect.XER
-      when(Forms.X62.Rc(i.insn) === True){
+      when(Forms.X62.Rc(i.insn) === True) {
         addRC()
       }
     }
 
-    is(FormEnums.X66){
-      val ra  = Forms.X66.RA(i.insn)
-      when(ra =/= 0){
+    is(FormEnums.X66) {
+      val ra = Forms.X66.RA(i.insn)
+      when(ra =/= 0) {
         o.slots(ReadSlotPacking.GPRPort1).idx := ra.resized
         o.slots(ReadSlotPacking.GPRPort1).sel := SourceSelect.GPR
       }
@@ -376,217 +447,296 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface){
       o.slots(ReadSlotPacking.GPRPort3).sel := SourceSelect.GPR
     }
 
-    is(FormEnums.X68){
+    is(FormEnums.X68) {
       o.slots(ReadSlotPacking.GPRPort1).idx := Forms.X68.RS(i.insn).resized
       o.slots(ReadSlotPacking.GPRPort1).sel := SourceSelect.GPR
       o.slots(ReadSlotPacking.GPRPort2).idx := Forms.X68.RB(i.insn).resized
       o.slots(ReadSlotPacking.GPRPort2).sel := SourceSelect.GPR
-      when(i.opcode === MnemonicEnums.srad_dot_ || i.opcode === MnemonicEnums.sraw_dot_){
-        o.write_interface.slots(WriteSlotPacking.XERPort1).idx := XERMask.CA | XERMask.CA32
-        o.write_interface.slots(WriteSlotPacking.XERPort1).sel := SourceSelect.XER
+      when(
+        i.opcode === MnemonicEnums.srad_dot_ || i.opcode === MnemonicEnums.sraw_dot_
+      ) {
+        o.write_interface
+          .slots(WriteSlotPacking.XERPort1)
+          .idx := XERMask.CA | XERMask.CA32
+        o.write_interface
+          .slots(WriteSlotPacking.XERPort1)
+          .sel := SourceSelect.XER
       }
-      o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.X68.RA(i.insn).resized
+      o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.X68
+        .RA(i.insn)
+        .resized
       o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
-      when(Forms.X68.Rc(i.insn) === True){
+      when(Forms.X68.Rc(i.insn) === True) {
         addRC()
       }
     }
 
-    is(FormEnums.X77){
-      val ra  = Forms.X77.RA(i.insn)
-      when(ra =/= 0){
+    is(FormEnums.X77) {
+      val ra = Forms.X77.RA(i.insn)
+      when(ra =/= 0) {
         o.slots(ReadSlotPacking.GPRPort1).idx := ra.resized
         o.slots(ReadSlotPacking.GPRPort1).sel := SourceSelect.GPR
       }
       o.slots(ReadSlotPacking.GPRPort2).idx := Forms.X77.RB(i.insn).resized
       o.slots(ReadSlotPacking.GPRPort2).sel := SourceSelect.GPR
 
-      o.write_interface.slots(ReadSlotPacking.GPRPort1).idx := Forms.X77.RT(i.insn).resized
+      o.write_interface.slots(ReadSlotPacking.GPRPort1).idx := Forms.X77
+        .RT(i.insn)
+        .resized
       o.write_interface.slots(ReadSlotPacking.GPRPort1).sel := SourceSelect.GPR
-      o.write_interface.slots(ReadSlotPacking.GPRPort2).idx := Forms.X77.RA(i.insn).resized
+      o.write_interface.slots(ReadSlotPacking.GPRPort2).idx := Forms.X77
+        .RA(i.insn)
+        .resized
       o.write_interface.slots(ReadSlotPacking.GPRPort2).sel := SourceSelect.GPR
     }
 
-    is(FormEnums.XFX2, FormEnums.XFX3){
+    is(FormEnums.XFX2, FormEnums.XFX3) {
       o.slots(ReadSlotPacking.GPRPort1).idx := Forms.XFX2.RS(i.insn).resized
       o.slots(ReadSlotPacking.GPRPort1).sel := SourceSelect.GPR
       val fxm = Forms.XFX3.FXM(i.insn)
       val maska = Cat(fxm(7), fxm(5), fxm(3), fxm(1))
       val maskb = Cat(fxm(6), fxm(4), fxm(2), fxm(0))
-      
+
       // If any bits are set in mask a
-      when(maska =/= 0){
-        o.write_interface.slots(WriteSlotPacking.CRPort1).idx := maska.asUInt.resized
-        o.write_interface.slots(WriteSlotPacking.CRPort1).sel := SourceSelect.CRA
+      when(maska =/= 0) {
+        o.write_interface
+          .slots(WriteSlotPacking.CRPort1)
+          .idx := maska.asUInt.resized
+        o.write_interface
+          .slots(WriteSlotPacking.CRPort1)
+          .sel := SourceSelect.CRA
       }
-      when(maskb =/= 0){
-        o.write_interface.slots(WriteSlotPacking.CRPort2).idx := maskb.asUInt.resized
-        o.write_interface.slots(WriteSlotPacking.CRPort2).sel := SourceSelect.CRB
+      when(maskb =/= 0) {
+        o.write_interface
+          .slots(WriteSlotPacking.CRPort2)
+          .idx := maskb.asUInt.resized
+        o.write_interface
+          .slots(WriteSlotPacking.CRPort2)
+          .sel := SourceSelect.CRB
       }
     }
-    is(FormEnums.XFX4){
+    is(FormEnums.XFX4) {
       val rs = Forms.XFX4.RS(i.insn)
-      when(spr === SPREnums.XER.asBits.asUInt){
+      when(spr === SPREnums.XER.asBits.asUInt) {
         o.dec_data.opcode := MnemonicEnums.mtxer
         o.slots(ReadSlotPacking.GPRPort1).idx := rs.resized
         o.slots(ReadSlotPacking.GPRPort1).sel := SourceSelect.GPR
         o.write_interface.slots(WriteSlotPacking.XERPort1).idx := XERMask.ALL
-        o.write_interface.slots(WriteSlotPacking.XERPort1).sel := SourceSelect.XER
-      }.otherwise{
+        o.write_interface
+          .slots(WriteSlotPacking.XERPort1)
+          .sel := SourceSelect.XER
+      }.otherwise {
         o.slots(ReadSlotPacking.GPRPort1).idx := rs.resized
         o.slots(ReadSlotPacking.GPRPort1).sel := SourceSelect.GPR
         o.write_interface.slots(WriteSlotPacking.SPRPort1).idx := spr.resized
-        o.write_interface.slots(WriteSlotPacking.SPRPort1).sel := SourceSelect.SPR
+        o.write_interface
+          .slots(WriteSlotPacking.SPRPort1)
+          .sel := SourceSelect.SPR
       }
     }
 
-    is(FormEnums.XFX5){
+    is(FormEnums.XFX5) {
       o.slots(ReadSlotPacking.CRPort1).idx := 0xf
       o.slots(ReadSlotPacking.CRPort1).sel := SourceSelect.CRA
       o.slots(ReadSlotPacking.CRPort2).idx := 0xf
       o.slots(ReadSlotPacking.CRPort2).sel := SourceSelect.CRB
-      o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.XFX5.RT(i.insn).resized
+      o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.XFX5
+        .RT(i.insn)
+        .resized
       o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
     }
-    is(FormEnums.XFX6){
+    is(FormEnums.XFX6) {
       val fxm = Forms.XFX6.FXM(i.insn)
       val maska = Cat(fxm(7), fxm(5), fxm(3), fxm(1))
       val maskb = Cat(fxm(6), fxm(4), fxm(2), fxm(0))
-      when(maska =/= 0){
+      when(maska =/= 0) {
         o.slots(ReadSlotPacking.CRPort1).idx := 0xf
         o.slots(ReadSlotPacking.CRPort1).sel := SourceSelect.CRA
       }
-      when(maskb =/= 0){
+      when(maskb =/= 0) {
         o.slots(ReadSlotPacking.CRPort2).idx := 0xf
         o.slots(ReadSlotPacking.CRPort2).sel := SourceSelect.CRB
       }
-      o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.XFX6.RT(i.insn).resized
+      o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.XFX6
+        .RT(i.insn)
+        .resized
       o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
     }
 
     // TODO check if the address returned from XFX8.spr is properly encoded
-    is(FormEnums.XFX8){
+    is(FormEnums.XFX8) {
       // val spr_fields = Forms.XFX8.spr(i.insn)
       // val spr = UInt(10 bits)
       // spr := Cat(spr_fields(5 downto 0), spr_fields(9 downto 6)).asUInt
-      when(spr === SPREnums.XER.asBits.asUInt){
+      when(spr === SPREnums.XER.asBits.asUInt) {
         o.dec_data.opcode := MnemonicEnums.mfxer
         o.slots(ReadSlotPacking.XERPort1).idx := XERMask.ALL
         o.slots(ReadSlotPacking.XERPort1).sel := SourceSelect.XER
-        o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.XFX8.RT(i.insn).resized
-        o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
-      }.otherwise{
+        o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.XFX8
+          .RT(i.insn)
+          .resized
+        o.write_interface
+          .slots(WriteSlotPacking.GPRPort1)
+          .sel := SourceSelect.GPR
+      }.otherwise {
         o.slots(ReadSlotPacking.SPRPort1).idx := spr
         o.slots(ReadSlotPacking.SPRPort1).sel := SourceSelect.SPR
-        o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.XFX8.RT(i.insn).resized
-        o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
+        o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.XFX8
+          .RT(i.insn)
+          .resized
+        o.write_interface
+          .slots(WriteSlotPacking.GPRPort1)
+          .sel := SourceSelect.GPR
       }
     }
 
     // TODO revisit this one to determine if further sub-forms are necesarry
-    is(FormEnums.XL4){
-      when(i.opcode === MnemonicEnums.bclr_l_){
+    is(FormEnums.XL4) {
+      when(i.opcode === MnemonicEnums.bclr_l_) {
         o.slots(ReadSlotPacking.SPRPort1).idx := SPREnums.LR.asBits.asUInt
         o.slots(ReadSlotPacking.SPRPort1).sel := SourceSelect.SPR
       }
-      when(i.opcode === MnemonicEnums.bcctr_l_){
+      when(i.opcode === MnemonicEnums.bcctr_l_) {
         o.slots(ReadSlotPacking.SPRPort1).idx := SPREnums.CTR.asBits.asUInt
         o.slots(ReadSlotPacking.SPRPort1).sel := SourceSelect.SPR
       }
-      when(i.opcode === MnemonicEnums.bctar_l_){
+      when(i.opcode === MnemonicEnums.bctar_l_) {
         o.slots(ReadSlotPacking.SPRPort1).idx := SPREnums.CTR.asBits.asUInt
         o.slots(ReadSlotPacking.SPRPort1).sel := SourceSelect.SPR
       }
     }
 
-    is(FormEnums.XO1){
+    is(FormEnums.XO1) {
       o.slots(ReadSlotPacking.GPRPort1).idx := Forms.XO1.RA(i.insn).resized
       o.slots(ReadSlotPacking.GPRPort1).sel := SourceSelect.GPR
-      o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.XO1.RT(i.insn).resized
+      o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.XO1
+        .RT(i.insn)
+        .resized
       o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
-      when(Forms.XO1.OE(i.insn) === True){
-        o.write_interface.slots(WriteSlotPacking.XERPort1).idx := XERMask.SO | XERMask.OV | XERMask.OV32
-        o.write_interface.slots(WriteSlotPacking.XERPort1).sel := SourceSelect.XER
+      when(Forms.XO1.OE(i.insn) === True) {
+        o.write_interface
+          .slots(WriteSlotPacking.XERPort1)
+          .idx := XERMask.SO | XERMask.OV | XERMask.OV32
+        o.write_interface
+          .slots(WriteSlotPacking.XERPort1)
+          .sel := SourceSelect.XER
       }
-      when(Forms.XO1.Rc(i.insn) === True){
+      when(Forms.XO1.Rc(i.insn) === True) {
         addRC()
       }
-      switch(i.opcode){
-        is(MnemonicEnums.addme_o__dot_, MnemonicEnums.subfme_o__dot_,
-        MnemonicEnums.addze_o__dot_, MnemonicEnums.subfze_o__dot_){
+      switch(i.opcode) {
+        is(
+          MnemonicEnums.addme_o__dot_,
+          MnemonicEnums.subfme_o__dot_,
+          MnemonicEnums.addze_o__dot_,
+          MnemonicEnums.subfze_o__dot_
+        ) {
           o.slots(ReadSlotPacking.XERPort1).idx := XERMask.CA
           o.slots(ReadSlotPacking.XERPort1).sel := SourceSelect.XER
-          o.write_interface.slots(WriteSlotPacking.XERPort1).idx := XERMask.CA | XERMask.CA32
-          o.write_interface.slots(WriteSlotPacking.XERPort1).sel := SourceSelect.XER
-          when(Forms.XO1.OE(i.insn) === True){
-            o.write_interface.slots(WriteSlotPacking.XERPort1).idx := XERMask.SO | XERMask.OV | XERMask.OV32 | XERMask.CA | XERMask.CA32
-            o.write_interface.slots(WriteSlotPacking.XERPort1).sel := SourceSelect.XER
+          o.write_interface
+            .slots(WriteSlotPacking.XERPort1)
+            .idx := XERMask.CA | XERMask.CA32
+          o.write_interface
+            .slots(WriteSlotPacking.XERPort1)
+            .sel := SourceSelect.XER
+          when(Forms.XO1.OE(i.insn) === True) {
+            o.write_interface
+              .slots(WriteSlotPacking.XERPort1)
+              .idx := XERMask.SO | XERMask.OV | XERMask.OV32 | XERMask.CA | XERMask.CA32
+            o.write_interface
+              .slots(WriteSlotPacking.XERPort1)
+              .sel := SourceSelect.XER
           }
         }
       }
     }
 
-    is(FormEnums.XO3){
+    is(FormEnums.XO3) {
       o.slots(ReadSlotPacking.GPRPort1).idx := Forms.XO3.RA(i.insn).resized
       o.slots(ReadSlotPacking.GPRPort1).sel := SourceSelect.GPR
       o.slots(ReadSlotPacking.GPRPort2).idx := Forms.XO3.RB(i.insn).resized
       o.slots(ReadSlotPacking.GPRPort2).sel := SourceSelect.GPR
-      o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.XO3.RT(i.insn).resized
+      o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.XO3
+        .RT(i.insn)
+        .resized
       o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
-      when(Forms.XO3.Rc(i.insn) === True){
+      when(Forms.XO3.Rc(i.insn) === True) {
         addRC()
       }
     }
 
-    is(FormEnums.XO4){
+    is(FormEnums.XO4) {
       o.slots(ReadSlotPacking.GPRPort1).idx := Forms.XO4.RA(i.insn).resized
       o.slots(ReadSlotPacking.GPRPort1).sel := SourceSelect.GPR
       o.slots(ReadSlotPacking.GPRPort2).idx := Forms.XO4.RB(i.insn).resized
       o.slots(ReadSlotPacking.GPRPort2).sel := SourceSelect.GPR
-      o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.XO4.RT(i.insn).resized
+      o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.XO4
+        .RT(i.insn)
+        .resized
       o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
-      when(Forms.XO4.Rc(i.insn) === True){
+      when(Forms.XO4.Rc(i.insn) === True) {
         addRC()
       }
-      when(Forms.XO4.OE(i.insn) === True){
-        o.write_interface.slots(WriteSlotPacking.XERPort1).idx := XERMask.OV | XERMask.OV32 | XERMask.SO
-        o.write_interface.slots(WriteSlotPacking.XERPort1).sel := SourceSelect.XER
+      when(Forms.XO4.OE(i.insn) === True) {
+        o.write_interface
+          .slots(WriteSlotPacking.XERPort1)
+          .idx := XERMask.OV | XERMask.OV32 | XERMask.SO
+        o.write_interface
+          .slots(WriteSlotPacking.XERPort1)
+          .sel := SourceSelect.XER
       }
-      switch(i.opcode){
-        is(MnemonicEnums.adde_o__dot_, MnemonicEnums.subfe_o__dot_){
+      switch(i.opcode) {
+        is(MnemonicEnums.adde_o__dot_, MnemonicEnums.subfe_o__dot_) {
           o.slots(ReadSlotPacking.XERPort1).idx := XERMask.CA
           o.slots(ReadSlotPacking.XERPort1).sel := SourceSelect.XER
-          when(Forms.XO4.Rc(i.insn) === True){
+          when(Forms.XO4.Rc(i.insn) === True) {
             o.slots(ReadSlotPacking.XERPort1).idx := XERMask.CA | XERMask.SO
           }
         }
       }
-      switch(i.opcode){
-        is(MnemonicEnums.addc_o__dot_, MnemonicEnums.subfc_o__dot_,
-        MnemonicEnums.adde_o__dot_, MnemonicEnums.subfe_o__dot_){
+      switch(i.opcode) {
+        is(
+          MnemonicEnums.addc_o__dot_,
+          MnemonicEnums.subfc_o__dot_,
+          MnemonicEnums.adde_o__dot_,
+          MnemonicEnums.subfe_o__dot_
+        ) {
 
-          o.write_interface.slots(WriteSlotPacking.XERPort1).sel := SourceSelect.XER
-          when(Forms.XO4.OE(i.insn) === True){
-            o.write_interface.slots(WriteSlotPacking.XERPort1).idx := XERMask.OV | XERMask.OV32 |
+          o.write_interface
+            .slots(WriteSlotPacking.XERPort1)
+            .sel := SourceSelect.XER
+          when(Forms.XO4.OE(i.insn) === True) {
+            o.write_interface
+              .slots(WriteSlotPacking.XERPort1)
+              .idx := XERMask.OV | XERMask.OV32 |
               XERMask.SO | XERMask.CA | XERMask.CA32
-          }.otherwise{
-            o.write_interface.slots(WriteSlotPacking.XERPort1).idx := XERMask.CA | XERMask.CA32
+          }.otherwise {
+            o.write_interface
+              .slots(WriteSlotPacking.XERPort1)
+              .idx := XERMask.CA | XERMask.CA32
           }
         }
       }
     }
 
-    is(FormEnums.XS1){
+    is(FormEnums.XS1) {
       o.slots(ReadSlotPacking.GPRPort1).idx := Forms.XS1.RS(i.insn).resized
       o.slots(ReadSlotPacking.GPRPort1).sel := SourceSelect.GPR
       o.imm.valid := True
-      o.imm.payload := Cat(Forms.XS1.sh2(i.insn), Forms.XS1.sh1(i.insn)).asUInt.resized
-      o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.XS1.RA(i.insn).resized
+      o.imm.payload := Cat(
+        Forms.XS1.sh2(i.insn),
+        Forms.XS1.sh1(i.insn)
+      ).asUInt.resized
+      o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.XS1
+        .RA(i.insn)
+        .resized
       o.write_interface.slots(WriteSlotPacking.GPRPort1).sel := SourceSelect.GPR
       // TODO determine what field is written here
-      o.write_interface.slots(WriteSlotPacking.XERPort1).idx := XERMask.CA | XERMask.CA32
+      o.write_interface
+        .slots(WriteSlotPacking.XERPort1)
+        .idx := XERMask.CA | XERMask.CA32
       o.write_interface.slots(WriteSlotPacking.XERPort1).sel := SourceSelect.XER
-      when(Forms.XS1.Rc(i.insn) === True){
+      when(Forms.XS1.Rc(i.insn) === True) {
         addRC()
       }
     }

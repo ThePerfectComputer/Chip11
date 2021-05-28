@@ -21,7 +21,7 @@ oris 8, 8, 0x9abc
 ori 8, 8, 0xdef0
 mtcr 1
 
-test_load:
+test_load8:
 lis 17, ld_data@h                                 # 22
 ori 17, 17, ld_data@l                             # 23
 ld 18, 0(17)                                      # 24
@@ -38,11 +38,11 @@ hang: b hang
 .section .data
 data:
 ld_data:
-.quad 0xdc
-.quad 0x81
-.quad 0xec
-.quad 0xab
-.quad 0xc8
-.quad 0x24
-.quad 0x40
-.quad 0xa0
+.quad 0x752d8772f82c7970
+.quad 0x1b9eb6ecd4748779
+.quad 0x375c3b46e64a1315
+.quad 0x6f96aee420c78e24
+.quad 0x1d8c431c06983371
+.quad 0x6c137ad4d2760e6f
+.quad 0x5c7ac0ea149b6ab9
+.quad 0x446e3c9075c52322

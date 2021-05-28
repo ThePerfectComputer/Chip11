@@ -423,7 +423,7 @@ mtcr 1
             ])
         self.add_code(self.id(), insns)
 
-    def test_load(self):
+    def test_load8(self):
         insns = []
         data = []
         data_items = 8
@@ -433,8 +433,22 @@ mtcr 1
             insns.append(f"ld 18, {i*8}(17)")
         data.append("ld_data:")
         for i in range(data_items):
-            rand = self.rand.randint(0, 256)
+            rand = self.rand.randint(0, 1<<64-1)
             data.append(f".quad 0x{rand:x}")
+        self.add_code(self.id(), insns, data)
+
+    def test_load4(self):
+        insns = []
+        data = []
+        data_items = 8
+        insns.extend(["lis 17, ld_data@h",
+                      "ori 17, 17, ld_data@l"])
+        for i in range(data_items):
+            insns.append(f"lwz 18, {i*4}(17)")
+        data.append("ld_data:")
+        for i in range(data_items):
+            rand = self.rand.randint(0, 1<<32-1)
+            data.append(f".long 0x{rand:x}")
         self.add_code(self.id(), insns, data)
         
         
