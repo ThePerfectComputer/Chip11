@@ -29,6 +29,10 @@ class Comparator(val wid: Int) extends Component {
   a_32b := io.a(31 downto 0).asSInt
   b_32b := io.b(31 downto 0).asSInt
 
+  val result = UInt(65 bits)
+  result := a.asUInt -^ b.asUInt
+  val not_eq = result.orR
+
 
   when(!io.is_64b){
     when(io.logical){
@@ -43,17 +47,17 @@ class Comparator(val wid: Int) extends Component {
     b := io.b.asSInt
   }
   when(io.logical){
-    when(a.asUInt < b.asUInt){
+    when(result(64)){
       io.o := 4
-    }.elsewhen(a.asUInt > b.asUInt){
+    }.elsewhen(not_eq){
       io.o := 2
     }.otherwise{
       io.o := 1
     }
   }.otherwise{
-    when(a < b){
+    when(result(63)){
       io.o := 4
-    }.elsewhen(a > b){
+    }.elsewhen(not_eq){
       io.o := 2
     }.otherwise{
       io.o := 1

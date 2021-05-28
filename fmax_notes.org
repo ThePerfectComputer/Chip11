@@ -31,6 +31,8 @@
 | just popcnt                                               | 61.59 |       |                                 |
 | full cpu, pipelined partial 0 bits                        |  47.2 |       | s2 adder                        |
 | full cpu, pipelined partial 1 bits                        |  47.0 |       | hazard                          |
+| post rebase                                               | 47.59 |       | comparator                      |
+| no comparator                                             | 52.54 |       | hazard? not sure                |
 
 * Hazard Detector
 | Configuration       |  FMAx |
