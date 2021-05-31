@@ -157,15 +157,15 @@ class UOpsMapping(implicit config: CPUConfig) extends Component {
   val default = out(uOps(INTEGER, U(0), U(0)))
 
   val info = Map[MnemonicEnums.E, uOps]()
-    .++(if(config.branch) branch else Nil)
-    .++(if(config.adder) adder else Nil)
-    .++(if(config.logical) logic else Nil)
-    .++(if(config.multiplier) multiplier else Nil)
-    .++(if(config.shifter) shifter else Nil)
+    .++(branch)
+    .++(adder)
+    .++(logic)
+    .++(multiplier)
+    .++(shifter)
     .++(move)
-    .++(if(config.comparator) comparator else Nil)
-    .++(if(config.zcnt) zCnt else Nil)
-    .++(if(config.popcnt) popcnt else Nil)
+    .++(comparator)
+    .++(zCnt)
+    .++(popcnt)
 
   def lookup(x: MnemonicEnums.E) = 
     info getOrElse (x, default)

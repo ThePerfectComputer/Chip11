@@ -45,6 +45,8 @@
 | ^, s2m pipe before s2                                     |  47.06 |       |                                 |
 | ^, s2m pipe before hazard, write, and ldst                |  58.31 |       |                                 |
 | ^, enable logical, add, cmp, popcnt                       |  55.04 |       |                                 |
+| ^,with shifter                                            |  47.79 |       | strangely not shifter, decode   |
+| disable shifter, enable shifter part of decoder           |  53.47 |       | ???                             |
 
 * Hazard Detector
 | Configuration       |  FMAx |
