@@ -6,7 +6,6 @@ import spinal.lib._
 
 class CompareData extends Bundle {
   val activate = Bool()
-  val in_slot = UInt(3 bits)
   val out_slot = UInt(3 bits)
 }
 

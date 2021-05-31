@@ -51,7 +51,6 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface) {
     o.write_interface.slots(WriteSlotPacking.CRPort1).idx := 8
     o.write_interface.slots(WriteSlotPacking.CRPort1).sel := SourceSelect.CRA
     o.compare.activate := True
-    o.compare.in_slot := WriteSlotPacking.GPRPort1
     o.compare.out_slot := WriteSlotPacking.CRPort1
     o.slots(ReadSlotPacking.XERPort1).idx := XERMask.SO
     o.slots(ReadSlotPacking.XERPort1).sel := SourceSelect.XER
@@ -237,7 +236,6 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface) {
           .slots(WriteSlotPacking.CRPort1)
           .sel := SourceSelect.CRA
         o.compare.activate := i.insn(28)
-        o.compare.in_slot := WriteSlotPacking.GPRPort1
         o.compare.out_slot := WriteSlotPacking.CRPort1
       }
     }

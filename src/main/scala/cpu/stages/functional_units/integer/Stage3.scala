@@ -19,46 +19,44 @@ class Stage3 extends PipeStage(new ExecuteData, new FunctionalUnitExit) {
   val so_bit = Bool
   so_bit := i.so_bit
   val xer_slot = i.write_interface.slots(WriteSlotPacking.XERPort1)
-  when(xer_slot.sel === SourceSelect.XER && (xer_slot.idx & XERMask.SO) =/= 0){
+  when(xer_slot.sel === SourceSelect.XER && (xer_slot.idx & XERMask.SO) =/= 0) {
     so_bit := xer_slot.data(XERBits.SO)
   }
 
-  def compare_slot_value(slot : Slot) = {
+  def compare_slot_value(slot: Slot) = {
     val value = SInt(64 bits)
     value := slot.data(63 downto 0).asSInt
+
+    val not_eq = value.orR
     val cmp = UInt(3 bits)
-    when(value < 0){
+    // when(value < 0)
+    when(value(63)) {
       cmp := 4
-    }.elsewhen(value > 0){
+    // elsewhen(value > 0)
+    }.elsewhen(not_eq) {
       cmp := 2
-    }.otherwise{
+    }.otherwise {
       cmp := 1
     }
     Cat(cmp, so_bit)
   }
-    
 
-  when (i.compare.activate) {
+  when(i.compare.activate) {
     // look for the slot containing data to compare
-    for ((in_slot, in_index) <- i.write_interface.slots.zipWithIndex) {
-      // check if the index matches the in_slot value set during form population
-      when (in_index === i.compare.in_slot) {
-        // use the active slot's value to get the result of comparing to 0
-        val comparison = compare_slot_value(in_slot)
-        // look for the slot which will hold the compariso result
-        for ((out_slot, out_index) <- o.write_interface.slots.zipWithIndex) {
-          // check if the index matches the out_slot value set during form population
-          when (out_index === i.compare.out_slot) {
-            out_slot.data := Cat(comparison, B(0, 12 bits)).asUInt.resized
-            if (debug_stage3) {
-              // when (pipeOutput.fire()) {
-              //   printf(p"STAGE 3: Compared slot ${in_index.U} data 0x${Hexadecimal(in_slot.data)} to 0, got ${Binary(comparison)}\n")
-              // }
-            }
-          }
+    val value = i.write_interface.slots(WriteSlotPacking.GPRPort1)
+    // use the active slot's value to get the result of comparing to 0
+    val comparison = compare_slot_value(value)
+    // look for the slot which will hold the compariso result
+    for ((out_slot, out_index) <- o.write_interface.slots.zipWithIndex) {
+      // check if the index matches the out_slot value set during form population
+      when(out_index === i.compare.out_slot) {
+        out_slot.data := Cat(comparison, B(0, 12 bits)).asUInt.resized
+        if (debug_stage3) {
+          // when (pipeOutput.fire()) {
+          //   printf(p"STAGE 3: Compared slot ${in_index.U} data 0x${Hexadecimal(in_slot.data)} to 0, got ${Binary(comparison)}\n")
+          // }
         }
       }
     }
   }
 }
-
