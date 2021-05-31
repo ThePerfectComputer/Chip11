@@ -119,8 +119,8 @@ class CPU(implicit val config: CPUConfig) extends Component {
 
   // connect up pipeline stages
   fetch_resp << fetch_req.pipeOutput
-  fetch_resp >-> decode >-> form_pop >-> hazard >-> read >/->
-  s1 >-> s2 >-> s3 >/-> ldst_request >/-> ldst_response >/-> write
+  fetch_resp >-> decode >-> form_pop >/-> hazard >-> read >->
+  s1 >/-> s2 >-> s3 >-> ldst_request >/-> ldst_response >/-> write
 
   val flushLatency = LatencyAnalysis(s2.pipeInput.flush, fetch_resp.pipeOutput.flush)
   println(s"flush latency: $flushLatency")

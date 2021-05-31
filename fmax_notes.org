@@ -41,6 +41,10 @@
 | pipelined branch, nothing else                            | 53 MHz |       | ??? form pop?                   |
 | register flush signal in s2m pipe                         |  61.24 |       |                                 |
 | pipelined branch, new s2m pipe, everything but shifter    |  52.56 |       |                                 |
+| just branch, no s2m pipes                                 |  47.68 |       | ??? form pop?                   |
+| ^, s2m pipe before s2                                     |  47.06 |       |                                 |
+| ^, s2m pipe before hazard, write, and ldst                |  58.31 |       |                                 |
+| ^, enable logical, add, cmp, popcnt                       |  55.04 |       |                                 |
 
 * Hazard Detector
 | Configuration       |  FMAx |
