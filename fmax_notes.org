@@ -1,43 +1,46 @@
 * CPU
-| Configuration                                             |  FMax |  LUTs | critical path stage             |
-|-----------------------------------------------------------+-------+-------+---------------------------------|
-| Default(master)                                           | 35.47 | 26732 | s1                              |
-| execute disabled                                          | 52.88 | 11443 | ready path from write->form_pop |
-| execute disabled, extra s2m pipes                         | 57.63 | 14488 | hazard detector                 |
-| no hazard detector                                        | 75.81 | 11510 | decode mux                      |
-| execute, s2m pipes, no retime                             | 15.26 |       | WTF                             |
-| no hazard detector, no retime                             | 79.48 | 11267 | decoder                         |
-| better hazard detector                                    |  65.2 |       | form_pop somehow?               |
-| enable adder                                              |  64.5 | 18579 | hazard?                         |
-| enable logical                                            |  60.3 | 19268 |                                 |
-| enable comparator                                         |  50.5 | 20601 | s1                              |
-| enable shifter                                            | 32.26 | 31388 | s1                              |
-| just shifter                                              |  34.8 | 28257 | s1                              |
-| no shifter, popcnt and zcnt                               |  49.5 |       |                                 |
-| branch                                                    |  51.9 |       |                                 |
-| full cpu without shifter, retimed                         |  55.6 |       |                                 |
-| full cpu with shifter, retimed                            |  45.7 |       |                                 |
-| pipelined shifter                                         | 47.34 |       |                                 |
-| pipelined shifter with partial shift (2 bits)             | 51.98 |       |                                 |
-| pipelined shifter with partial shift (3 bits)             |  40.1 |       |                                 |
-| pipelined shifter with partial shift (1 bits)             |  47.9 |       |                                 |
-| pipelined shifter with partial shift (2 bits) no retiming | 52.22 |       |                                 |
-| pipelined shifter with partial shift (3 bits) no retiming |    48 |       |                                 |
-| pipelined shifter with partial shift (1 bits) no retiming | 51.89 |       |                                 |
-| full cpu, pipelined partial 1 bits                        |  47.8 |       |                                 |
-| full cpu, pipelined partial 0 bits                        |  48.9 |       |                                 |
-| full cpu, pipelined partial 2 bits                        | 46.74 |       | popcnt                          |
-| just popcnt                                               | 58.04 |       |                                 |
-| just popcnt                                               | 61.59 |       |                                 |
-| full cpu, pipelined partial 0 bits                        |  47.2 |       | s2 adder                        |
-| full cpu, pipelined partial 1 bits                        |  47.0 |       | hazard                          |
-| post rebase                                               | 47.59 |       | comparator                      |
-| no comparator                                             | 52.54 |       | hazard? not sure                |
-| pipelined comparator                                      | 49.08 |       | branch                          |
-| pipelined add,cmp,logic, nothing else                     | 66.91 |       |                                 |
-| pipelined comparator, no branch                           | 55.79 |       | shifter                         |
-| pipelined comparator, no branch, no shifter               | 57.54 |       | hazard?                         |
-| pipelined branch                                          | 49.25 |       | ???                             |
+| Configuration                                             |   FMax |  LUTs | critical path stage             |
+|-----------------------------------------------------------+--------+-------+---------------------------------|
+| Default(master)                                           |  35.47 | 26732 | s1                              |
+| execute disabled                                          |  52.88 | 11443 | ready path from write->form_pop |
+| execute disabled, extra s2m pipes                         |  57.63 | 14488 | hazard detector                 |
+| no hazard detector                                        |  75.81 | 11510 | decode mux                      |
+| execute, s2m pipes, no retime                             |  15.26 |       | WTF                             |
+| no hazard detector, no retime                             |  79.48 | 11267 | decoder                         |
+| better hazard detector                                    |   65.2 |       | form_pop somehow?               |
+| enable adder                                              |   64.5 | 18579 | hazard?                         |
+| enable logical                                            |   60.3 | 19268 |                                 |
+| enable comparator                                         |   50.5 | 20601 | s1                              |
+| enable shifter                                            |  32.26 | 31388 | s1                              |
+| just shifter                                              |   34.8 | 28257 | s1                              |
+| no shifter, popcnt and zcnt                               |   49.5 |       |                                 |
+| branch                                                    |   51.9 |       |                                 |
+| full cpu without shifter, retimed                         |   55.6 |       |                                 |
+| full cpu with shifter, retimed                            |   45.7 |       |                                 |
+| pipelined shifter                                         |  47.34 |       |                                 |
+| pipelined shifter with partial shift (2 bits)             |  51.98 |       |                                 |
+| pipelined shifter with partial shift (3 bits)             |   40.1 |       |                                 |
+| pipelined shifter with partial shift (1 bits)             |   47.9 |       |                                 |
+| pipelined shifter with partial shift (2 bits) no retiming |  52.22 |       |                                 |
+| pipelined shifter with partial shift (3 bits) no retiming |     48 |       |                                 |
+| pipelined shifter with partial shift (1 bits) no retiming |  51.89 |       |                                 |
+| full cpu, pipelined partial 1 bits                        |   47.8 |       |                                 |
+| full cpu, pipelined partial 0 bits                        |   48.9 |       |                                 |
+| full cpu, pipelined partial 2 bits                        |  46.74 |       | popcnt                          |
+| just popcnt                                               |  58.04 |       |                                 |
+| just popcnt                                               |  61.59 |       |                                 |
+| full cpu, pipelined partial 0 bits                        |   47.2 |       | s2 adder                        |
+| full cpu, pipelined partial 1 bits                        |   47.0 |       | hazard                          |
+| post rebase                                               |  47.59 |       | comparator                      |
+| no comparator                                             |  52.54 |       | hazard? not sure                |
+| pipelined comparator                                      |  49.08 |       | branch                          |
+| pipelined add,cmp,logic, nothing else                     |  66.91 |       |                                 |
+| pipelined comparator, no branch                           |  55.79 |       | shifter                         |
+| pipelined comparator, no branch, no shifter               |  57.54 |       | hazard?                         |
+| pipelined branch                                          |  49.25 |       | ???                             |
+| pipelined branch, nothing else                            | 53 MHz |       | ??? form pop?                   |
+| register flush signal in s2m pipe                         |  61.24 |       |                                 |
+| pipelined branch, new s2m pipe, everything but shifter    |  52.56 |       |                                 |
 
 * Hazard Detector
 | Configuration       |  FMAx |
