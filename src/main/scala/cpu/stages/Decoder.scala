@@ -81,6 +81,8 @@ class uOpAndFormDecoderMulti(numStages: Int)(implicit val config: CPUConfig) ext
   val numitems = (ISAPairings.pairings.size + numStages - 1) / numStages
   val groups = ISAPairings.pairings.grouped(numitems)
   val stages = groups.map( g => new uOpAndFormDecoderBySeq(g)).toSeq
+  o.insn := i.insn
+  o.cia := i.cia
 
   for((stage, idx) <- stages.zipWithIndex){
     stage << pipeInput
