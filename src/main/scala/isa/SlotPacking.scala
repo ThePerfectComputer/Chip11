@@ -1,4 +1,4 @@
-//generated 2021-05-31 14:56:38.402430
+//generated 2021-05-31 15:21:58.108904
 
 package isa
 import spinal.core._
@@ -96,15 +96,15 @@ object WriteSlotPacking {
     val COMBINEDPort2 = 4
     val FPSCRPort2 = 4
 
-    val VRSlots = Set(0,1,2)
-    val FPRSlots = Set(0,1,2,3)
-    val VSRSlots = Set(0,1,2)
-    val COMBINEDSlots = Set(0,1,4)
-    val GPRSlots = Set(0,1,2,3)
-    val CRASlots = Set(1)
-    val CRBSlots = Set(2)
+    val VRSlots = Set(0,1)
+    val FPRSlots = Set(0,1)
+    val VSRSlots = Set(0,1)
+    val COMBINEDSlots = Set(0,4)
+    val GPRSlots = Set(0,1)
+    val CRASlots = Set(2)
     val SPRSlots = Set(3,4)
     val FPSCRSlots = Set(3,4)
+    val CRBSlots = Set(3)
     val XERSlots = Set(4)
     val BHRBSlots = Set(4)
 
@@ -115,9 +115,9 @@ object WriteSlotPacking {
     slotsMap += (SourceSelect.COMBINED -> COMBINEDSlots)
     slotsMap += (SourceSelect.GPR -> GPRSlots)
     slotsMap += (SourceSelect.CRA -> CRASlots)
-    slotsMap += (SourceSelect.CRB -> CRBSlots)
     slotsMap += (SourceSelect.SPR -> SPRSlots)
     slotsMap += (SourceSelect.FPSCR -> FPSCRSlots)
+    slotsMap += (SourceSelect.CRB -> CRBSlots)
     slotsMap += (SourceSelect.XER -> XERSlots)
     slotsMap += (SourceSelect.BHRB -> BHRBSlots)
     def apply(sel: SourceSelect.E) = slotsMap(sel)

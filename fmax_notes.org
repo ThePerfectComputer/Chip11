@@ -59,6 +59,16 @@
 |---------------------+-------|
 | Stock, 8 stages     | 44.99 |
 | Bitvector and reduc | 58.00 |
+| before              | 55.74 |
+| slot set based      | 62.43 |
+
+** Before
+   ltp: 20
+   size: 5986
+ 
+** After
+   ltp: 19
+   size: 4854
 
 
 * Stage 3 ltp
