@@ -118,8 +118,8 @@ class SoCTestVerilog extends AnyFlatSpec with should.Matchers {
 
   it should "create verilog" in {
     implicit val config = new CPUConfig(
-      adder = true,
-      branch = false,
+      adder = false,
+      branch = true,
       logical = false,
       shifter = false,
       comparator = false,

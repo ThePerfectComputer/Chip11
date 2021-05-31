@@ -7,6 +7,10 @@ case class InstructionInfo(opcode: String, mnemonic: MnemonicEnums.E, form: Form
 
 // Enumerate all the opcodes
 object ISAPairings {
+
+  def sortfn(a: InstructionInfo, b: InstructionInfo) = {
+    a.opcode > b.opcode
+  }
   val pairings = Seq(
 
   InstructionInfo("011111----------------100001010-", MnemonicEnums.add_o__dot_, FormEnums.XO4),
@@ -940,5 +944,5 @@ object ISAPairings {
   InstructionInfo("111100---------------0--00010---", MnemonicEnums.xxsldwi, FormEnums.XX3_3),
   InstructionInfo("111100-----00--------0101101000-", MnemonicEnums.xxspltib, FormEnums.X82),
   InstructionInfo("111100---------------010100100--", MnemonicEnums.xxspltw, FormEnums.XX2_5)
- )
+ ).sortWith(sortfn)
 }

@@ -65,3 +65,12 @@
  | Start                             | 41 |
  | reduce number of comparisons      | 37 |
  | use top bit of the result and orR | 7  |
+
+* Decoder size
+  | Before                        |  9074 |
+  | after sorting                 | 11656 |
+  | greater than sorting          |  8105 |
+  | greater than sorting reversed | 11712 |
+  | less than sorting reversed    | 10559 |
+
+Sorting opcodes doesn't provide very much benefit it seems
