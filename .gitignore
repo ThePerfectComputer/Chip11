@@ -17,3 +17,6 @@ tmp/*
 *.ol
 *.ob
 *.elf
+/ltp_output/
+*.log
+/test_csv_output/

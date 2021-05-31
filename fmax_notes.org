@@ -47,9 +47,21 @@
 | ^, enable logical, add, cmp, popcnt                       |  55.04 |       |                                 |
 | ^,with shifter                                            |  47.79 |       | strangely not shifter, decode   |
 | disable shifter, enable shifter part of decoder           |  53.47 |       | ???                             |
+| just adder                                                |     53 |       |                                 |
+| Just logical                                              |     54 |       |                                 |
+| Just logical, no stage 3                                  |  65.33 |       |                                 |
+| just adder, fixed stage3                                  |  64.49 |       |                                 |
+| adder, logic, fixed s3                                    |  63.69 |       |                                 |
+| adder, logic, branch, fixed s3                            |  54.24 |       |                                 |
 
 * Hazard Detector
 | Configuration       |  FMAx |
 |---------------------+-------|
 | Stock, 8 stages     | 44.99 |
 | Bitvector and reduc | 58.00 |
+
+
+* Stage 3 ltp
+ | Start                             | 41 |
+ | reduce number of comparisons      | 37 |
+ | use top bit of the result and orR | 7  |
