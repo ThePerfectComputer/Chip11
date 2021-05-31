@@ -41,9 +41,6 @@ import spinal.lib._
 
 class Stage1(implicit config: CPUConfig)
     extends PipeStage(new ReadInterface, new ExecuteData) {
-  val io = new Bundle {
-    val bc = out(new BranchControl)
-  }
   val so_bit = i.slots(ReadSlotPacking.XERPort1).data(XERBits.SO)
   o.so_bit := so_bit
 
@@ -65,11 +62,6 @@ class Stage1(implicit config: CPUConfig)
     }
   }
 
-  // default tieoffs for branch unit interface
-  io.bc.is_branch := False
-  io.bc.branch_taken := False
-  io.bc.target_addr := 0
-  io.bc.branch_addr := 0
 
   val sub_function = i.dec_data.uOps.sub_function
 
@@ -183,10 +175,14 @@ class Stage1(implicit config: CPUConfig)
         if (config.branch) {
           val branchMod = new Branch
 
-          val branchS2 = new BranchStage2
-          branchS2.io.pipedata := branchMod.io.pipedata
+
+          val branchData = new BranchPipeData
+          branchData := branchMod.io.pipedata
           branchMod.io.ri := i
-          branchS2.io.dec_data := i.dec_data
+
+
+          o.additionalData(branchData.getBitsWidth - 1 downto 0)
+            .assignFromBits(branchData.asBits)
 
           // def debug_branch(){
           //   when (pipeOutput.fire()) {
@@ -199,48 +195,6 @@ class Stage1(implicit config: CPUConfig)
           // }
           // if (cpu.debug.debug_stage1_ifu_branch) {debug_branch()}
 
-          when(pipeOutput.valid) {
-            io.bc := branchS2.io.bc
-            when(branchS2.io.bc.branch_taken) {
-              pipeInput.flush := True
-            }
-          }
-          // TODO :
-          // By default we shouldn't write to any registers,
-          // should be tied off up top.
-
-          // By default don't write to the SPRs
-          o.write_interface
-            .slots(WriteSlotPacking.SPRPort1)
-            .sel := SourceSelect.NONE
-          o.write_interface
-            .slots(WriteSlotPacking.SPRPort2)
-            .sel := SourceSelect.NONE
-
-          // If the branch unit outputs a valid ctr, then write that to ctr SPR
-          when(branchS2.io.ctr_w.valid) {
-            o.write_interface
-              .slots(WriteSlotPacking.SPRPort1)
-              .data := branchS2.io.ctr_w.payload
-            o.write_interface
-              .slots(WriteSlotPacking.SPRPort1)
-              .sel := SourceSelect.SPR
-            o.write_interface
-              .slots(WriteSlotPacking.SPRPort1)
-              .idx := SPREnums.CTR.asBits.asUInt
-          }
-          // Same with LR
-          when(branchS2.io.lr_w.valid) {
-            o.write_interface
-              .slots(WriteSlotPacking.SPRPort2)
-              .data := branchS2.io.lr_w.payload
-            o.write_interface
-              .slots(WriteSlotPacking.SPRPort2)
-              .sel := SourceSelect.SPR
-            o.write_interface
-              .slots(WriteSlotPacking.SPRPort2)
-              .idx := SPREnums.LR.asBits.asUInt
-          }
         }
       }
 

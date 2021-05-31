@@ -1,10 +1,10 @@
 package cpu.stages.functional_units.integer
 
-import cpu.interfaces.{FunctionalUnit, FunctionalUnitExit}
+import cpu.interfaces.{FunctionalUnit, FunctionalUnitExit, BranchControl}
 import util.{PipeStage}
 import cpu.uOps.{FunctionalUnit}
 import cpu.uOps.functional_units.Integer.{IntegerFUSub, PopcntArgs, PopcntSize}
-import isa.{ReadSlotPacking, WriteSlotPacking, SPREnums, MnemonicEnums, Forms}
+import isa.{ReadSlotPacking, WriteSlotPacking, SPREnums, MnemonicEnums, Forms, SourceSelect}
 import cpu.shared.{XERBits, XERMask}
 import cpu.{CPUConfig}
 
@@ -12,7 +12,18 @@ import spinal.core._
 
 class Stage2(implicit config: CPUConfig)
     extends PipeStage(new ExecuteData, new ExecuteData) {
+  val io = new Bundle {
+    val bc = out(new BranchControl)
+  }
+
+  // default tieoffs for branch unit interface
+  io.bc.is_branch := False
+  io.bc.branch_taken := False
+  io.bc.target_addr := 0
+  io.bc.branch_addr := 0
+
   o := i
+
   val sub_function = i.dec_data.uOps.sub_function
 
   val sub_unit = IntegerFUSub().keep()
@@ -134,6 +145,59 @@ class Stage2(implicit config: CPUConfig)
             o.write_interface
               .slots(WriteSlotPacking.CRPort2)
               .data := cr_fields.asBits.asUInt.resized
+          }
+        }
+      }
+      is(IntegerFUSub.Branch) {
+        if (config.branch) {
+          val branchS2 = new BranchStage2
+          val branchData = new BranchPipeData
+          branchData.assignFromBits(i.additionalData)
+          branchS2.io.pipedata := branchData
+
+          branchS2.io.dec_data := i.dec_data
+
+          when(pipeOutput.valid) {
+            io.bc := branchS2.io.bc
+            when(branchS2.io.bc.branch_taken) {
+              pipeInput.flush := True
+            }
+          }
+          // TODO :
+          // By default we shouldn't write to any registers,
+          // should be tied off up top.
+
+          // By default don't write to the SPRs
+          o.write_interface
+            .slots(WriteSlotPacking.SPRPort1)
+            .sel := SourceSelect.NONE
+          o.write_interface
+            .slots(WriteSlotPacking.SPRPort2)
+            .sel := SourceSelect.NONE
+
+          // If the branch unit outputs a valid ctr, then write that to ctr SPR
+          when(branchS2.io.ctr_w.valid) {
+            o.write_interface
+              .slots(WriteSlotPacking.SPRPort1)
+              .data := branchS2.io.ctr_w.payload
+            o.write_interface
+              .slots(WriteSlotPacking.SPRPort1)
+              .sel := SourceSelect.SPR
+            o.write_interface
+              .slots(WriteSlotPacking.SPRPort1)
+              .idx := SPREnums.CTR.asBits.asUInt
+          }
+          // Same with LR
+          when(branchS2.io.lr_w.valid) {
+            o.write_interface
+              .slots(WriteSlotPacking.SPRPort2)
+              .data := branchS2.io.lr_w.payload
+            o.write_interface
+              .slots(WriteSlotPacking.SPRPort2)
+              .sel := SourceSelect.SPR
+            o.write_interface
+              .slots(WriteSlotPacking.SPRPort2)
+              .idx := SPREnums.LR.asBits.asUInt
           }
         }
       }

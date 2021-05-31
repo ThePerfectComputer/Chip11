@@ -133,7 +133,7 @@ class CPU(implicit val config: CPUConfig) extends Component {
   fetch_resp.io.bp_interface <> branch.io.fetch_resp_interface
   // connect branch predictor to the execute stage 1 branch unit
 
-  val branchDelayed  = Delay(s1.io.bc, flushLatency)
+  val branchDelayed  = Delay(s2.io.bc, flushLatency)
   branch.io.b_ctrl := branchDelayed
 
   // connect fetch and loadstore to memory interfaces
