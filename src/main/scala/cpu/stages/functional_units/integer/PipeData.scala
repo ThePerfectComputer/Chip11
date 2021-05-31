@@ -35,3 +35,11 @@ class ComparatorPipeData extends Bundle {
   val logical = Bool
   val so_bit = Bool
 }
+
+class BranchPipeData extends Bundle {
+  val branch_addr = UInt(64 bits)
+  val cr_bits = UInt(16 bits)
+  val ctr = UInt(64 bits)
+
+  val conditional = Bool
+}

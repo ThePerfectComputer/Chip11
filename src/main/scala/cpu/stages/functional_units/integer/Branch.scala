@@ -1,6 +1,6 @@
 package cpu.stages.functional_units.integer
 
-import cpu.interfaces.{ReadInterface, BranchControl}
+import cpu.interfaces.{ReadInterface, BranchControl, DecoderData}
 import cpu.uOps.functional_units.Integer.{BranchArgs}
 import cpu.debug.debug_stage1_ifu_branch
 
@@ -21,26 +21,18 @@ class Branch extends Component {
   val io = new Bundle {
     val ri = in(new ReadInterface)
 
-    val lr_w = out(Flow(UInt(64 bits)))
-    val ctr_w = out(Flow(UInt(64 bits)))
-
-    val bc = out(new BranchControl)
+    val pipedata = out(new BranchPipeData)
   }
-  io.bc.is_branch := False
-  io.bc.branch_taken := False
-  io.bc.target_addr := 0
-  io.bc.branch_addr := 0
+  io.pipedata.ctr := 0
 
-  io.lr_w.valid := False
-  io.lr_w.payload := 0
-  io.ctr_w.valid := False
-  io.ctr_w.payload := 0
 
   val dec_data = io.ri.dec_data
   val insn = dec_data.insn
 
   val branchArgs = new BranchArgs
   branchArgs.assignFromBits(dec_data.uOps.args)
+
+  io.pipedata.conditional := branchArgs.conditional
   val bo = Reverse(Forms.B1.BO(insn))
   // val bo = Forms.B1.BO(insn)
 
@@ -58,18 +50,16 @@ class Branch extends Component {
     // banked_cr := Reverse(io.ri.slots(ReadSlotPacking.CRPort2).data(15, 0))
     banked_cr := io.ri.slots(ReadSlotPacking.CRPort2).data(15 downto 0)
   }
-  val cr_idx = UInt(4 bits)
-  cr_idx := (~Cat(bi.cr_num, bi.regfield)).asUInt
+  io.pipedata.cr_bits := banked_cr
 
-  when(branchArgs.conditional =/= True) {
-    io.bc.is_branch := True
-    io.bc.branch_taken := True
-    io.bc.branch_addr := dec_data.cia
+
+
+  when(io.pipedata.conditional =/= True) {
     // absolute address
     when(Forms.I1.AA(insn) === True) {
-      io.bc.target_addr := io.ri.imm.payload |<< 2
+      io.pipedata.branch_addr := io.ri.imm.payload |<< 2
     }.otherwise {
-      io.bc.target_addr := (io.ri.imm.payload |<< 2) + dec_data.cia
+      io.pipedata.branch_addr := (io.ri.imm.payload |<< 2) + dec_data.cia
     }
   }.otherwise {
     // Yep, reverse it because power's bit ordering is weird
@@ -78,8 +68,69 @@ class Branch extends Component {
     // Invert the bits as it indexes backwards due to power's weird bit ordering
 
     // Check the CR condition
+
+    val ctr = io.ri.slots(ReadSlotPacking.SPRPort1).data(63 downto 0)
+    val ctr_new = ctr - 1
+    io.pipedata.ctr := ctr_new
+
+    // absolute address
+    when(branchArgs.immediate_address) {
+      when(Forms.B1.AA(insn) === True) {
+        io.pipedata.branch_addr := io.ri.imm.payload |<< 2
+      }.otherwise {
+        io.pipedata.branch_addr := (io.ri.imm.payload |<< 2) + dec_data.cia
+      }
+    }.otherwise {
+      io.pipedata.branch_addr := io.ri.slots(ReadSlotPacking.SPRPort1).data
+    }
+  }
+
+}
+
+class BranchStage2 extends Component {
+  val io = new Bundle {
+    val dec_data = in(new DecoderData)
+    val pipedata = in(new BranchPipeData)
+
+    val lr_w = out(Flow(UInt(64 bits)))
+    val ctr_w = out(Flow(UInt(64 bits)))
+    val bc = out(new BranchControl)
+  }
+
+  io.lr_w.valid := False
+  io.lr_w.payload := 0
+  io.ctr_w.valid := False
+  io.ctr_w.payload := 0
+  val insn = io.dec_data.insn
+
+  val bo = Reverse(Forms.B1.BO(insn))
+  // val bo = Forms.B1.BO(insn)
+
+  val bi = new BIBits
+  bi.assignFromBits(Forms.B1.BI(insn).asBits)
+
+  val cr_idx = UInt(4 bits)
+  cr_idx := (~Cat(bi.cr_num, bi.regfield)).asUInt
+
+  io.bc.is_branch := False
+  io.bc.branch_taken := False
+
+  io.bc.target_addr := io.pipedata.branch_addr
+  io.bc.branch_addr := io.dec_data.cia
+  when(io.pipedata.conditional =/= True) {
+    io.bc.is_branch := True
+    io.bc.branch_taken := True
+    // absolute address
+  }.otherwise {
+    // Yep, reverse it because power's bit ordering is weird
+
+    // Generate the index into banked_cr
+    // Invert the bits as it indexes backwards due to power's weird bit ordering
+
+    // Check the CR condition
     val cond_1 = bo(0)
-    val cond_2 = banked_cr(cr_idx) === bo(1)
+    val cond_2 = io.pipedata.cr_bits(cr_idx) === bo(1)
+
     val cond_ok = cond_1 | cond_2
 
     if (debug_stage1_ifu_branch) {
@@ -101,35 +152,20 @@ class Branch extends Component {
       // printf(p"\t     Cond OK: $cond_ok\n")
     }
 
-    val ctr = io.ri.slots(ReadSlotPacking.SPRPort1).data(63 downto 0)
-    val ctr_new = ctr - 1
-    val ctr_ok = bo(2) | ((ctr_new =/= 0) ^ bo(3))
+    val ctr_ok = bo(2) | ((io.pipedata.ctr =/= 0) ^ bo(3))
 
     when(bo(2) === False) {
-      io.ctr_w.payload := ctr_new
+      io.ctr_w.payload := io.pipedata.ctr
       io.ctr_w.valid := True
     }
 
     io.bc.is_branch := True
     io.bc.branch_taken := cond_ok & ctr_ok
-    io.bc.branch_addr := dec_data.cia
     // absolute address
-    when(branchArgs.immediate_address) {
-      when(Forms.B1.AA(insn) === True) {
-        io.bc.target_addr := io.ri.imm.payload |<< 2
-      }.otherwise {
-        io.bc.target_addr := (io.ri.imm.payload |<< 2) + dec_data.cia
-      }
-    }.otherwise {
-      io.bc.target_addr := io.ri.slots(ReadSlotPacking.SPRPort1).data
-    }
-
   }
   val lk = Forms.I1.LK(insn)
-
-  when(io.bc.branch_taken & (lk === True)) {
-    io.lr_w.payload := dec_data.cia + 4
+  when(lk){
     io.lr_w.valid := True
+    io.lr_w.payload := io.dec_data.cia + 4
   }
-
 }

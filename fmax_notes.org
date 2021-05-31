@@ -36,6 +36,8 @@
 | pipelined comparator                                      | 49.08 |       | branch                          |
 | pipelined add,cmp,logic, nothing else                     | 66.91 |       |                                 |
 | pipelined comparator, no branch                           | 55.79 |       | shifter                         |
+| pipelined comparator, no branch, no shifter               | 57.54 |       | hazard?                         |
+|                                                           |       |       |                                 |
 
 * Hazard Detector
 | Configuration       |  FMAx |

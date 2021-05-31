@@ -182,7 +182,11 @@ class Stage1(implicit config: CPUConfig)
       is(IntegerFUSub.Branch) {
         if (config.branch) {
           val branchMod = new Branch
+
+          val branchS2 = new BranchStage2
+          branchS2.io.pipedata := branchMod.io.pipedata
           branchMod.io.ri := i
+          branchS2.io.dec_data := i.dec_data
 
           // def debug_branch(){
           //   when (pipeOutput.fire()) {
@@ -196,8 +200,8 @@ class Stage1(implicit config: CPUConfig)
           // if (cpu.debug.debug_stage1_ifu_branch) {debug_branch()}
 
           when(pipeOutput.valid) {
-            io.bc := branchMod.io.bc
-            when(branchMod.io.bc.branch_taken) {
+            io.bc := branchS2.io.bc
+            when(branchS2.io.bc.branch_taken) {
               pipeInput.flush := True
             }
           }
@@ -214,10 +218,10 @@ class Stage1(implicit config: CPUConfig)
             .sel := SourceSelect.NONE
 
           // If the branch unit outputs a valid ctr, then write that to ctr SPR
-          when(branchMod.io.ctr_w.valid) {
+          when(branchS2.io.ctr_w.valid) {
             o.write_interface
               .slots(WriteSlotPacking.SPRPort1)
-              .data := branchMod.io.ctr_w.payload
+              .data := branchS2.io.ctr_w.payload
             o.write_interface
               .slots(WriteSlotPacking.SPRPort1)
               .sel := SourceSelect.SPR
@@ -226,10 +230,10 @@ class Stage1(implicit config: CPUConfig)
               .idx := SPREnums.CTR.asBits.asUInt
           }
           // Same with LR
-          when(branchMod.io.lr_w.valid) {
+          when(branchS2.io.lr_w.valid) {
             o.write_interface
               .slots(WriteSlotPacking.SPRPort2)
-              .data := branchMod.io.lr_w.payload
+              .data := branchS2.io.lr_w.payload
             o.write_interface
               .slots(WriteSlotPacking.SPRPort2)
               .sel := SourceSelect.SPR
