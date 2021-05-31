@@ -48,10 +48,10 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface) {
   spr := Cat(spr_fields(4 downto 0), spr_fields(9 downto 5)).asUInt
 
   def addRC() {
-    o.write_interface.slots(WriteSlotPacking.CRPort1).idx := 8
-    o.write_interface.slots(WriteSlotPacking.CRPort1).sel := SourceSelect.CRA
+    o.write_interface.slots(WriteSlotPacking.CRAPort1).idx := 8
+    o.write_interface.slots(WriteSlotPacking.CRAPort1).sel := SourceSelect.CRA
     o.compare.activate := True
-    o.compare.out_slot := WriteSlotPacking.CRPort1
+    o.compare.out_slot := WriteSlotPacking.CRAPort1
     o.slots(ReadSlotPacking.XERPort1).idx := XERMask.SO
     o.slots(ReadSlotPacking.XERPort1).sel := SourceSelect.XER
   }
@@ -77,11 +77,11 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface) {
       // bi's 2nd MSB selects between fields [(0, 1), (2, 3)] or [(4, 5), (6, 7)]
       // bi's 3rd MSB selects between fields [0, 1 or 2, 3]
       when(bi(2) === False) {
-        o.slots(ReadSlotPacking.CRPort1).idx := 0xf
-        o.slots(ReadSlotPacking.CRPort1).sel := SourceSelect.CRA
+        o.slots(ReadSlotPacking.CRAPort1).idx := 0xf
+        o.slots(ReadSlotPacking.CRAPort1).sel := SourceSelect.CRA
       }.otherwise {
-        o.slots(ReadSlotPacking.CRPort2).idx := 0xf
-        o.slots(ReadSlotPacking.CRPort2).sel := SourceSelect.CRB
+        o.slots(ReadSlotPacking.CRBPort1).idx := 0xf
+        o.slots(ReadSlotPacking.CRBPort1).sel := SourceSelect.CRB
       }
 
       val bo = Reverse(Forms.B1.BO(i.insn))
@@ -122,14 +122,14 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface) {
       val field_select = 3 - bf(2 downto 1)
       val mask = U(1) << field_select
       when(bf(0) === False) {
-        o.write_interface.slots(WriteSlotPacking.CRPort1).idx := mask.resized
+        o.write_interface.slots(WriteSlotPacking.CRAPort1).idx := mask.resized
         o.write_interface
-          .slots(WriteSlotPacking.CRPort1)
+          .slots(WriteSlotPacking.CRAPort1)
           .sel := SourceSelect.CRA
       }.otherwise {
-        o.write_interface.slots(WriteSlotPacking.CRPort2).idx := mask.resized
+        o.write_interface.slots(WriteSlotPacking.CRBPort1).idx := mask.resized
         o.write_interface
-          .slots(WriteSlotPacking.CRPort2)
+          .slots(WriteSlotPacking.CRBPort1)
           .sel := SourceSelect.CRB
       }
       o.imm.valid := True
@@ -145,14 +145,14 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface) {
       val field_select = 3 - bf(2 downto 1)
       val mask = U(1) << field_select
       when(bf(0) === False) {
-        o.write_interface.slots(WriteSlotPacking.CRPort1).idx := mask.resized
+        o.write_interface.slots(WriteSlotPacking.CRAPort1).idx := mask.resized
         o.write_interface
-          .slots(WriteSlotPacking.CRPort1)
+          .slots(WriteSlotPacking.CRAPort1)
           .sel := SourceSelect.CRA
       }.otherwise {
-        o.write_interface.slots(WriteSlotPacking.CRPort2).idx := mask.resized
+        o.write_interface.slots(WriteSlotPacking.CRBPort1).idx := mask.resized
         o.write_interface
-          .slots(WriteSlotPacking.CRPort2)
+          .slots(WriteSlotPacking.CRBPort1)
           .sel := SourceSelect.CRB
       }
       o.imm.valid := True
@@ -231,12 +231,12 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface) {
       when(i.insn(28)) {
         // use an output slot to hold the data to write to CR field 0
         // Select cr0 (the most significant 4 bits of the data field)
-        o.write_interface.slots(WriteSlotPacking.CRPort1).idx := 0x8
+        o.write_interface.slots(WriteSlotPacking.CRAPort1).idx := 0x8
         o.write_interface
-          .slots(WriteSlotPacking.CRPort1)
+          .slots(WriteSlotPacking.CRAPort1)
           .sel := SourceSelect.CRA
         o.compare.activate := i.insn(28)
-        o.compare.out_slot := WriteSlotPacking.CRPort1
+        o.compare.out_slot := WriteSlotPacking.CRAPort1
       }
     }
 
@@ -506,14 +506,14 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface) {
       val field_select = 3 - bf(2 downto 1)
       val mask = U(1) << field_select
       when(bf(0) === False) {
-        o.write_interface.slots(WriteSlotPacking.CRPort1).idx := mask.resized
+        o.write_interface.slots(WriteSlotPacking.CRAPort1).idx := mask.resized
         o.write_interface
-          .slots(WriteSlotPacking.CRPort1)
+          .slots(WriteSlotPacking.CRAPort1)
           .sel := SourceSelect.CRA
       }.otherwise {
-        o.write_interface.slots(WriteSlotPacking.CRPort2).idx := mask.resized
+        o.write_interface.slots(WriteSlotPacking.CRBPort1).idx := mask.resized
         o.write_interface
-          .slots(WriteSlotPacking.CRPort2)
+          .slots(WriteSlotPacking.CRBPort1)
           .sel := SourceSelect.CRB
       }
     }
@@ -705,18 +705,18 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface) {
       // If any bits are set in mask a
       when(maska =/= 0) {
         o.write_interface
-          .slots(WriteSlotPacking.CRPort1)
+          .slots(WriteSlotPacking.CRAPort1)
           .idx := maska.asUInt.resized
         o.write_interface
-          .slots(WriteSlotPacking.CRPort1)
+          .slots(WriteSlotPacking.CRAPort1)
           .sel := SourceSelect.CRA
       }
       when(maskb =/= 0) {
         o.write_interface
-          .slots(WriteSlotPacking.CRPort2)
+          .slots(WriteSlotPacking.CRBPort1)
           .idx := maskb.asUInt.resized
         o.write_interface
-          .slots(WriteSlotPacking.CRPort2)
+          .slots(WriteSlotPacking.CRBPort1)
           .sel := SourceSelect.CRB
       }
     }
@@ -741,10 +741,10 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface) {
     }
 
     is(FormEnums.XFX5) {
-      o.slots(ReadSlotPacking.CRPort1).idx := 0xf
-      o.slots(ReadSlotPacking.CRPort1).sel := SourceSelect.CRA
-      o.slots(ReadSlotPacking.CRPort2).idx := 0xf
-      o.slots(ReadSlotPacking.CRPort2).sel := SourceSelect.CRB
+      o.slots(ReadSlotPacking.CRAPort1).idx := 0xf
+      o.slots(ReadSlotPacking.CRAPort1).sel := SourceSelect.CRA
+      o.slots(ReadSlotPacking.CRBPort1).idx := 0xf
+      o.slots(ReadSlotPacking.CRBPort1).sel := SourceSelect.CRB
       o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.XFX5
         .RT(i.insn)
         .resized
@@ -755,12 +755,12 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface) {
       val maska = Cat(fxm(7), fxm(5), fxm(3), fxm(1))
       val maskb = Cat(fxm(6), fxm(4), fxm(2), fxm(0))
       when(maska =/= 0) {
-        o.slots(ReadSlotPacking.CRPort1).idx := 0xf
-        o.slots(ReadSlotPacking.CRPort1).sel := SourceSelect.CRA
+        o.slots(ReadSlotPacking.CRAPort1).idx := 0xf
+        o.slots(ReadSlotPacking.CRAPort1).sel := SourceSelect.CRA
       }
       when(maskb =/= 0) {
-        o.slots(ReadSlotPacking.CRPort2).idx := 0xf
-        o.slots(ReadSlotPacking.CRPort2).sel := SourceSelect.CRB
+        o.slots(ReadSlotPacking.CRBPort1).idx := 0xf
+        o.slots(ReadSlotPacking.CRBPort1).sel := SourceSelect.CRB
       }
       o.write_interface.slots(WriteSlotPacking.GPRPort1).idx := Forms.XFX6
         .RT(i.insn)

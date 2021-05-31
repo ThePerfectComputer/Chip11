@@ -43,8 +43,8 @@ object WritePortCycleMap {
   map += ((SourceSelect.SPR, WriteSlotPacking.SPRPort2) -> (0, 2))
 
   // CR
-  map += ((SourceSelect.CRA, WriteSlotPacking.CRPort1) -> (0, 1))
-  map += ((SourceSelect.CRB, WriteSlotPacking.CRPort2) -> (1, 1))
+  map += ((SourceSelect.CRA, WriteSlotPacking.CRAPort1) -> (0, 1))
+  map += ((SourceSelect.CRB, WriteSlotPacking.CRBPort1) -> (1, 1))
 
   // FPSCR
   map += ((SourceSelect.FPSCR, WriteSlotPacking.FPSCRPort1) -> (0, 1))

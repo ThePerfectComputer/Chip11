@@ -44,11 +44,11 @@ class Branch extends Component {
   // index selects the correct bit
   val banked_cr = UInt(16 bits)
   when(bi.cr_bank === 0) {
-    // banked_cr := Reverse(io.ri.slots(ReadSlotPacking.CRPort1).data(15, 0))
-    banked_cr := io.ri.slots(ReadSlotPacking.CRPort1).data(15 downto 0)
+    // banked_cr := Reverse(io.ri.slots(ReadSlotPacking.CRAPort1).data(15, 0))
+    banked_cr := io.ri.slots(ReadSlotPacking.CRAPort1).data(15 downto 0)
   }.otherwise {
-    // banked_cr := Reverse(io.ri.slots(ReadSlotPacking.CRPort2).data(15, 0))
-    banked_cr := io.ri.slots(ReadSlotPacking.CRPort2).data(15 downto 0)
+    // banked_cr := Reverse(io.ri.slots(ReadSlotPacking.CRBPort1).data(15, 0))
+    banked_cr := io.ri.slots(ReadSlotPacking.CRBPort1).data(15 downto 0)
   }
   io.pipedata.cr_bits := banked_cr
 
@@ -138,9 +138,9 @@ class BranchStage2 extends Component {
       // printf(p"\t          B0: 0b${Binary(bo)}\n")
       // printf(p"\t          BI: ${Forms.B1.BI(insn)}\n")
       // when(bi.cr_bank === 0) {
-      //   printf(s"\t     CR Slot: ${ReadSlotPacking.CRPort1}\n")
+      //   printf(s"\t     CR Slot: ${ReadSlotPacking.CRAPort1}\n")
       // } .otherwise {
-      //   printf(s"\t     CR Slot: ${ReadSlotPacking.CRPort2}\n")
+      //   printf(s"\t     CR Slot: ${ReadSlotPacking.CRBPort1}\n")
       // }
       // printf(p"\tCR Bank Sel.: ${bi.cr_bank}\n")
       // printf(p"\t   Banked CR: 0b${Binary(banked_cr)}\n")

@@ -139,11 +139,11 @@ class Stage2(implicit config: CPUConfig)
 
           when(bf(0) === False) {
             o.write_interface
-              .slots(WriteSlotPacking.CRPort1)
+              .slots(WriteSlotPacking.CRAPort1)
               .data := cr_fields.asBits.asUInt.resized
           }.otherwise {
             o.write_interface
-              .slots(WriteSlotPacking.CRPort2)
+              .slots(WriteSlotPacking.CRBPort1)
               .data := cr_fields.asBits.asUInt.resized
           }
         }

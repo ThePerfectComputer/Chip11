@@ -481,7 +481,7 @@ class Stage1(implicit config: CPUConfig)
                   datain(7 downto 4)
                 )
                 o.write_interface
-                  .slots(WriteSlotPacking.CRPort1)
+                  .slots(WriteSlotPacking.CRAPort1)
                   .data := dataa.asUInt.resized
               }
               when(maskb =/= 0) {
@@ -492,13 +492,13 @@ class Stage1(implicit config: CPUConfig)
                   datain(3 downto 0)
                 )
                 o.write_interface
-                  .slots(WriteSlotPacking.CRPort2)
+                  .slots(WriteSlotPacking.CRBPort1)
                   .data := datab.asUInt.resized
               }
             }
             is(MnemonicEnums.mfcr) {
-              val cra = i.slots(ReadSlotPacking.CRPort1).data
-              val crb = i.slots(ReadSlotPacking.CRPort2).data
+              val cra = i.slots(ReadSlotPacking.CRAPort1).data
+              val crb = i.slots(ReadSlotPacking.CRBPort1).data
               val dataout = Vec(UInt(4 bits), 8)
               dataout(7) := cra(15 downto 12)
               dataout(5) := cra(11 downto 8)
@@ -513,8 +513,8 @@ class Stage1(implicit config: CPUConfig)
                 .data := dataout.asBits.asUInt.resized
             }
             is(MnemonicEnums.mfocrf) {
-              val cra = i.slots(ReadSlotPacking.CRPort1).data
-              val crb = i.slots(ReadSlotPacking.CRPort2).data
+              val cra = i.slots(ReadSlotPacking.CRAPort1).data
+              val crb = i.slots(ReadSlotPacking.CRBPort1).data
               val dataout = Vec(UInt(4 bits), 8)
               val fxm = Forms.XFX6.FXM(i.dec_data.insn)
               dataout(7) := cra(15 downto 12)

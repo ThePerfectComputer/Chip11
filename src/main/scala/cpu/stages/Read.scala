@@ -49,8 +49,8 @@ object PortCycleMap {
   map += ((SourceSelect.SPR, ReadSlotPacking.SPRPort1) -> (0, 1))
   map += ((SourceSelect.SPR, ReadSlotPacking.SPRPort2) -> (1, 1))
   // CR
-  map += ((SourceSelect.CRA, ReadSlotPacking.CRPort1) -> (0, 1))
-  map += ((SourceSelect.CRB, ReadSlotPacking.CRPort2) -> (1, 1))
+  map += ((SourceSelect.CRA, ReadSlotPacking.CRAPort1) -> (0, 1))
+  map += ((SourceSelect.CRB, ReadSlotPacking.CRBPort1) -> (1, 1))
   // FPSCR
   map += ((SourceSelect.FPSCR, ReadSlotPacking.FPSCRPort1) -> (0, 1))
   map += ((SourceSelect.FPSCR, ReadSlotPacking.FPSCRPort1) -> (1, 1))
