@@ -129,12 +129,12 @@ class Flushable[T <: Data](private val gen: HardType[T])
       rValid := this.valid
       rBits := this.payload
     }
-    when(ret.flush) {
+    when(ret.flush || rFlush) {
       rValid := False
       ret.valid := False
     }
     // TODO figure out how to register flush
-    this.flush := ret.flush
+    this.flush := rFlush
     ret
   }
 

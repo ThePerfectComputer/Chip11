@@ -119,8 +119,11 @@ class CPU(implicit val config: CPUConfig) extends Component {
 
   // connect up pipeline stages
   fetch_resp << fetch_req.pipeOutput
-  fetch_resp >-> decode >-> form_pop >/-> hazard >-> read >/->
+  fetch_resp >-> decode >-> form_pop >-> hazard >-> read >/->
   s1 >-> s2 >-> s3 >/-> ldst_request >/-> ldst_response >/-> write
+
+  val flushLatency = LatencyAnalysis(s2.pipeInput.flush, fetch_resp.pipeOutput.flush)
+  println(s"flush latency: $flushLatency")
   
   // instantiate other hardware that isn't pipeline stages
   val branch        = new BranchPredictor                             // branch predictor
@@ -129,7 +132,9 @@ class CPU(implicit val config: CPUConfig) extends Component {
   fetch_req.io.bp_interface <> branch.io.fetch_req_interface
   fetch_resp.io.bp_interface <> branch.io.fetch_resp_interface
   // connect branch predictor to the execute stage 1 branch unit
-  s1.io.bc <> branch.io.b_ctrl
+
+  val branchDelayed  = Delay(s1.io.bc, flushLatency)
+  branch.io.b_ctrl := branchDelayed
 
   // connect fetch and loadstore to memory interfaces
   // fetch_req.io.line_request       <> io.fetch_request
