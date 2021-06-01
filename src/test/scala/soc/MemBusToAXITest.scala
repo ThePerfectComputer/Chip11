@@ -60,15 +60,60 @@ class MemBusToAXITest extends AnyFlatSpec with should.Matchers {
         }
         dut.io.membus.ldst_req #= TransactionType.NONE
       }
+      def get_done() = {
+        while (dut.io.membus.status.toEnum != TransactionStatus.DONE) {
+          dut.clockDomain.waitSampling(1)
+        }
+        dut.io.membus.ldst_req #= TransactionType.NONE
+      }
+      def write_data(data: BigInt, mask: Int){
+        for(i <- 0 until 16){
+          val byte = (data >> i*8) & 0xff
+          dut.io.membus.write_data(i) #= byte
+          val maskBit = (mask >> i) & 1
+          dut.io.membus.write_mask(i) #= (maskBit != 0)
+        }
+      }
+      def read_data() = {
+        var bigInt = BigInt(0)
+        for(i <- 0 until 16){
+          val byte = dut.io.membus.read_data(i).toBigInt
+          bigInt |= (byte << i*8)
+        }
+        bigInt
+      }
+
+      def doRead(address: BigInt, size: TransactionSize.E=TransactionSize.WORD) : BigInt ={
+        dut.io.membus.ldst_req #= TransactionType.LOAD
+        dut.io.membus.byte_address #= address
+        dut.io.membus.access_size #= size
+        dut.clockDomain.waitSampling(1)
+        get_ack()
+        dut.io.membus.ldst_req #= TransactionType.NONE
+        get_done()
+        read_data()
+      }
+      def doWrite(address: BigInt, data: BigInt){
+        dut.io.membus.ldst_req #= TransactionType.STORE
+        dut.io.membus.byte_address #= address
+        write_data(data, 0x0f)
+        dut.io.membus.access_size #= TransactionSize.WORD
+        dut.clockDomain.waitSampling(1)
+        get_ack()
+        dut.io.membus.ldst_req #= TransactionType.NONE
+      }
 
       dut.io.membus.ldst_req #= TransactionType.NONE
       dut.clockDomain.waitSampling(1)
-      dut.io.membus.ldst_req #= TransactionType.LOAD
-      dut.io.membus.byte_address #= 0x40
-      dut.io.membus.access_size #= TransactionSize.WORD
-      dut.clockDomain.waitSampling(1)
-      get_ack()
-      dut.clockDomain.waitSampling(10)
+      var res = doRead(0x40)
+      println(s"Read $res")
+      doWrite(0x44, 6)
+      doWrite(0x40, 0)
+      res = doRead(0x40)
+      println(s"Read $res")
+      doWrite(0x54, 10)
+      doWrite(0x50, 0)
+      dut.clockDomain.waitSampling(100)
     }
   }
 }
