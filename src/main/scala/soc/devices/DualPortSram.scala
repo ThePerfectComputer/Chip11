@@ -101,12 +101,14 @@ class DualPortSram128(depth: Int=8, dataWidth: Int=128, val mem_file:String = nu
       println(s"${port.getName()} RECIEVED ${port.ldst_req.toEnum} REQUEST")
       println(s"${port.read_data.getName()} = ${vecToStringU(port.read_data)}")
       println(s"${port.byte_address.getName()} = ${port.byte_address.toBigInt}")
+      println(s"${port.access_size.getName()} = ${port.access_size.toEnum}")
     }
 
     if (port.ldst_req.toEnum == TransactionType.STORE){
       println(s"${port.getName()} RECIEVED ${port.ldst_req.toEnum} REQUEST")
       println(s"${port.read_data.getName()} = ${vecToStringU(port.read_data)}")
       println(s"${port.byte_address.getName()} = ${port.byte_address.toBigInt}")
+      println(s"${port.access_size.getName()} = ${port.access_size.toEnum}")
     }
 
   }
