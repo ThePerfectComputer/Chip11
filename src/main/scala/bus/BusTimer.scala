@@ -15,17 +15,9 @@ object Apb3Ctrl {
   )
 }
 
-object Axi4Ctrl {
-  def getAxi4Config = Axi4Config(
-    addressWidth = 32,
-    dataWidth = 32,
-    idWidth = 4
-  )
-}
-
-class BusTimer(width: Int) extends Component {
+class BusTimer(width: Int)(implicit config: Axi4Config) extends Component {
   val io = new Bundle {
-    val bus = slave(Axi4(Axi4Ctrl.getAxi4Config))
+    val bus = slave(Axi4(config))
     val timerAMatch = out Bool
     val timerBMatch = out Bool
   }

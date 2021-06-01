@@ -12,7 +12,16 @@ import org.scalatest._
 import flatspec._
 import matchers._
 
+object Axi4Ctrl {
+  def getAxi4Config = Axi4Config(
+    addressWidth = 32,
+    dataWidth = 32,
+    idWidth = 4
+  )
+}
+
 class BusTimerTests extends AnyFlatSpec with should.Matchers{
+  implicit val config = Axi4Ctrl.getAxi4Config
   behavior of "BusTimer"
 
   it should "do a thing" in {

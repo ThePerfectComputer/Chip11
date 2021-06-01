@@ -5,9 +5,9 @@ import spinal.lib.bus.misc.BusSlaveFactory
 import spinal.lib.bus.amba4.axi.{Axi4, Axi4SlaveFactory, Axi4Config}
 import spinal.lib.bus._
 
-class Timer(width: Int, baseAddress: Int) extends Component {
+class Timer(width: Int, baseAddress: Int)(implicit config: Axi4Config) extends Component {
   val io = new Bundle {
-    val bus = slave(Axi4(Axi4Ctrl.getAxi4Config))
+    val bus = slave(Axi4(config))
     val timerMatch = out Bool
   }
 
