@@ -77,6 +77,8 @@ class CPUShiftRegDUT(implicit val config: CPUConfig) extends Component {
     val tdo = out Bool
     val tck = in Bool
     val sample = in Bool
+    val fetch_status = in(TransactionStatus())
+    val ldst_status = in(TransactionStatus())
   }
   val cpu = new CPU
   class ResponseBundle extends Bundle {
@@ -96,6 +98,9 @@ class CPUShiftRegDUT(implicit val config: CPUConfig) extends Component {
     cpu.io.ldst_request.ldst_req
   )
 
+  val fetch_status_reg = RegNext(io.fetch_status)
+  val ldst_status_reg = RegNext(io.fetch_status)
+
   val input_reg = Reg(Bits(inputs.getBitsWidth bits))
   val output_reg = Reg(Bits(outputs.getWidth bits))
   inputs.assignFromBits(input_reg)
@@ -111,13 +116,8 @@ class CPUShiftRegDUT(implicit val config: CPUConfig) extends Component {
   when(io.sample) {
     output_reg := outputs
   }
-  when(io.en) {
-    cpu.io.fetch_response.status := TransactionStatus.DONE
-    cpu.io.ldst_response.status := TransactionStatus.DONE
-  }.otherwise {
-    cpu.io.fetch_response.status := TransactionStatus.WAITING
-    cpu.io.ldst_response.status := TransactionStatus.WAITING
-  }
+  cpu.io.fetch_response.status := fetch_status_reg
+  cpu.io.ldst_response.status := ldst_status_reg
 }
 
 class SoCTestVerilog extends AnyFlatSpec with should.Matchers {
