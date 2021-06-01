@@ -1,0 +1,13 @@
+[options]
+mode bmc
+depth 4
+
+[engines]
+smtbmc
+
+[script]
+read -formal BranchProofDUT.sv
+prep -top BranchProofDUT
+
+[files]
+BranchProofDUT.sv
