@@ -23,7 +23,6 @@ class Branch extends Component {
 
     val pipedata = out(new BranchPipeData)
   }
-  io.pipedata.ctr := 0
 
 
   val dec_data = io.ri.dec_data
@@ -65,6 +64,12 @@ class Branch extends Component {
   io.pipedata.branch_addr_carry := addr_o(32)
 
 
+  val ctr = io.ri.slots(ReadSlotPacking.SPRPort1).data(63 downto 0)
+  val ctr_low = UInt(33 bits)
+  ctr_low := ctr(31 downto 0) -^ 1
+  io.pipedata.ctr_low := ctr_low(31 downto 0)
+  io.pipedata.ctr_hi := ctr(63 downto 32)
+  io.pipedata.ctr_carry := ctr_low(32)
 
   when(io.pipedata.conditional =/= True) {
     // absolute address
@@ -83,9 +88,6 @@ class Branch extends Component {
 
     // Check the CR condition
 
-    val ctr = io.ri.slots(ReadSlotPacking.SPRPort1).data(63 downto 0)
-    val ctr_new = ctr - 1
-    io.pipedata.ctr := ctr_new
 
     // absolute address
     when(branchArgs.immediate_address) {
@@ -142,6 +144,19 @@ class BranchStage2 extends Component {
 
   io.bc.target_addr := branch_addr
   io.bc.branch_addr := io.dec_data.cia
+
+
+  val ctr = UInt(64 bits)
+
+  val ctr_hi_a = UInt(33 bits)
+  val ctr_hi_b = UInt(33 bits)
+  ctr_hi_a := Cat(io.pipedata.ctr_hi, ~io.pipedata.ctr_carry).asUInt
+  ctr_hi_b := Cat(~U(0, 32 bits), ~io.pipedata.ctr_carry).asUInt
+  val ctr_hi = ctr_hi_a + ctr_hi_b
+  ctr := Cat(ctr_hi(32 downto 1), io.pipedata.ctr_low).asUInt
+
+
+
   when(io.pipedata.conditional =/= True) {
     io.bc.is_branch := True
     io.bc.branch_taken := True
@@ -177,10 +192,10 @@ class BranchStage2 extends Component {
       // printf(p"\t     Cond OK: $cond_ok\n")
     }
 
-    val ctr_ok = bo(2) | ((io.pipedata.ctr =/= 0) ^ bo(3))
+    val ctr_ok = bo(2) | ((ctr =/= 0) ^ bo(3))
 
     when(bo(2) === False) {
-      io.ctr_w.payload := io.pipedata.ctr
+      io.ctr_w.payload := ctr
       io.ctr_w.valid := True
     }
 
