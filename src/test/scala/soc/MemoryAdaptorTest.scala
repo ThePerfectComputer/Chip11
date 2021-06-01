@@ -68,10 +68,11 @@ class TruthTableTest extends AnyFlatSpec with should.Matchers {
     DebugDualPortSram128.debug = debug
 
     SimConfig.withWave.doSim(new MemoryAdaptorWithSram()){dut =>
+      dut.clockDomain.forkStimulus(period = 10)
+      sleep(50)
       // SimTimeout(300)
       if (debug) {dut.clockDomain.onFallingEdges{dut.debug()}}
       if (debug) {dut.clockDomain.onFallingEdges{println(s"$YELLOW STEPPING $RESET")}}
-      dut.clockDomain.forkStimulus(period = 10)
 
       def get_ack() = {
         while(!dut.io.ack.toBoolean){
