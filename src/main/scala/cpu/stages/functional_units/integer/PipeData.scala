@@ -48,7 +48,9 @@ class BranchPipeData extends Bundle {
   val ctr_hi = UInt(32 bits)
   val ctr_carry = Bool
 
-  val lr = UInt(64 bits)
+  val lr_low = UInt(32 bits)
+  val lr_hi = UInt(32 bits)
+  val lr_carry = Bool
 
   val conditional = Bool
 }

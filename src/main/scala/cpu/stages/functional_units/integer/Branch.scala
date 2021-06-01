@@ -56,7 +56,6 @@ class Branch extends Component {
 
   val addr_o = UInt(33 bits)
 
-  io.pipedata.lr := dec_data.cia + 4
   addr_o := addr_a(31 downto 0) +^ addr_b(31 downto 0)
   io.pipedata.branch_addr_low := addr_o(31 downto 0)
   io.pipedata.branch_addr_hi_a := addr_a(63 downto 32)
@@ -70,6 +69,14 @@ class Branch extends Component {
   io.pipedata.ctr_low := ctr_low(31 downto 0)
   io.pipedata.ctr_hi := ctr(63 downto 32)
   io.pipedata.ctr_carry := ctr_low(32)
+
+
+  val lr_low = UInt(33 bits)
+  lr_low := dec_data.cia(31 downto 0) +^ 4
+  io.pipedata.lr_low := lr_low(31 downto 0)
+  io.pipedata.lr_hi := dec_data.cia(63 downto 32)
+  io.pipedata.lr_carry := lr_low(32)
+
 
   when(io.pipedata.conditional =/= True) {
     // absolute address
@@ -156,6 +163,11 @@ class BranchStage2 extends Component {
   ctr := Cat(ctr_hi(32 downto 1), io.pipedata.ctr_low).asUInt
 
 
+  val lr = UInt(64 bits)
+  val lr_hi = io.pipedata.lr_hi + io.pipedata.lr_carry.asUInt
+  lr := Cat(lr_hi, io.pipedata.lr_low).asUInt
+
+
 
   when(io.pipedata.conditional =/= True) {
     io.bc.is_branch := True
@@ -206,6 +218,6 @@ class BranchStage2 extends Component {
   val lk = Forms.I1.LK(insn)
   when(lk){
     io.lr_w.valid := True
-    io.lr_w.payload := io.pipedata.lr
+    io.lr_w.payload := lr
   }
 }
