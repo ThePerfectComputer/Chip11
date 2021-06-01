@@ -1,9 +1,15 @@
 package soc
 
 import spinal.core._
-//import spinal.lib._
+import spinal.lib.{slave, master}
 import spinal.sim._
 import cpu.{CPU, CPUConfig}
+import cpu.shared.memory_state.{
+  TransactionStatus,
+  TransactionType,
+  TransactionSize
+}
+import cpu.interfaces.{LineRequest, LineResponse}
 
 import spinal.core.sim._
 import org.scalatest._
@@ -64,6 +70,56 @@ class CSVLogger(dut: SoC, filePath: String) {
 
 }
 
+class CPUShiftRegDUT(implicit val config: CPUConfig) extends Component {
+  val io = new Bundle {
+    val en = in Bool
+    val tdi = in Bool
+    val tdo = out Bool
+    val tck = in Bool
+    val sample = in Bool
+  }
+  val cpu = new CPU
+  class ResponseBundle extends Bundle {
+    val fetch_response = new LineResponse
+    val ldst_response = new LineResponse
+  }
+
+  val inputs = new ResponseBundle
+  val outputs = Cat(
+    cpu.io.fetch_request.data,
+    cpu.io.fetch_request.byte_address,
+    cpu.io.fetch_request.size,
+    cpu.io.fetch_request.ldst_req,
+    cpu.io.ldst_request.data,
+    cpu.io.ldst_request.byte_address,
+    cpu.io.ldst_request.size,
+    cpu.io.ldst_request.ldst_req
+  )
+
+  val input_reg = Reg(Bits(inputs.getBitsWidth bits))
+  val output_reg = Reg(Bits(outputs.getWidth bits))
+  inputs.assignFromBits(input_reg)
+  cpu.io.fetch_response := inputs.fetch_response
+  cpu.io.ldst_response := inputs.ldst_response
+
+  io.tdo := input_reg(0)
+
+  when(io.tck) {
+    input_reg := Cat(U(0, 1 bits), input_reg(input_reg.getWidth - 1 downto 1))
+    output_reg := Cat(io.tdi, output_reg(output_reg.getWidth - 1 downto 1))
+  }
+  when(io.sample) {
+    output_reg := outputs
+  }
+  when(io.en) {
+    cpu.io.fetch_response.status := TransactionStatus.DONE
+    cpu.io.ldst_response.status := TransactionStatus.DONE
+  }.otherwise {
+    cpu.io.fetch_response.status := TransactionStatus.WAITING
+    cpu.io.ldst_response.status := TransactionStatus.WAITING
+  }
+}
+
 class SoCTestVerilog extends AnyFlatSpec with should.Matchers {
   behavior of "SoC"
 
@@ -79,6 +135,7 @@ class SoCTestVerilog extends AnyFlatSpec with should.Matchers {
       popcnt = false
     )
     SpinalVerilog(new CPU)
+    SpinalVerilog(new CPUShiftRegDUT)
   }
 
 }
