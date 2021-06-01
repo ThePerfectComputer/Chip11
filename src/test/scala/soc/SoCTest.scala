@@ -102,11 +102,11 @@ class CPUShiftRegDUT(implicit val config: CPUConfig) extends Component {
   cpu.io.fetch_response := inputs.fetch_response
   cpu.io.ldst_response := inputs.ldst_response
 
-  io.tdo := input_reg(0)
+  io.tdo := output_reg(0)
 
   when(io.tck) {
-    input_reg := Cat(U(0, 1 bits), input_reg(input_reg.getWidth - 1 downto 1))
-    output_reg := Cat(io.tdi, output_reg(output_reg.getWidth - 1 downto 1))
+    input_reg := Cat(io.tdi, input_reg(input_reg.getWidth - 1 downto 1))
+    output_reg := Cat(U(0, 1 bits), output_reg(output_reg.getWidth - 1 downto 1))
   }
   when(io.sample) {
     output_reg := outputs
