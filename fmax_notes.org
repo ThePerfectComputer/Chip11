@@ -53,6 +53,11 @@
 | just adder, fixed stage3                                  |  64.49 |       |                                 |
 | adder, logic, fixed s3                                    |  63.69 |       |                                 |
 | adder, logic, branch, fixed s3                            |  54.24 |       |                                 |
+| new hazard detector                                       |  55.97 |       |                                 |
+| old branch unit                                           |  55.97 |       |                                 |
+| move all additions to stage 1                             |  60.85 |       |                                 |
+| evenly split additions between both stages                |  61.98 |       |                                 |
+| decouple ctr 0 calculation                                |  52.11 |       | ldst                         |
 
 * Hazard Detector
 | Configuration       |  FMAx |
