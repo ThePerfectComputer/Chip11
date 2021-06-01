@@ -57,7 +57,8 @@
 | old branch unit                                           |  55.97 |       |                                 |
 | move all additions to stage 1                             |  60.85 |       |                                 |
 | evenly split additions between both stages                |  61.98 |       |                                 |
-| decouple ctr 0 calculation                                |  52.11 |       | ldst                         |
+| decouple ctr 0 calculation                                |  52.11 |       | ldst                            |
+| decouple ctr 0 calculation better                         |  53.38 |       | hazard                      |
 
 * Hazard Detector
 | Configuration       |  FMAx |

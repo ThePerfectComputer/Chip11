@@ -69,6 +69,7 @@ class Branch extends Component {
   io.pipedata.ctr_low := ctr_low(31 downto 0)
   io.pipedata.ctr_hi := ctr(63 downto 32)
   io.pipedata.ctr_carry := ctr_low(32)
+  io.pipedata.ctr_is_zero := (ctr(63 downto 32) === 0) & (ctr(31 downto 0) === 1)
 
 
   val lr_low = UInt(33 bits)
@@ -162,15 +163,7 @@ class BranchStage2 extends Component {
   val ctr_hi = ctr_hi_a + ctr_hi_b
   ctr := Cat(ctr_hi(32 downto 1), io.pipedata.ctr_low).asUInt
 
-  val ctr_hi_is_zero = Bool
-  when(io.pipedata.ctr_carry){
-    ctr_hi_is_zero := io.pipedata.ctr_hi === 1
-  }.otherwise {
-    ctr_hi_is_zero := io.pipedata.ctr_hi === 0
-
-  }
-  val ctr_is_zero = Bool
-  ctr_is_zero := (io.pipedata.ctr_low === 0) & ctr_hi_is_zero
+  val ctr_is_zero = io.pipedata.ctr_is_zero
 
 
   val lr = UInt(64 bits)
@@ -214,7 +207,7 @@ class BranchStage2 extends Component {
       // printf(p"\t     Cond OK: $cond_ok\n")
     }
 
-    val ctr_ok = bo(2) | (ctr_is_zero ^ bo(3))
+    val ctr_ok = bo(2) | ((!ctr_is_zero) ^ bo(3))
 
     when(bo(2) === False) {
       io.ctr_w.payload := ctr
