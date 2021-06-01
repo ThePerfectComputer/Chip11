@@ -4,7 +4,11 @@ import Console.{BLUE, GREEN, CYAN_B, RED, RESET, YELLOW}
 import soc.devices.DualPortSram128
 
 import cpu.interfaces.{LineRequest, LineResponse}
-import cpu.shared.memory_state.{TransactionStatus, TransactionType, TransactionSize}
+import cpu.shared.memory_state.{
+  TransactionStatus,
+  TransactionType,
+  TransactionSize
+}
 import util._
 
 import spinal.core._
@@ -25,15 +29,15 @@ class MemoryAdaptorWithSram() extends Component {
   // instantiate modules
   val memory_adaptor = new MemoryAdaptor()
   val ram = new DualPortSram128()
-  
+
   val io = new Bundle {
-    val request  = in(new LineRequest())
+    val request = in(new LineRequest())
     val response = out(new LineResponse())
 
     // debugging signals
     val ack = out(Bool())
   }
-  
+
   // dontTouch(ram.io)
   io.ack := io.response.status === TransactionStatus.DONE
 
@@ -41,16 +45,16 @@ class MemoryAdaptorWithSram() extends Component {
   io.request <> memory_adaptor.io.request
   io.response <> memory_adaptor.io.response
   memory_adaptor.io.membus <> ram.io.port_2
-  
+
   // port_1, which is read-only, should remain unconnected
-  ram.io.port_1.ldst_req       := TransactionType.NONE
-  ram.io.port_1.quad_word_address        := 0
-  ram.io.port_1.write_mask.foreach{byte_mask => byte_mask := False}
-  ram.io.port_1.write_data.foreach{byte => byte := 0}
+  ram.io.port_1.ldst_req := TransactionType.NONE
+  ram.io.port_1.byte_address := 0
+  ram.io.port_1.write_mask.foreach { byte_mask => byte_mask := False }
+  ram.io.port_1.write_data.foreach { byte => byte := 0 }
 
   def debug() {
-    if (memory_adaptor.debugEnabled()) {memory_adaptor.debug()}
-    if (ram.debugEnabled()) {ram.debug()}
+    if (memory_adaptor.debugEnabled()) { memory_adaptor.debug() }
+    if (ram.debugEnabled()) { ram.debug() }
   }
 }
 
@@ -67,54 +71,108 @@ class TruthTableTest extends AnyFlatSpec with should.Matchers {
     DebugWriteAdaptor.debug = debug
     DebugDualPortSram128.debug = debug
 
-    SimConfig.withWave.doSim(new MemoryAdaptorWithSram()){dut =>
+    SimConfig.withWave.doSim(new MemoryAdaptorWithSram()) { dut =>
       dut.clockDomain.forkStimulus(period = 10)
       sleep(50)
       // SimTimeout(300)
-      if (debug) {dut.clockDomain.onFallingEdges{dut.debug()}}
-      if (debug) {dut.clockDomain.onFallingEdges{println(s"$YELLOW STEPPING $RESET")}}
+      if (debug) { dut.clockDomain.onFallingEdges { dut.debug() } }
+      if (debug) {
+        dut.clockDomain.onFallingEdges { println(s"$YELLOW STEPPING $RESET") }
+      }
 
       def get_ack() = {
-        while(!dut.io.ack.toBoolean){
-          if (debug) {println(s"$CYAN_B ${dut.io.ack.toBoolean} ack$RESET")}
+        while (!dut.io.ack.toBoolean) {
+          if (debug) { println(s"$CYAN_B ${dut.io.ack.toBoolean} ack$RESET") }
           dut.clockDomain.waitFallingEdge()
         }
         dut.io.request.ldst_req #= TransactionType.NONE
       }
 
-      for(start_byte <- 0 until 16) {
+      for (start_byte <- 0 until 16) {
         println(s"start_byte = ${start_byte}")
         val address = start_byte
         dut.io.request.byte_address #= address
 
         // verify all transaction sizes work at current address
-        for(bytes_in_transaction <- TransactionSize.elements) {
-          val bytes_in_transaction_asInt = TransactionSize.defaultEncoding.getValue(bytes_in_transaction).toInt
+        for (bytes_in_transaction <- TransactionSize.elements) {
+          val bytes_in_transaction_asInt =
+            TransactionSize.defaultEncoding.getValue(bytes_in_transaction).toInt
 
           // store some data
-          if (debug) {println(s"${BLUE}storing $bytes_in_transaction_asInt @ $start_byte ${RESET}")}
+          if (debug) {
+            println(
+              s"${BLUE}storing $bytes_in_transaction_asInt @ $start_byte ${RESET}"
+            )
+          }
           dut.io.request.ldst_req #= TransactionType.STORE
           dut.io.request.size #= bytes_in_transaction
-          val test_data = BigInt.apply(8 * bytes_in_transaction_asInt, scala.util.Random)
+          val test_data =
+            BigInt.apply(8 * bytes_in_transaction_asInt, scala.util.Random)
           dut.io.request.data #= test_data
           dut.clockDomain.waitFallingEdge()
           get_ack()
 
-
           // read some data
-          if (debug) {println(s"${GREEN}loading $bytes_in_transaction @ $start_byte ${RESET}")}
+          if (debug) {
+            println(
+              s"${GREEN}loading $bytes_in_transaction @ $start_byte ${RESET}"
+            )
+          }
           dut.io.request.ldst_req #= (TransactionType.LOAD)
           dut.clockDomain.waitFallingEdge()
           get_ack()
-          
+
           // verify results
-          if (debug) {println("trying assertion")}
+          if (debug) { println("trying assertion") }
           assert(dut.io.response.data.toBigInt == test_data)
-          }
         }
+      }
     }
 
   }
+
+  it should "test byte address" in {
+    val debug = true
+    DebugMemoryAdaptor.debug = debug
+    DebugWriteAdaptor.debug = false
+    DebugDualPortSram128.debug = debug
+
+    SimConfig.withWave.doSim(new MemoryAdaptorWithSram()) { dut =>
+      dut.clockDomain.forkStimulus(period = 10)
+      sleep(50)
+      // SimTimeout(300)
+      if (debug) { dut.clockDomain.onFallingEdges { dut.debug() } }
+      if (debug) {
+        dut.clockDomain.onFallingEdges { println(s"$YELLOW STEPPING $RESET") }
+      }
+
+      def get_ack() = {
+        while (!dut.io.ack.toBoolean) {
+          if (debug) { println(s"$CYAN_B ${dut.io.ack.toBoolean} ack$RESET") }
+          dut.clockDomain.waitFallingEdge()
+        }
+        dut.io.request.ldst_req #= TransactionType.NONE
+      }
+
+      for (i <- 0 until 8) {
+        val address = i*4
+        println(s"$RED reading from address ${address} $RESET")
+        dut.io.request.byte_address #= address
+        dut.io.request.ldst_req #= TransactionType.LOAD
+        dut.io.request.size #= TransactionSize.WORD
+        // val test_data = BigInt.apply(8 * 4, scala.util.Random)
+        // dut.io.request.data #= test_data
+        dut.clockDomain.waitFallingEdge()
+        get_ack()
+
+        // dut.io.request.ldst_req #= (TransactionType.LOAD)
+        // dut.clockDomain.waitFallingEdge()
+        // get_ack()
+      }
+
+    }
+  }
+
 }
 
 // class NoOverwriteTest extends FlatSpec with ChiselScalatestTester with Matchers {
@@ -156,7 +214,7 @@ class TruthTableTest extends AnyFlatSpec with should.Matchers {
 //       dut.io.request.size.poke(TransactionSize.QUADWORD)
 //       dut.clock.step(1)
 //       get_ack()
-      
+
 //       if (debug) {println("trying assertion")}
 //       dut.io.response.data.expect(quadword_bigint.asUInt)
 
@@ -206,7 +264,7 @@ class TruthTableTest extends AnyFlatSpec with should.Matchers {
 
 //       if (debug) {println("trying assertion")}
 //       dut.io.response.data.expect(0x3520.U)
-      
+
 //     }
 //   }
 // }

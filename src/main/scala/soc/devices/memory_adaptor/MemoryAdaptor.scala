@@ -22,9 +22,9 @@ object MemoryAdaptorState extends SpinalEnum {
 class MemoryAdaptor() extends Component {
 
   val io = new Bundle {
-    val request  = in(new LineRequest)
-    val response = out(new LineResponse)
-    val membus   = (new MemBus128).flip()
+    val request  = slave(new LineRequest)
+    val response = master(new LineResponse)
+    val membus   = master(new MemBus128)
 
   }
 
@@ -60,7 +60,7 @@ class MemoryAdaptor() extends Component {
   io.response.byte_address := request_latched.byte_address
 
   io.membus.ldst_req            := TransactionType.NONE
-  io.membus.quad_word_address   := 0
+  io.membus.byte_address   := 0
 
   // internal modules
   val load_adaptor  = new LoadAdaptor
@@ -119,12 +119,12 @@ class MemoryAdaptor() extends Component {
         when (aligned){
           state := MemoryAdaptorState.TRANSACTION1
           connect_transaction1()
-          io.membus.quad_word_address := line_address
+          io.membus.byte_address := Cat(line_address, B(0, 4 bits)).asUInt
         }
         when (!aligned){
           state := MemoryAdaptorState.TRANSACTION2
           connect_transaction2()
-          io.membus.quad_word_address := line_address + 1
+          io.membus.byte_address := Cat(line_address+1, B(0, 4 bits)).asUInt
         }
       }
 
@@ -133,7 +133,7 @@ class MemoryAdaptor() extends Component {
     is (MemoryAdaptorState.TRANSACTION2){
       connect_transaction2()
       hold_request()
-      io.membus.quad_word_address := line_address + 1
+      io.membus.byte_address := Cat(line_address+1, B(0, 4 bits)).asUInt
       io.response.status          := TransactionStatus.WAITING
       io.membus.ldst_req          := request_combined.ldst_req
 
@@ -141,7 +141,7 @@ class MemoryAdaptor() extends Component {
         load_adaptor.io.transaction2_ack := True
         connect_transaction1()
         state := MemoryAdaptorState.TRANSACTION1
-        io.membus.quad_word_address := line_address
+        io.membus.byte_address := Cat(line_address, B(0, 4 bits)).asUInt
       }
 
     }
@@ -149,7 +149,7 @@ class MemoryAdaptor() extends Component {
     is (MemoryAdaptorState.TRANSACTION1){
       connect_transaction1()
       hold_request()
-      io.membus.quad_word_address := line_address
+      io.membus.byte_address := Cat(line_address, B(0, 4 bits)).asUInt
       io.response.status          := TransactionStatus.WAITING
       when (ack){
         io.response.status          := TransactionStatus.DONE
@@ -161,12 +161,12 @@ class MemoryAdaptor() extends Component {
           when (aligned){
             state := MemoryAdaptorState.TRANSACTION1
             connect_transaction1()
-            io.membus.quad_word_address := line_address
+            io.membus.byte_address := Cat(line_address, B(0, 4 bits)).asUInt
           }
           when (!aligned){
             state := MemoryAdaptorState.TRANSACTION2
             connect_transaction2()
-            io.membus.quad_word_address := line_address + 1
+            io.membus.byte_address := Cat(line_address+1, B(0, 4 bits)).asUInt
           }
         }
       }

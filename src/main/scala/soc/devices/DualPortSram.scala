@@ -16,8 +16,8 @@ object DebugDualPortSram128 {
 
 class DualPortSram128(depth: Int=8, dataWidth: Int=128, val mem_file:String = null) extends Component {
   val io = new Bundle {
-    val port_1 = new MemBus128()
-    val port_2 = new MemBus128()
+    val port_1 = slave(new MemBus128)
+    val port_2 = slave(new MemBus128)
   }
   val bytesPerLine = dataWidth/8
 
@@ -56,7 +56,9 @@ class DualPortSram128(depth: Int=8, dataWidth: Int=128, val mem_file:String = nu
   
   // for the fetch stage
   val rport1_data = Bits(dataWidth bits)
-  rport1_data := mem.readSync(io.port_1.quad_word_address.take(mem.addressWidth).asUInt, enable=port1_do_load)
+  val p1_quad_word_address = UInt(60 bits)
+  p1_quad_word_address := io.port_1.byte_address(63 downto 4)
+  rport1_data := mem.readSync(p1_quad_word_address.take(mem.addressWidth).asUInt, enable=port1_do_load)
   io.port_1.read_data.assignFromBits(rport1_data)
   when(port1_do_load | port1_do_store) {
     port1_status_reg := TransactionStatus.DONE
@@ -65,9 +67,11 @@ class DualPortSram128(depth: Int=8, dataWidth: Int=128, val mem_file:String = nu
   }
 
   // for the loadstore stage
-  when (port2_do_store) {mem.write(io.port_2.quad_word_address.take(mem.addressWidth).asUInt, io.port_2.write_data.asBits, mask=io.port_2.write_mask.asBits)}
+  val p2_quad_word_address = UInt(60 bits)
+  p2_quad_word_address := io.port_2.byte_address(63 downto 4)
+  when (port2_do_store) {mem.write(p2_quad_word_address.take(mem.addressWidth).asUInt, io.port_2.write_data.asBits, mask=io.port_2.write_mask.asBits)}
   val rport2_data = Bits(dataWidth bits)
-  rport2_data := mem.readSync(io.port_2.quad_word_address.take(mem.addressWidth).asUInt, enable=port2_do_load)
+  rport2_data := mem.readSync(p2_quad_word_address.take(mem.addressWidth).asUInt, enable=port2_do_load)
   io.port_2.read_data.assignFromBits(rport2_data)
   when(port2_do_load | port2_do_store) {
     port2_status_reg := TransactionStatus.DONE
@@ -96,13 +100,13 @@ class DualPortSram128(depth: Int=8, dataWidth: Int=128, val mem_file:String = nu
     if (port.ldst_req.toEnum == TransactionType.LOAD){
       println(s"${port.getName()} RECIEVED ${port.ldst_req.toEnum} REQUEST")
       println(s"${port.read_data.getName()} = ${vecToStringU(port.read_data)}")
-      println(s"${port.quad_word_address.getName()} = ${port.quad_word_address.toBigInt}")
+      println(s"${port.byte_address.getName()} = ${port.byte_address.toBigInt}")
     }
 
     if (port.ldst_req.toEnum == TransactionType.STORE){
       println(s"${port.getName()} RECIEVED ${port.ldst_req.toEnum} REQUEST")
       println(s"${port.read_data.getName()} = ${vecToStringU(port.read_data)}")
-      println(s"${port.quad_word_address.getName()} = ${port.quad_word_address.toBigInt}")
+      println(s"${port.byte_address.getName()} = ${port.byte_address.toBigInt}")
     }
 
   }
