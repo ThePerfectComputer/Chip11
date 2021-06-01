@@ -1,8 +1,30 @@
 package cpu.stages.functional_units.integer
 
 import cpu.interfaces.{FunctionalUnit, ReadInterface}
-import isa.{FormEnums, MnemonicEnums, ISAPairings, ReadSlotPacking, WriteSlotPacking}
-import cpu.uOps.functional_units.Integer.{IntegerFUSub, AdderSelectB, AdderCarryIn, AdderArgs, LogicSelectB, LogicArgs, MultiplierSelectB, MultiplierArgs, BranchArgs, ShifterSelectB, ShifterME, ShifterMB, ShifterArgs, ComparatorArgs, ComparatorSelectB}
+import isa.{
+  FormEnums,
+  MnemonicEnums,
+  ISAPairings,
+  ReadSlotPacking,
+  WriteSlotPacking
+}
+import cpu.uOps.functional_units.Integer.{
+  IntegerFUSub,
+  AdderSelectB,
+  AdderCarryIn,
+  AdderArgs,
+  LogicSelectB,
+  LogicArgs,
+  MultiplierSelectB,
+  MultiplierArgs,
+  BranchArgs,
+  ShifterSelectB,
+  ShifterME,
+  ShifterMB,
+  ShifterArgs,
+  ComparatorArgs,
+  ComparatorSelectB
+}
 import cpu.uOps.{FunctionalUnit, UOpsMapping}
 import util.{PipeStage, PipeData}
 
@@ -19,7 +41,7 @@ import scala.util.Random
 
 class BranchProofDUT extends Component {
   val io = new Bundle {
-    val ctr_in = in UInt(64 bits)
+    val ctr_in = in UInt (64 bits)
   }
   val ri = new ReadInterface
   ri := ri.getZero
@@ -44,22 +66,21 @@ class BranchProofDUT extends Component {
 
   val ctr_o = branchS2.io.ctr_w.payload
   assert(branchS2.io.ctr_w.valid)
-  cover(branchS2.io.ctr_w.valid)
   assert(ctr_o === ((ctr - 1) & ~U(0, 64 bits)))
 
   val ctr_is_zero = (ctr - 1) === 0
   assert(branchS2.io.bc.branch_taken === !ctr_is_zero)
-  
-
+  cover(ctr_is_zero === True)
 
 }
 
-class BranchProofVerilog extends AnyFlatSpec with should.Matchers {
+class BranchProofVerilogFormal extends AnyFlatSpec with should.Matchers {
   behavior of "BranchProofDUT"
 
-
   it should "create verilog" in {
-    val config = SpinalConfig(defaultConfigForClockDomains=ClockDomainConfig(resetKind=SYNC, resetActiveLevel=HIGH)).withoutEnumString()
+    val config = SpinalConfig(defaultConfigForClockDomains=ClockDomainConfig(resetKind = SYNC, resetActiveLevel = HIGH),
+      targetDirectory="formal"
+    ).withoutEnumString()
     config.includeFormal.generateSystemVerilog(new BranchProofDUT)
   }
 }
