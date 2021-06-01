@@ -52,14 +52,28 @@ class Branch extends Component {
   }
   io.pipedata.cr_bits := banked_cr
 
+  val addr_a = UInt(64 bits)
+  val addr_b = UInt(64 bits)
+
+  val addr_o = UInt(33 bits)
+
+  io.pipedata.lr := dec_data.cia + 4
+  addr_o := addr_a(31 downto 0) +^ addr_b(31 downto 0)
+  io.pipedata.branch_addr_low := addr_o(31 downto 0)
+  io.pipedata.branch_addr_hi_a := addr_a(63 downto 32)
+  io.pipedata.branch_addr_hi_b := addr_b(63 downto 32)
+  io.pipedata.branch_addr_carry := addr_o(32)
+
 
 
   when(io.pipedata.conditional =/= True) {
     // absolute address
     when(Forms.I1.AA(insn) === True) {
-      io.pipedata.branch_addr := io.ri.imm.payload |<< 2
+      addr_a := io.ri.imm.payload |<< 2
+      addr_b := 0
     }.otherwise {
-      io.pipedata.branch_addr := (io.ri.imm.payload |<< 2) + dec_data.cia
+      addr_a := io.ri.imm.payload |<< 2
+      addr_b := dec_data.cia
     }
   }.otherwise {
     // Yep, reverse it because power's bit ordering is weird
@@ -76,15 +90,17 @@ class Branch extends Component {
     // absolute address
     when(branchArgs.immediate_address) {
       when(Forms.B1.AA(insn) === True) {
-        io.pipedata.branch_addr := io.ri.imm.payload |<< 2
+        addr_a := io.ri.imm.payload |<< 2
+        addr_b := 0
       }.otherwise {
-        io.pipedata.branch_addr := (io.ri.imm.payload |<< 2) + dec_data.cia
+        addr_a := io.ri.imm.payload |<< 2
+        addr_b := dec_data.cia
       }
     }.otherwise {
-      io.pipedata.branch_addr := io.ri.slots(ReadSlotPacking.SPRPort1).data
+      addr_a := io.ri.slots(ReadSlotPacking.SPRPort1).data
+      addr_b := 0
     }
   }
-  io.pipedata.lr := dec_data.cia + 4
 
 }
 
@@ -116,7 +132,15 @@ class BranchStage2 extends Component {
   io.bc.is_branch := False
   io.bc.branch_taken := False
 
-  io.bc.target_addr := io.pipedata.branch_addr
+  val addr_hi_a = UInt(33 bits)
+  val addr_hi_b = UInt(33 bits)
+  addr_hi_a := Cat(io.pipedata.branch_addr_hi_a, io.pipedata.branch_addr_carry).asUInt
+  addr_hi_b := Cat(io.pipedata.branch_addr_hi_b, io.pipedata.branch_addr_carry).asUInt
+  val addr_hi_o = UInt(33 bits)
+  addr_hi_o := addr_hi_a + addr_hi_b
+  val branch_addr = Cat(addr_hi_o(32 downto 1), io.pipedata.branch_addr_low).asUInt
+
+  io.bc.target_addr := branch_addr
   io.bc.branch_addr := io.dec_data.cia
   when(io.pipedata.conditional =/= True) {
     io.bc.is_branch := True
