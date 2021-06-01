@@ -2,7 +2,7 @@ package bus
 import spinal.core._
 import spinal.lib._
 import spinal.lib.bus.misc.BusSlaveFactory
-import spinal.lib.bus.amba4.axi.{Axi4, Axi4SlaveFactory, Axi4Config}
+import spinal.lib.bus.amba4.axi.{Axi4, Axi4Shared, Axi4SlaveFactory, Axi4Config}
 import spinal.lib.bus._
 
 class Timer(width: Int, baseAddress: Int)(implicit config: Axi4Config) extends Component {

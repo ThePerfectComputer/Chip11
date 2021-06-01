@@ -8,9 +8,9 @@ import spinal.lib.bus.amba4.axi.{Axi4, Axi4SlaveFactory, Axi4Config, Axi4Crossba
 
 import spinal.core.sim._
 
-class BusUART(uartCtrlConfig: UartCtrlGenerics, rxFifoDepth: Int) extends Component {
+class BusUART(uartCtrlConfig: UartCtrlGenerics, rxFifoDepth: Int)(implicit config: Axi4Config) extends Component {
   val io = new Bundle {
-    val bus = slave(Axi4(Axi4Ctrl.getAxi4Config))
+    val bus = slave(Axi4(config))
     val uart = master(Uart())
   }
 

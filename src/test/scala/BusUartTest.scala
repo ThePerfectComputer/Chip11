@@ -18,8 +18,9 @@ object BusUartControl {
     dataWidthMax=8)
 }
 class BusUARTLoopback(uartCtrlConfig: UartCtrlGenerics, rxFifoDepth: Int) extends Component {
+  implicit val config = Axi4Ctrl.getAxi4Config
   val io = new Bundle {
-    val bus = slave(Axi4(Axi4Ctrl.getAxi4Config))
+    val bus = slave(Axi4(config))
   }
   val uart = new BusUART(uartCtrlConfig, rxFifoDepth)
 
@@ -31,6 +32,7 @@ class BusUARTLoopback(uartCtrlConfig: UartCtrlGenerics, rxFifoDepth: Int) extend
 class BusUARTTests extends AnyFlatSpec with should.Matchers{
   behavior of "BusUART"
 
+  implicit val config = Axi4Ctrl.getAxi4Config
   it should "do a thing" in {
     CommonSimConfig().withWave.compile(new BusUART(BusUartControl.getGenerics, 8)).doSim { dut =>
       dut.clockDomain.forkStimulus(10)

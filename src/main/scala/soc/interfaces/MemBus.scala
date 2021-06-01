@@ -13,6 +13,7 @@ class MemBus128() extends Bundle with IMasterSlave{
   val access_size       = in(TransactionSize)
   val write_mask        = in(Vec(Bool(), 16))
   val write_data        = in(Vec(UInt(8 bits), 16))
+  val req_ack = out Bool
   
   val read_data         = out(Vec(UInt(8 bits), 16))
   val status            = out(TransactionStatus())
@@ -24,6 +25,7 @@ class MemBus128() extends Bundle with IMasterSlave{
     out(write_mask)
     out(write_data)
 
+    in(req_ack)
     in(read_data)
     in(status)
   }

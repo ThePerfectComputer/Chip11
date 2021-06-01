@@ -47,9 +47,11 @@ class MemBusToAXIShared(id: Int)(implicit axiConfig: Axi4Config) extends Compone
 
   io.axi.w.data := 0
   io.axi.w.strb := 0
+  io.axi.w.last := False
 
   io.membus.read_data := io.membus.read_data.getZero
   io.membus.status := TransactionStatus.WAITING
+  io.membus.req_ack := False
 
 
   when(io.membus.ldst_req === TransactionType.LOAD) {
@@ -60,8 +62,12 @@ class MemBusToAXIShared(id: Int)(implicit axiConfig: Axi4Config) extends Compone
     io.axi.arw.write := True
     io.axi.arw.valid := True
     io.axi.w.valid := True
+    io.axi.w.last := True
     io.axi.w.payload.data := io.membus.write_data.asBits
     io.axi.w.strb := io.membus.write_mask.asBits
+  }
+  when(io.axi.arw.valid & io.axi.arw.ready){
+    io.membus.req_ack := True
   }
   val pastTransaction = RegInit(TransactionType.NONE)
   pastTransaction := io.membus.ldst_req
