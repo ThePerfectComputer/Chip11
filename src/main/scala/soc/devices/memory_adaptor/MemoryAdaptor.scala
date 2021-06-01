@@ -111,8 +111,11 @@ class MemoryAdaptor() extends Component {
   }
   val transactionSize = TransactionSize()
   transactionSize := TransactionSize.QUADWORD
+  val byte_address = UInt(64 bits)
+  byte_address := Cat(line_address, U(0, 4 bits)).asUInt
   when(byte_address_aligned){
     transactionSize := request_combined.size
+    byte_address := request_combined.byte_address
   }
   io.membus.access_size := transactionSize
 
@@ -134,7 +137,7 @@ class MemoryAdaptor() extends Component {
         when (aligned){
           state := MemoryAdaptorState.TRANSACTION1
           connect_transaction1()
-          io.membus.byte_address := request_combined.byte_address
+          io.membus.byte_address := byte_address
         }
         when (!aligned){
           state := MemoryAdaptorState.TRANSACTION2
@@ -157,7 +160,7 @@ class MemoryAdaptor() extends Component {
         load_adaptor.io.transaction2_ack := True
         connect_transaction1()
         state := MemoryAdaptorState.TRANSACTION1
-        io.membus.byte_address := request_combined.byte_address
+        io.membus.byte_address := byte_address
       }
 
     }
@@ -165,7 +168,7 @@ class MemoryAdaptor() extends Component {
     is (MemoryAdaptorState.TRANSACTION1){
       connect_transaction1()
       hold_request()
-      io.membus.byte_address := request_combined.byte_address
+      io.membus.byte_address := byte_address
       io.response.status          := TransactionStatus.WAITING
       when (ack){
         io.response.status          := TransactionStatus.DONE
@@ -177,7 +180,7 @@ class MemoryAdaptor() extends Component {
           when (aligned){
             state := MemoryAdaptorState.TRANSACTION1
             connect_transaction1()
-            io.membus.byte_address := request_combined.byte_address
+            io.membus.byte_address := byte_address
           }
           when (!aligned){
             state := MemoryAdaptorState.TRANSACTION2
