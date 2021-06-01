@@ -3,7 +3,7 @@ import spinal.core._
 import cpu.interfaces.{FunctionalUnit}
 
 class ExecuteData extends FunctionalUnit {
-  val additionalData = Bits(203 bits)
+  val additionalData = Bits(209 bits)
 }
 
 class AdderPipeData extends Bundle {
@@ -40,6 +40,7 @@ class BranchPipeData extends Bundle {
   val branch_addr = UInt(64 bits)
   val cr_bits = UInt(16 bits)
   val ctr = UInt(64 bits)
+  val lr = UInt(64 bits)
 
   val conditional = Bool
 }

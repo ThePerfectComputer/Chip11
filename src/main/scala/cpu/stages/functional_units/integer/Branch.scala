@@ -84,6 +84,7 @@ class Branch extends Component {
       io.pipedata.branch_addr := io.ri.slots(ReadSlotPacking.SPRPort1).data
     }
   }
+  io.pipedata.lr := dec_data.cia + 4
 
 }
 
@@ -166,6 +167,6 @@ class BranchStage2 extends Component {
   val lk = Forms.I1.LK(insn)
   when(lk){
     io.lr_w.valid := True
-    io.lr_w.payload := io.dec_data.cia + 4
+    io.lr_w.payload := io.pipedata.lr
   }
 }
