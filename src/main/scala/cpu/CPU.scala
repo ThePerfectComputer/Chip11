@@ -3,7 +3,7 @@ package cpu
 import cpu.interfaces.{LineRequest, LineResponse, ReadInterface, WriteInterface}
 import cpu.shared.{Regfile, RegfileMasked, XERMaskMapping}
 import cpu.shared.{BranchPredictor, BRAMMultiRegfile, RegfileMasked}
-import cpu.stages.{FetchRequest, FetchResponse, uOpAndFormDecoder, PopulateByForm, ReadStage}
+import cpu.stages.{FetchUnit, uOpAndFormDecoder, PopulateByForm, ReadStage}
 import cpu.stages.{HazardDetector, WriteStage, LDSTRequest, LDSTResponse}
 import cpu.stages.functional_units.integer.{Stage1, Stage2, Stage3}
 import util.{PipeStage, Delay}
@@ -61,8 +61,7 @@ class CPU(implicit val config: CPUConfig) extends Component {
   }
 
   // instantiate pipeline stages
-  val fetch_req     = new FetchRequest
-  val fetch_resp    = new FetchResponse      // fetch instructions from memory
+  val fetch = new FetchUnit
   val decode        = new uOpAndFormDecoder                           // decode instructions into uOps and forms
   val form_pop      = new PopulateByForm     // use form to populate instruction data
 
@@ -118,30 +117,30 @@ class CPU(implicit val config: CPUConfig) extends Component {
   hazard.io.stage_valid_vec(7) := write.pipeInput.valid
 
   // connect up pipeline stages
-  fetch_resp << fetch_req.pipeOutput
-  fetch_resp >-> decode >-> form_pop >/-> hazard >-> read >->
+  decode << fetch.pipeOutput
+  decode >-> form_pop >/-> hazard >-> read >->
   s1 >/-> s2 >-> s3 >-> ldst_request >/-> ldst_response >/-> write
 
-  val flushLatency = LatencyAnalysis(s2.pipeInput.flush, fetch_resp.pipeOutput.flush)
+  val flushLatency = LatencyAnalysis(s2.pipeInput.flush, fetch.pipeOutput.flush)
   println(s"flush latency: $flushLatency")
   
   // instantiate other hardware that isn't pipeline stages
   val branch        = new BranchPredictor                             // branch predictor
 
   // connect fetch unit to branch predictor
-  fetch_req.io.bp_interface <> branch.io.fetch_req_interface
-  fetch_resp.io.bp_interface <> branch.io.fetch_resp_interface
+  fetch.io.bp_request <> branch.io.fetch_req_interface
+  fetch.io.bp_response <> branch.io.fetch_resp_interface
   // connect branch predictor to the execute stage 1 branch unit
 
-  val branchDelayed  = Delay(s2.io.bc, flushLatency)
+  val branchDelayed  = Delay(s2.io.bc, flushLatency, init=s2.io.bc.getZero)
   branch.io.b_ctrl := branchDelayed
 
   // connect fetch and loadstore to memory interfaces
   // fetch_req.io.line_request       <> io.fetch_request
-  io.fetch_request                := fetch_req.io.line_request
-  fetch_resp.io.line_response     <> io.fetch_response
-  ldst_request.io                 <> io.ldst_request
-  ldst_response.io                <> io.ldst_response
+  io.fetch_request                := fetch.io.line_request
+  fetch.io.line_response <> io.fetch_response
+  ldst_request.io        <> io.ldst_request
+  ldst_response.io       <> io.ldst_response
 
   // instantiate the regfile(s)
   // val gpr = if(doDebug) new DebugBRAMMultiRegfile(32, 64, 2, 2) else
