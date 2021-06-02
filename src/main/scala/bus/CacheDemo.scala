@@ -5,19 +5,18 @@ import spinal.lib.com.uart._
 import scala.math.BigInt
 
 import spinal.lib.bus.amba4.axi._
-import spinal.lib.cpu.riscv.impl._
 
 import spinal.core.sim._
 
 object CacheConfig {
-  def getICacheConfig = InstructionCacheConfig(
-    cacheSize=2048,
-    bytePerLine=16,
-    wayCount=1,  
-    wrappedMemAccess=false,
-    addressWidth=32,
-    cpuDataWidth=32,
-    memDataWidth=32)
+  // def getICacheConfig = InstructionCacheConfig(
+  //   cacheSize=2048,
+  //   bytePerLine=16,
+  //   wayCount=1,  
+  //   wrappedMemAccess=false,
+  //   addressWidth=32,
+  //   cpuDataWidth=32,
+  //   memDataWidth=32)
   def getDCacheConfig = DataCacheConfig(
     cacheSize=2048,
     bytePerLine=16,
