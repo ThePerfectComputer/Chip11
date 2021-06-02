@@ -184,7 +184,7 @@ class SoCTestRun extends AnyFlatSpec with should.Matchers {
     val goldCsv = s"$goldCsvDir/$testName/test.csv"
     it should s"run $testName" in {
       compiled.doSimUntilVoid(testName) { dut =>
-        SimTimeout(1000000)
+        SimTimeout(30000)
         dut.loadFromFile(s"$testDir/$testName/$binary")
         val logger = new CSVLogger(dut, testCsv)
         dut.clockDomain.forkStimulus(10)

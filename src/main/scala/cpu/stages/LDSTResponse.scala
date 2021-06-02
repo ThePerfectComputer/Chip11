@@ -11,10 +11,10 @@ class LDSTResponse extends PipeStage(new FunctionalUnitExit, new WriteStageInter
   val io = slave(new LineResponse)
   val ldst_req = i.ldst_request
 
-  when (i.ldst_request.req_type =/= TransactionType.LOAD){
+  when(i.ldst_request.req_type === TransactionType.NONE || !pipeInput.valid){
+    ready := True
+  }.otherwise{
     when(io.status === TransactionStatus.DONE) {
-      ready := True
-    } .elsewhen(io.status === TransactionStatus.IDLE) {
       ready := True
     } .otherwise {
       ready := False
