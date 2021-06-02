@@ -169,6 +169,7 @@ class MemoryAdaptor() extends Component {
       connect_transaction1()
       hold_request()
       io.membus.byte_address := byte_address
+      io.membus.ldst_req := request_combined.ldst_req
       io.response.status          := TransactionStatus.WAITING
       when (ack){
         io.response.status          := TransactionStatus.DONE

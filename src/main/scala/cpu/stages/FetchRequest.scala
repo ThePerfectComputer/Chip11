@@ -20,9 +20,9 @@ class FetchRequest extends Component {
 
   // signals and objects
   object FetchState extends SpinalEnum {
-    val firstRequest, firstResponse, steadyState = newElement()
+    val init, firstRequest, firstResponse, steadyState = newElement()
   }
-  val state = RegInit(FetchState.firstRequest)
+  val state = RegInit(FetchState.init)
 
   val cia_reg           = RegInit(U(0x10, 64 bits))
   val nia               = cia_reg + 4
@@ -38,6 +38,11 @@ class FetchRequest extends Component {
 
 
   switch (state) {
+    is (FetchState.init) {
+      io.line_request.ldst_req        := TransactionType.NONE
+      state                           := FetchState.firstRequest
+      io.line_request.byte_address    := cia_reg
+    }
 
     is (FetchState.firstRequest) {
       io.line_request.ldst_req        := TransactionType.LOAD
