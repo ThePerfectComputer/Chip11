@@ -1,20 +1,29 @@
 package cpu.stages
 
-import cpu.interfaces.{FetchOutput, BPFetchRequestInterface, LineRequest, LineResponse}
+import cpu.interfaces.{
+  FetchOutput,
+  BPFetchRequestInterface,
+  LineRequest,
+  LineResponse
+}
 import soc.devices.memory_adaptor.{MemoryAdaptor, MemBusToAXIShared}
 
 import util._
 import spinal.core._
 import spinal.lib._
 import spinal.sim._
-import spinal.lib.bus.amba4.axi.{Axi4Config, Axi4CrossbarFactory, Axi4SharedOnChipRam}
-
+import spinal.lib.bus.amba4.axi.{
+  Axi4Config,
+  Axi4CrossbarFactory,
+  Axi4SharedOnChipRam
+}
 
 import spinal.core.sim._
 import org.scalatest._
 import flatspec._
 import matchers._
 
+import scala.collection.mutable.ListBuffer
 
 class FetchDUT extends Component {
   val io = new Bundle {
@@ -44,7 +53,6 @@ class FetchDUT extends Component {
   io.pipeOutput <> fetch.pipeOutput
   io.bp_interface <> fetch.io.bp_interface
 
-
   val fetch_adaptor = new MemoryAdaptor
   fetch.io.line_request <> fetch_adaptor.io.request
   fetch.io.line_response <> fetch_adaptor.io.response
@@ -52,13 +60,24 @@ class FetchDUT extends Component {
   val mbToAxi1 = new MemBusToAXIShared(0)
   mbToAxi1.io.membus <> fetch_adaptor.io.membus
 
-  val ramSize = 32
+  val ramSize = 128
 
-  val ram = Axi4SharedOnChipRam (
+  val ram = Axi4SharedOnChipRam(
     dataWidth = axiConfig.dataWidth,
     byteCount = ramSize,
     idWidth = 5
   )
+
+  var initialData = new ListBuffer[BigInt]
+  for (idx <- 0 until (ramSize / 16)) {
+    var item = BigInt(0)
+    for (i <- 0 until 4) {
+      val word = BigInt(idx * 4 + i)
+      item |= word << (32 * i)
+    }
+    initialData += item
+  }
+  ram.ram.init(initialData.map(B(_, 128 bits)))
 
   val axiCrossbar = Axi4CrossbarFactory()
 
@@ -79,10 +98,21 @@ class FetchTest extends AnyFlatSpec with should.Matchers {
 
   it should "fetch instructions" in {
     SimConfig.withWave.doSim(new FetchDUT) { dut =>
+      dut.io.pipeOutput.ready #= true
+      dut.io.pipeOutput.flush #= false
       dut.clockDomain.forkStimulus(10)
+      dut.clockDomain.waitSampling(1)
 
-      dut.clockDomain.waitSampling(100)
+      for (i <- 16 until 100 by 4) {
+        while (!dut.io.pipeOutput.valid.toBoolean) {
+          dut.clockDomain.waitSampling(1)
+        }
+        val cia = dut.io.pipeOutput.payload.cia.toBigInt
+        val insn = dut.io.pipeOutput.payload.insn.toBigInt
+        assert(cia === i)
+        assert(insn === i/4)
+        dut.clockDomain.waitSampling(1)
+      }
     }
   }
 }
-

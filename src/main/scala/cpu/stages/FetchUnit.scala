@@ -42,7 +42,7 @@ class FetchUnit extends Component {
   io.line_request.data := 0
 
   val busArea = new Area {
-    val cia = RegInit(U(0x16, 64 bits))
+    val cia = RegInit(U(0x10, 64 bits))
 
     val fsm = new StateMachine {
       val requestState: State = new State with EntryPoint {
@@ -65,9 +65,35 @@ class FetchUnit extends Component {
         }
       }
 
+    }
+    when(io.bp_interface.branch.valid) {
+      cia := io.bp_interface.branch.payload & ~U(0xf, 64 bits)
+    }
+  }
+
+  val deserializeArea = new Area {
+    val cia = RegInit(U(0x10, 64 bits))
+    val word_addr = cia(3 downto 2)
+    val dataOut = dataFifo.io.pop.payload.subdivideIn(32 bits)
+
+    val fsm = new StateMachine {
+      val running: State = new State with EntryPoint {
+        whenIsActive {
+          when(dataFifo.io.pop.valid & pipeOutput.ready) {
+            pipeOutput.payload.insn := dataOut(word_addr).asUInt
+            pipeOutput.payload.cia := cia
+            pipeOutput.valid := True
+            cia := cia + 4
+            when(word_addr === 0x3) {
+              dataFifo.io.pop.ready := True
+            }
+          }
+        }
+      }
 
     }
-    when(io.bp_interface.branch.valid){
+
+    when(io.bp_interface.branch.valid) {
       cia := io.bp_interface.branch.payload & ~U(0xf, 64 bits)
     }
   }
