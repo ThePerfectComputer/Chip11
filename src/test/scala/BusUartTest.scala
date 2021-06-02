@@ -45,16 +45,16 @@ class BusUARTTests extends AnyFlatSpec with should.Matchers{
       dut.io.uart.rxd #= true
 
       driver.write(0, 0x10)
-      driver.write(4, 7)
+      driver.write(16, 7)
       dut.clockDomain.waitSampling(100)
-      driver.write(8, 0x55)
-      driver.write(8, 0x0f)
-      driver.write(8, 0xf0)
+      driver.write(32, 0x55)
+      driver.write(32, 0x0f)
+      driver.write(32, 0xf0)
       dut.clockDomain.waitSampling(100)
-      var resp = driver.read(8)
+      var resp = driver.read(32)
       while((resp & 1) != 0){
         dut.clockDomain.waitSampling(50)
-        resp = driver.read(8)
+        resp = driver.read(32)
       }
 
     }
@@ -69,37 +69,37 @@ class BusUARTTests extends AnyFlatSpec with should.Matchers{
       val driver = Axi4Driver(dut.io.bus, dut.clockDomain)
 
       def fifoWrite(data:Int){
-        var resp = driver.read(8).toInt
+        var resp = driver.read(32).toInt
         while((resp & 2) == 0){
           dut.clockDomain.waitSampling(50)
-          resp = driver.read(8).toInt
+          resp = driver.read(32).toInt
         }
-        driver.write(8, data & 255)
+        driver.write(32, data & 255)
       }
 
       driver.reset()
       dut.clockDomain.waitSampling(5)
 
       driver.write(0, 0x10)
-      driver.write(4, 7)
+      driver.write(16, 7)
       dut.clockDomain.waitSampling(100)
       for(c <- testdata){
         fifoWrite(c)
       }
       dut.clockDomain.waitSampling(100)
-      var resp = driver.read(8)
+      var resp = driver.read(32)
       while((resp & 1) != 0){
         dut.clockDomain.waitSampling(50)
-        resp = driver.read(8)
+        resp = driver.read(32)
       }
 
-      resp = driver.read(12).toInt
+      resp = driver.read(24).toInt
       var received = ListBuffer[Char]()
       while((resp & (1<<31)) != 0){
         println(f"resp: 0x${resp & 0xff}%x ${(resp & 0xff).charValue}%c")
         received += (resp & 0xff).charValue
         dut.clockDomain.waitSampling(10)
-        resp = driver.read(12)
+        resp = driver.read(24)
       }
 
       for((expected, actual) <- testdata.zip(received)){
