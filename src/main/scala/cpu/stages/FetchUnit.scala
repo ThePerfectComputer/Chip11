@@ -2,7 +2,7 @@ package cpu.stages
 
 import cpu.interfaces.{
   FetchOutput,
-  BPFetchRequestInterface,
+  BPFetchRequestInterface, BPFetchResponseInterface,
   LineRequest,
   LineResponse
 }
@@ -26,7 +26,8 @@ class FetchUnit extends Component {
     val line_request = master(new LineRequest())
     val line_response = slave(new LineResponse)
 
-    val bp_interface = slave(new BPFetchRequestInterface())
+    val bp_response = master(new BPFetchResponseInterface())
+    val bp_request = slave(new BPFetchRequestInterface())
   }
 
   pipeOutput.valid := False
@@ -36,6 +37,7 @@ class FetchUnit extends Component {
   dataFifo.io.push.valid := False
   dataFifo.io.push.payload := 0
   dataFifo.io.pop.ready := False
+  dataFifo.io.flush := False
   io.line_request.ldst_req := TransactionType.NONE
   io.line_request.size := TransactionSize.QUADWORD
   io.line_request.byte_address := 0
@@ -47,7 +49,7 @@ class FetchUnit extends Component {
     val fsm = new StateMachine {
       val requestState: State = new State with EntryPoint {
         whenIsActive {
-          when(dataFifo.io.push.ready & ~io.bp_interface.branch.valid) {
+          when(dataFifo.io.push.ready & ~io.bp_request.branch.valid) {
             io.line_request.ldst_req := TransactionType.LOAD
             io.line_request.byte_address := cia
             cia := (cia & ~U(0xf, 64 bits)) + 0x10
@@ -57,17 +59,37 @@ class FetchUnit extends Component {
       }
       val responseState: State = new State {
         whenIsActive {
+          when(!io.bp_request.branch.valid) {
+            when(io.line_response.status === TransactionStatus.DONE) {
+              dataFifo.io.push.valid := True
+              dataFifo.io.push.payload := io.line_response.data.asBits
+              goto(requestState)
+            }
+            // When there's a branch, either drop the current
+            // response, or go to the branchWait state to wait for the
+            // response to come
+          }.otherwise {
+            when(io.line_response.status === TransactionStatus.DONE) {
+              goto(requestState)
+            }.otherwise {
+              goto(branchWait)
+            }
+
+          }
+        }
+      }
+      val branchWait: State = new State {
+        whenIsActive {
           when(io.line_response.status === TransactionStatus.DONE) {
-            dataFifo.io.push.valid := True
-            dataFifo.io.push.payload := io.line_response.data.asBits
             goto(requestState)
           }
         }
       }
 
     }
-    when(io.bp_interface.branch.valid) {
-      cia := io.bp_interface.branch.payload & ~U(0xf, 64 bits)
+    when(io.bp_request.branch.valid) {
+      cia := io.bp_request.branch.payload & ~U(0xf, 64 bits)
+      dataFifo.io.flush := True
     }
   }
 
@@ -79,13 +101,15 @@ class FetchUnit extends Component {
     val fsm = new StateMachine {
       val running: State = new State with EntryPoint {
         whenIsActive {
-          when(dataFifo.io.pop.valid & pipeOutput.ready) {
-            pipeOutput.payload.insn := dataOut(word_addr).asUInt
-            pipeOutput.payload.cia := cia
-            pipeOutput.valid := True
-            cia := cia + 4
-            when(word_addr === 0x3) {
-              dataFifo.io.pop.ready := True
+          when(!io.bp_request.branch.valid) {
+            when(dataFifo.io.pop.valid & pipeOutput.ready) {
+              pipeOutput.payload.insn := dataOut(word_addr).asUInt
+              pipeOutput.payload.cia := cia
+              pipeOutput.valid := True
+              cia := cia + 4
+              when(word_addr === 0x3) {
+                dataFifo.io.pop.ready := True
+              }
             }
           }
         }
@@ -93,9 +117,13 @@ class FetchUnit extends Component {
 
     }
 
-    when(io.bp_interface.branch.valid) {
-      cia := io.bp_interface.branch.payload & ~U(0xf, 64 bits)
+    when(io.bp_request.branch.valid) {
+      cia := io.bp_request.branch.payload
     }
   }
+  io.bp_response.fetch_info.payload.insn  := pipeOutput.payload.insn
+  io.bp_response.fetch_info.payload.cia   := pipeOutput.payload.cia
+  io.bp_response.fetch_info.valid      := pipeOutput.valid
+
 
 }

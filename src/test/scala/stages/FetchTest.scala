@@ -24,10 +24,11 @@ import flatspec._
 import matchers._
 
 import scala.collection.mutable.ListBuffer
+import scala.util.Random
 
 class FetchDUT extends Component {
   val io = new Bundle {
-    val bp_interface = slave(new BPFetchRequestInterface())
+    val bp_request = slave(new BPFetchRequestInterface())
 
     val pipeOutput = master(Flushable(new FetchOutput))
   }
@@ -51,7 +52,7 @@ class FetchDUT extends Component {
 
   val fetch = new FetchUnit
   io.pipeOutput <> fetch.pipeOutput
-  io.bp_interface <> fetch.io.bp_interface
+  io.bp_request <> fetch.io.bp_request
 
   val fetch_adaptor = new MemoryAdaptor
   fetch.io.line_request <> fetch_adaptor.io.request
@@ -95,6 +96,7 @@ class FetchDUT extends Component {
 
 class FetchTest extends AnyFlatSpec with should.Matchers {
   behavior of "FetchUnit"
+  val r = new Random
 
   it should "fetch instructions" in {
     SimConfig.withWave.doSim(new FetchDUT) { dut =>
@@ -104,6 +106,42 @@ class FetchTest extends AnyFlatSpec with should.Matchers {
       dut.clockDomain.waitSampling(1)
 
       for (i <- 16 until 100 by 4) {
+        while (!dut.io.pipeOutput.valid.toBoolean) {
+          dut.clockDomain.waitSampling(1)
+        }
+        val cia = dut.io.pipeOutput.payload.cia.toBigInt
+        val insn = dut.io.pipeOutput.payload.insn.toBigInt
+        assert(cia === i)
+        assert(insn === i/4)
+        dut.clockDomain.waitSampling(1)
+      }
+    }
+  }
+  it should "branch" in {
+    SimConfig.withWave.doSim(new FetchDUT) { dut =>
+      dut.io.pipeOutput.ready #= true
+      dut.io.pipeOutput.flush #= false
+      dut.clockDomain.forkStimulus(10)
+      dut.clockDomain.waitSampling(1)
+
+      for (i <- 16 until 32 by 4) {
+        while (!dut.io.pipeOutput.valid.toBoolean) {
+          dut.clockDomain.waitSampling(1)
+        }
+        val cia = dut.io.pipeOutput.payload.cia.toBigInt
+        val insn = dut.io.pipeOutput.payload.insn.toBigInt
+        assert(cia === i)
+        assert(insn === i/4)
+        dut.clockDomain.waitSampling(1)
+      }
+      
+      //dut.clockDomain.waitSampling(r.nextInt(10))
+      dut.clockDomain.waitSampling(1)
+      dut.io.bp_request.branch.valid #= true
+      dut.io.bp_request.branch.payload #= 0x4
+      dut.clockDomain.waitSampling(1)
+      dut.io.bp_request.branch.valid #= false
+      for (i <- 4 until 32 by 4) {
         while (!dut.io.pipeOutput.valid.toBoolean) {
           dut.clockDomain.waitSampling(1)
         }
