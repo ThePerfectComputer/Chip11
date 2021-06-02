@@ -733,7 +733,7 @@ mtcr 1
             "lis 17, 1f@h",
             "ori 17, 17, 1f@l",
             "mtspr 815, 17 # mttar 17",
-            "bctar 20, lt # branch unconditional",
+            "bctarl 20, lt # branch unconditional",
             "b 2f",
             "li 18, 1",
             "1: li 19, 2",

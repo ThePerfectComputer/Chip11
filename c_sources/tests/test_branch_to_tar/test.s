@@ -25,7 +25,7 @@ test_branch_to_tar:
 lis 17, 1f@h                                      # 22
 ori 17, 17, 1f@l                                  # 23
 mtspr 815, 17 # mttar 17                          # 24
-bctar 20, lt # branch unconditional               # 25
+bctarl 20, lt # branch unconditional              # 25
 b 2f                                              # 26
 li 18, 1                                          # 27
 1: li 19, 2                                       # 28
