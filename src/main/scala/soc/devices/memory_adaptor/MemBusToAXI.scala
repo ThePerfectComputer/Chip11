@@ -39,6 +39,7 @@ class MemBusToAXIShared(id: Int)(implicit axiConfig: Axi4Config)
   io.axi.r.ready := False
   io.axi.b.ready := False
   io.axi.w.valid := False
+  //io.axi.w.valid.noCombLoopCheck
 
   io.axi.arw.size := accessSize
   io.axi.arw.payload.addr := io.membus.byte_address
@@ -75,12 +76,14 @@ class MemBusToAXIShared(id: Int)(implicit axiConfig: Axi4Config)
         io.axi.w.valid := True
         io.axi.w.last := True
         when(io.axi.arw.ready) {
-          goto(stateStoreData)
-        }
-        when(io.axi.arw.ready & io.axi.w.ready) {
+          // goto(stateStoreData)
           goto(stateStoreResp)
           io.membus.req_ack := True
         }
+        // when(io.axi.arw.ready & io.axi.w.ready) {
+        //   goto(stateStoreResp)
+        //   io.membus.req_ack := True
+        // }
       }
 
     }

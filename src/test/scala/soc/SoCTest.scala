@@ -82,6 +82,8 @@ class CPUShiftRegDUT(implicit val config: CPUConfig) extends Component {
   class ResponseBundle extends Bundle {
     val fetch_response = new LineResponse
     val ldst_response = new LineResponse
+    val fetch_ack = Bool
+    val ldst_ack = Bool
   }
 
   val inputs = new ResponseBundle
@@ -101,6 +103,8 @@ class CPUShiftRegDUT(implicit val config: CPUConfig) extends Component {
   inputs.assignFromBits(input_reg)
   cpu.io.fetch_response := inputs.fetch_response
   cpu.io.ldst_response := inputs.ldst_response
+  cpu.io.ldst_request.ack := inputs.ldst_ack
+  cpu.io.fetch_request.ack := inputs.fetch_ack
 
   io.tdo := output_reg(0)
 
@@ -197,6 +201,21 @@ class SoCTestRun extends AnyFlatSpec with should.Matchers {
   for (file <- tests) {
     val testName = file.getName()
     runTest(testName)
+  }
+
+}
+
+class SoCWithUARTTest extends AnyFlatSpec with should.Matchers {
+  val binary = "c_sources/uart/test_le.bin"
+  val compiled = SimConfig.withWave.compile(new SoCWithUART)
+
+  it should "do something with uart" in {
+    compiled.doSim("uart") { dut =>
+      dut.loadFromFile(binary)
+      dut.clockDomain.forkStimulus(10)
+      dut.io.rx #= true
+      dut.clockDomain.waitSampling(10000)
+    }
   }
 
 }

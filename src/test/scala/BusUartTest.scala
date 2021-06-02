@@ -33,8 +33,9 @@ class BusUARTTests extends AnyFlatSpec with should.Matchers{
   behavior of "BusUART"
 
   implicit val config = Axi4Ctrl.getAxi4Config
+  val baseAddress = 0x10000
   it should "do a thing" in {
-    CommonSimConfig().withWave.compile(new BusUART(BusUartControl.getGenerics, 8)).doSim { dut =>
+    CommonSimConfig().withWave.compile(new BusUART(BusUartControl.getGenerics, 8, baseAddress)).doSim { dut =>
       dut.clockDomain.forkStimulus(10)
 
       val driver = Axi4Driver(dut.io.bus, dut.clockDomain)
@@ -44,12 +45,12 @@ class BusUARTTests extends AnyFlatSpec with should.Matchers{
 
       dut.io.uart.rxd #= true
 
-      driver.write(0, 0x10)
-      driver.write(16, 7)
+      driver.write(baseAddress+0, 0x10)
+      driver.write(baseAddress+16, 7)
       dut.clockDomain.waitSampling(100)
-      driver.write(32, 0x55)
-      driver.write(32, 0x0f)
-      driver.write(32, 0xf0)
+      driver.write(baseAddress+32, 0x55)
+      driver.write(baseAddress+32, 0x0f)
+      driver.write(baseAddress+32, 0xf0)
       dut.clockDomain.waitSampling(100)
       var resp = driver.read(32)
       while((resp & 1) != 0){
@@ -93,13 +94,13 @@ class BusUARTTests extends AnyFlatSpec with should.Matchers{
         resp = driver.read(32)
       }
 
-      resp = driver.read(24).toInt
+      resp = driver.read(48).toInt
       var received = ListBuffer[Char]()
       while((resp & (1<<31)) != 0){
         println(f"resp: 0x${resp & 0xff}%x ${(resp & 0xff).charValue}%c")
         received += (resp & 0xff).charValue
         dut.clockDomain.waitSampling(10)
-        resp = driver.read(24)
+        resp = driver.read(48)
       }
 
       for((expected, actual) <- testdata.zip(received)){

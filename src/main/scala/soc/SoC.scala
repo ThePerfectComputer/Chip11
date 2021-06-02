@@ -6,9 +6,11 @@ import spinal.lib.bus.amba4.axi.{Axi4Config, Axi4CrossbarFactory, Axi4SharedOnCh
 //import soc.devices.{DualPortSram128, UART, Arbiter, AdaptorPeripheral}
 import spinal.core.sim._
 import soc.devices.{DualPortSram128}
+import bus.BusUART
 
 import spinal.core._
 import spinal.lib._
+import spinal.lib.com.uart._
 import scala.collection.mutable.ListBuffer
 
 import java.nio.file.{Files, Paths}
@@ -122,6 +124,45 @@ class SoC(mem_file: String = null) extends SoCGen(mem_file) {
     fetchMbToAxi.io.axi -> List(ram.io.axi),
     ldstMbToAxi.io.axi -> List(ram.io.axi)
   )
+
+  axiCrossbar.build()
+
+}
+
+class SoCWithUART(mem_file: String = null) extends SoCGen(mem_file) {
+  val io = new Bundle{
+    val rx = in Bool
+    val tx = out Bool
+  }
+
+  val uartGenerics = UartCtrlGenerics(dataWidthMax=8)
+  val uartBase = 0x20000000
+  val uart = new BusUART(uartGenerics, 8, baseAddress=uartBase)
+  io.tx := uart.io.uart.txd
+  uart.io.uart.rxd := io.rx
+
+
+  val axiCrossbar = Axi4CrossbarFactory()
+
+  axiCrossbar.addSlaves(
+    ram.io.axi -> (0x0, ramSize),
+    uart.io.bus -> (uartBase, 64)
+  )
+
+  // I think this is defining what masters can access which slaves
+  axiCrossbar.addConnections(
+    fetchMbToAxi.io.axi -> List(ram.io.axi),
+    ldstMbToAxi.io.axi -> List(ram.io.axi, uart.io.bus)
+  )
+
+  axiCrossbar.addPipelining(uart.io.bus)((crossbar, u) => {
+    crossbar.readCmd >-> u.readCmd
+    crossbar.readRsp << u.readRsp
+  })((crossbar, u) => {
+    crossbar.writeCmd >-> u.writeCmd
+    crossbar.writeData >-> u.writeData
+    crossbar.writeRsp << u.writeRsp
+  })
 
   axiCrossbar.build()
 
