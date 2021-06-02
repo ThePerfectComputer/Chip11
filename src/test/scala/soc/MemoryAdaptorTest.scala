@@ -158,8 +158,10 @@ class TruthTableTest extends AnyFlatSpec with should.Matchers {
         val address = i*4
         println(s"$RED reading from address ${address} $RESET")
         dut.io.request.byte_address #= address
-        dut.io.request.ldst_req #= TransactionType.LOAD
+        dut.io.request.ldst_req #= TransactionType.STORE
         dut.io.request.size #= TransactionSize.WORD
+        val test_data = BigInt.apply(8 * 4, scala.util.Random)
+        dut.io.request.data #= test_data
         // val test_data = BigInt.apply(8 * 4, scala.util.Random)
         // dut.io.request.data #= test_data
         dut.clockDomain.waitFallingEdge()

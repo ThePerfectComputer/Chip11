@@ -52,6 +52,8 @@ class MemBusToAXIShared(id: Int)(implicit axiConfig: Axi4Config) extends Compone
   io.membus.read_data := io.membus.read_data.getZero
   io.membus.status := TransactionStatus.WAITING
   io.membus.req_ack := False
+  val write_data = Bits(128 bits)
+  write_data := io.membus.write_data.asBits |>> 8*io.membus.byte_address(3 downto 0)
 
 
   when(io.membus.ldst_req === TransactionType.LOAD) {
