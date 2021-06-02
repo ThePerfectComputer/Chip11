@@ -21,6 +21,7 @@ import spinal.core._
 import spinal.lib._
 import spinal.sim._
 import spinal.core.sim._
+import spinal.lib.bus.amba4.axi._
 
 import org.scalatest._
 import flatspec._
@@ -29,17 +30,19 @@ import matchers._
 class MemBusAXIDut(implicit config: Axi4Config) extends Component {
   val io = new Bundle {
     val membus = slave(new MemBus128)
-    val timerAMatch = out Bool
-    val timerBMatch = out Bool
   }
   val mbToAxi = new MemBusToAXIShared(2)
   val busTimer = new BusTimerShared(16)
+  val ramSize = 16384
+  val ram = Axi4SharedOnChipRam (
+    dataWidth = 128,
+    byteCount = ramSize,
+    idWidth = 5
+  )
 
   mbToAxi.io.membus <> io.membus
 
-  busTimer.io.bus << mbToAxi.io.axi
-  io.timerAMatch := busTimer.io.timerAMatch
-  io.timerBMatch := busTimer.io.timerBMatch
+  ram.io.axi << mbToAxi.io.axi
 
 }
 
@@ -83,21 +86,22 @@ class MemBusToAXITest extends AnyFlatSpec with should.Matchers {
         bigInt
       }
 
-      def doRead(address: BigInt, size: TransactionSize.E=TransactionSize.WORD) : BigInt ={
+      def doRead(address: BigInt, size: TransactionSize.E=TransactionSize.QUADWORD) : BigInt ={
         dut.io.membus.ldst_req #= TransactionType.LOAD
         dut.io.membus.byte_address #= address
         dut.io.membus.access_size #= size
         dut.clockDomain.waitSampling(1)
         get_ack()
         dut.io.membus.ldst_req #= TransactionType.NONE
+        dut.clockDomain.waitSampling(1)
         get_done()
         read_data()
       }
       def doWrite(address: BigInt, data: BigInt){
         dut.io.membus.ldst_req #= TransactionType.STORE
         dut.io.membus.byte_address #= address
-        write_data(data, 0x0f)
-        dut.io.membus.access_size #= TransactionSize.WORD
+        write_data(data, 0xffff)
+        dut.io.membus.access_size #= TransactionSize.QUADWORD
         dut.clockDomain.waitSampling(1)
         get_ack()
         dut.io.membus.ldst_req #= TransactionType.NONE
@@ -105,14 +109,14 @@ class MemBusToAXITest extends AnyFlatSpec with should.Matchers {
 
       dut.io.membus.ldst_req #= TransactionType.NONE
       dut.clockDomain.waitSampling(1)
-      var res = doRead(0x40)
-      println(s"Read $res")
-      doWrite(0x44, 6)
-      doWrite(0x40, 0)
-      res = doRead(0x40)
-      println(s"Read $res")
-      doWrite(0x54, 10)
-      doWrite(0x50, 0)
+      doWrite(0x10, BigInt("deadbeef", 16))
+      doWrite(0x20, BigInt("12345678", 16))
+
+      //dut.clockDomain.waitSampling(10)
+      var res = doRead(0x10)
+      println(f"Read $res%x")
+      res = doRead(0x20)
+      println(f"Read $res%x")
       dut.clockDomain.waitSampling(100)
     }
   }
