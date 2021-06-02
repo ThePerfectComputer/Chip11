@@ -96,9 +96,9 @@ class ReadStage extends PipeStage(new ReadInterface, new ReadInterface) {
   io.xer_rp(0).idx := 0
 
   val incomingData = new ReadInterface
-  val inputReg = Reg(new ReadInterface)
+  val inputReg = Reg(new ReadInterface) init(incomingData.getZero)
   val incomingValid = Bool
-  val incomingValidReg = Reg(Bool)
+  val incomingValidReg = RegInit(False)
   when(pipeOutput.ready & pipeInput.valid){
     inputReg := i
     incomingData := i
