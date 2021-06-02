@@ -41,7 +41,7 @@ object InitData {
   }
 }
 
-class SoC(val mem_file: String = null) extends Component {
+class SoCGen(val mem_file: String = null) extends Component {
   implicit val axiConfig = Axi4Config(
     addressWidth = 64,
     dataWidth = 128,
@@ -74,10 +74,10 @@ class SoC(val mem_file: String = null) extends Component {
   cpu.io.ldst_request <> ldst_adaptor.io.request
   cpu.io.ldst_response <> ldst_adaptor.io.response
 
-  val mbToAxi1 = new MemBusToAXIShared(0)
-  val mbToAxi2 = new MemBusToAXIShared(1)
-  mbToAxi1.io.membus <> fetch_adaptor.io.membus
-  mbToAxi2.io.membus <> ldst_adaptor.io.membus
+  val fetchMbToAxi = new MemBusToAXIShared(0)
+  val ldstMbToAxi = new MemBusToAXIShared(1)
+  fetchMbToAxi.io.membus <> fetch_adaptor.io.membus
+  ldstMbToAxi.io.membus <> ldst_adaptor.io.membus
 
   val ramSize = 16384
   val ramDepth = ramSize/axiConfig.dataWidth
@@ -91,19 +91,6 @@ class SoC(val mem_file: String = null) extends Component {
   val initialData = InitData.getDataFromFile(ramDepth, axiConfig.dataWidth, mem_file)
   print(initialData)
 
-  val axiCrossbar = Axi4CrossbarFactory()
-
-  axiCrossbar.addSlaves(
-    ram.io.axi -> (0x0, ramSize)
-  )
-
-  // I think this is defining what masters can access which slaves
-  axiCrossbar.addConnections(
-    mbToAxi1.io.axi -> List(ram.io.axi),
-    mbToAxi2.io.axi -> List(ram.io.axi)
-  )
-
-  axiCrossbar.build()
 
 
   def loadFromFile(fileName:String){
@@ -120,4 +107,22 @@ class SoC(val mem_file: String = null) extends Component {
       ram.ram.setBigInt(line_address, data)
     }
   }
+}
+
+class SoC(mem_file: String = null) extends SoCGen(mem_file) {
+
+  val axiCrossbar = Axi4CrossbarFactory()
+
+  axiCrossbar.addSlaves(
+    ram.io.axi -> (0x0, ramSize)
+  )
+
+  // I think this is defining what masters can access which slaves
+  axiCrossbar.addConnections(
+    fetchMbToAxi.io.axi -> List(ram.io.axi),
+    ldstMbToAxi.io.axi -> List(ram.io.axi)
+  )
+
+  axiCrossbar.build()
+
 }
