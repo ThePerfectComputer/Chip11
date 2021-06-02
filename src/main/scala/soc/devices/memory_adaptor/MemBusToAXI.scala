@@ -92,11 +92,12 @@ class MemBusToAXIShared(id: Int)(implicit axiConfig: Axi4Config)
     val stateLoad: State = new State {
       whenIsActive {
         io.axi.r.ready := True
+        io.axi.arw.valid := False
         when(io.axi.r.valid) {
           io.membus.read_data.assignFromBits(io.axi.r.payload.data)
           io.membus.status := TransactionStatus.DONE
           goto(stateIdle)
-          doIdle
+          //doIdle
         }
       }
     }
@@ -106,7 +107,7 @@ class MemBusToAXIShared(id: Int)(implicit axiConfig: Axi4Config)
         when(io.axi.b.valid) {
           io.membus.status := TransactionStatus.DONE
           goto(stateIdle)
-          doIdle
+          //doIdle
         }
       }
     }
