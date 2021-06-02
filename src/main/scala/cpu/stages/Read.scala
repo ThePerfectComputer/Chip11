@@ -95,17 +95,34 @@ class ReadStage extends PipeStage(new ReadInterface, new ReadInterface) {
   }
   io.xer_rp(0).idx := 0
 
+  val incomingData = new ReadInterface
+  val inputReg = Reg(new ReadInterface)
+  val incomingValid = Bool
+  val incomingValidReg = Reg(Bool)
+  when(pipeOutput.ready & pipeInput.valid){
+    inputReg := i
+    incomingData := i
+    incomingValid := pipeInput.valid
+    incomingValidReg := pipeInput.valid
+  }.otherwise{
+    incomingData := inputReg
+    incomingValid := incomingValidReg
+    when(pipeOutput.ready & !pipeInput.valid){
+      incomingValid := False
+    }
+  }
+
   // We need to latch some of the incoming slot data
-  val incoming_sel = Reg(Vec(cloneOf(i.slots(0).sel), 5))
-  val incoming_idx = Reg(Vec(cloneOf(i.slots(0).idx), 5))
+  val incoming_sel = Reg(Vec(cloneOf(incomingData.slots(0).sel), 5))
+  val incoming_idx = Reg(Vec(cloneOf(incomingData.slots(0).idx), 5))
   for (slot_index <- 0 until 5) {
     // set initial values
     incoming_sel(slot_index) := incoming_sel(slot_index).getZero
     incoming_idx(slot_index) := 0
     // when valid, latch incoming data
     when(pipeInput.valid) {
-      incoming_sel(slot_index) := i.slots(slot_index).sel
-      incoming_idx(slot_index) := i.slots(slot_index).idx.resized
+      incoming_sel(slot_index) := incomingData.slots(slot_index).sel
+      incoming_idx(slot_index) := incomingData.slots(slot_index).idx.resized
     }
   }
 
@@ -150,7 +167,7 @@ class ReadStage extends PipeStage(new ReadInterface, new ReadInterface) {
   val main_valid_reg = Reg(Bool()) init(False)
   main_valid_reg := False
 
-  for ((slot, i) <- i.slots.zipWithIndex) {
+  for ((slot, i) <- incomingData.slots.zipWithIndex) {
 
     def readFromRegfile[T <: Vec[ReadPort]](
         enumVal: SourceSelect.E,
@@ -218,11 +235,11 @@ class ReadStage extends PipeStage(new ReadInterface, new ReadInterface) {
       cycle := 2
       // Otherwise, delay valid/spec by one cycle
     }.otherwise {
-      main_valid_reg := pipeInput.valid
+      main_valid_reg := incomingValid
     }
   }.otherwise {
     cycle := 1
-    main_valid_reg := pipeInput.valid
+    main_valid_reg := incomingValid
   }
 
   // State for extra data in read interface
@@ -232,11 +249,11 @@ class ReadStage extends PipeStage(new ReadInterface, new ReadInterface) {
   val ldst_request_reg = Reg(new LoadStoreRequest)
   val compare_reg = Reg(cloneOf(i.compare))
 
-  imm_reg := i.imm
-  dec_data_reg := i.dec_data
-  write_interface_reg := i.write_interface
-  ldst_request_reg := i.ldst_request
-  compare_reg := i.compare
+  imm_reg := incomingData.imm
+  dec_data_reg := incomingData.dec_data
+  write_interface_reg := incomingData.write_interface
+  ldst_request_reg := incomingData.ldst_request
+  compare_reg := incomingData.compare
 
   o.imm := imm_reg
   o.dec_data := dec_data_reg
