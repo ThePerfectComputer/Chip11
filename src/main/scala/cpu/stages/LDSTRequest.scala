@@ -15,7 +15,12 @@ class LDSTRequest extends PipeStage(new FunctionalUnitExit, new FunctionalUnitEx
   io.data             := i.ldst_request.store_data
   io.byte_address     := i.ldst_request.ea
 
-  when (pipeInput.valid) {io.ldst_req := i.ldst_request.req_type}
+  when (pipeInput.valid) {
+    io.ldst_req := i.ldst_request.req_type
+    when(i.ldst_request.req_type =/= TransactionType.NONE){
+      ready := io.ack
+    }
+  }
 
   o := i
 }

@@ -117,7 +117,7 @@ class CPU(implicit val config: CPUConfig) extends Component {
   hazard.io.stage_valid_vec(7) := write.pipeInput.valid
 
   // connect up pipeline stages
-  decode << fetch.pipeOutput
+  decode <-< fetch.pipeOutput
   decode >-> form_pop >/-> hazard >-> read >->
   s1 >/-> s2 >-> s3 >-> ldst_request >/-> ldst_response >/-> write
 
@@ -137,7 +137,7 @@ class CPU(implicit val config: CPUConfig) extends Component {
 
   // connect fetch and loadstore to memory interfaces
   // fetch_req.io.line_request       <> io.fetch_request
-  io.fetch_request                := fetch.io.line_request
+  io.fetch_request       <> fetch.io.line_request
   fetch.io.line_response <> io.fetch_response
   ldst_request.io        <> io.ldst_request
   ldst_response.io       <> io.ldst_response

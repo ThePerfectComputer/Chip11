@@ -23,7 +23,7 @@ import spinal.lib.fsm._
 class FetchUnit extends Component {
   val pipeOutput = master(Flushable(new FetchOutput))
   val io = new Bundle {
-    val line_request = master(new LineRequest())
+    val line_request = master(new LineRequest)
     val line_response = slave(new LineResponse)
 
     val bp_response = master(new BPFetchResponseInterface())

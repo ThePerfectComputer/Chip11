@@ -27,6 +27,7 @@ class MemoryAdaptor() extends Component {
     val membus   = master(new MemBus128)
 
   }
+  io.request.ack := io.membus.req_ack
 
 
   def connect_transaction1() : Unit = {

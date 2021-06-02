@@ -5,21 +5,25 @@ import cpu.shared.memory_state.{TransactionStatus, TransactionType, TransactionS
 import spinal.core._
 import spinal.lib._
 
-class LineRequest() extends Bundle with IMasterSlave{
+class LineRequest extends Bundle with IMasterSlave{
   val ldst_req        = TransactionType()
   val size            = TransactionSize()
   val data            = UInt(128 bits)
   val byte_address    = UInt(64 bits)
+
+  val ack = Bool
+
 
   override def asMaster() : Unit = {
     out(ldst_req)
     out(size)
     out(data)
     out(byte_address)
+    in(ack)
   }
 }
 
-class LineResponse() extends Bundle with IMasterSlave{
+class LineResponse extends Bundle with IMasterSlave{
   val data              = UInt(128 bits)
   val status            = TransactionStatus()
   val byte_address      = UInt(64 bits)
