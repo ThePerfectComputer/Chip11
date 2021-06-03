@@ -135,7 +135,7 @@ class SoCWithUART(mem_file: String = null) extends SoCGen(mem_file) {
     val tx = out Bool
   }
 
-  val uartGenerics = UartCtrlGenerics(dataWidthMax=8)
+  val uartGenerics = UartCtrlGenerics(dataWidthMax=8, samplingSize=3)
   val uartBase = 0x20000000
   val uart = new BusUART(uartGenerics, 8, baseAddress=uartBase)
   io.tx := uart.io.uart.txd
@@ -156,12 +156,18 @@ class SoCWithUART(mem_file: String = null) extends SoCGen(mem_file) {
   )
 
   axiCrossbar.addPipelining(uart.io.bus)((crossbar, u) => {
-    crossbar.readCmd >-> u.readCmd
-    crossbar.readRsp << u.readRsp
+    crossbar.readCmd >/> u.readCmd
+    crossbar.readRsp <-/< u.readRsp
   })((crossbar, u) => {
-    crossbar.writeCmd >-> u.writeCmd
-    crossbar.writeData >-> u.writeData
-    crossbar.writeRsp << u.writeRsp
+    crossbar.writeCmd >/> u.writeCmd
+    crossbar.writeData >/> u.writeData
+    crossbar.writeRsp <-/< u.writeRsp
+  })
+  axiCrossbar.addPipelining(ram.io.axi)((crossbar, u) => {
+    crossbar.sharedCmd >/> u.sharedCmd
+    crossbar.readRsp <-/< u.readRsp
+    crossbar.writeData >/> u.writeData
+    crossbar.writeRsp <-/< u.writeRsp
   })
 
   axiCrossbar.build()

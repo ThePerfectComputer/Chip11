@@ -14,7 +14,7 @@ start:
 
 	# set the baud rate to something?
 	## lwz %r1, UART_CLKDIV(%r8)
-	li %r1, 0x40
+	li %r1, 0x1
 	stw %r1, UART_CLKDIV(%r8)
 
 	# set the frame info

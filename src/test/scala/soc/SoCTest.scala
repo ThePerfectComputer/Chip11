@@ -1,7 +1,8 @@
 package soc
 
 import spinal.core._
-import spinal.lib.{slave, master}
+import spinal.lib.{slave, master, Stream, Flow}
+import spinal.lib.com.uart._
 import spinal.sim._
 import cpu.{CPU, CPUConfig}
 import cpu.shared.memory_state.{
@@ -110,7 +111,10 @@ class CPUShiftRegDUT(implicit val config: CPUConfig) extends Component {
 
   when(io.tck) {
     input_reg := Cat(io.tdi, input_reg(input_reg.getWidth - 1 downto 1))
-    output_reg := Cat(U(0, 1 bits), output_reg(output_reg.getWidth - 1 downto 1))
+    output_reg := Cat(
+      U(0, 1 bits),
+      output_reg(output_reg.getWidth - 1 downto 1)
+    )
   }
   when(io.sample) {
     output_reg := outputs
@@ -205,17 +209,54 @@ class SoCTestRun extends AnyFlatSpec with should.Matchers {
 
 }
 
+class SoCUARTWrapper extends Component {
+  val io = new Bundle {
+    val write = slave(Stream(Bits(8 bits)))
+    val read = master(Stream(Bits(8 bits)))
+  }
+
+  val soc = new SoCWithUART
+
+  val uartCtrl = new UartCtrl(soc.uartGenerics)
+  soc.io.tx <> uartCtrl.io.uart.rxd
+  soc.io.rx <> uartCtrl.io.uart.txd
+
+  io.read <> uartCtrl.io.read
+  io.write <> uartCtrl.io.write
+
+  uartCtrl.io.config.clockDivider := 0x1
+  uartCtrl.io.config.frame.dataLength := 7
+  uartCtrl.io.config.frame.stop.assignFromBits(0)
+  uartCtrl.io.config.frame.parity.assignFromBits(0)
+  uartCtrl.io.writeBreak := False
+}
+
 class SoCWithUARTTest extends AnyFlatSpec with should.Matchers {
   val binary = "c_sources/uart/test_le.bin"
-  val compiled = SimConfig.withWave.compile(new SoCWithUART)
+  val compiled = SimConfig.withWave.compile(new SoCUARTWrapper)
 
   it should "do something with uart" in {
     compiled.doSim("uart") { dut =>
-      dut.loadFromFile(binary)
+      dut.io.read.ready #= true
+      dut.io.write.valid #= false
+      dut.soc.loadFromFile(binary)
       dut.clockDomain.forkStimulus(10)
-      dut.io.rx #= true
+      dut.clockDomain.onSamplings {
+        if (dut.io.read.valid.toBoolean) {
+          val char = dut.io.read.payload.toInt
+          println(s"Received value $char")
+        }
+      }
+
       dut.clockDomain.waitSampling(10000)
     }
   }
 
+}
+
+class SoCWithUARTVerilog extends AnyFlatSpec with should.Matchers {
+  it should "do verilog" in {
+    SpinalVerilog(new SoCWithUART)
+
+  }
 }
