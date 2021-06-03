@@ -244,7 +244,7 @@ class SoCWithUARTTest extends AnyFlatSpec with should.Matchers {
       dut.clockDomain.onSamplings {
         if (dut.io.read.valid.toBoolean) {
           val char = dut.io.read.payload.toInt
-          println(s"Received value $char")
+          println(f"resp: 0x${char & 0xff}%x ${(char & 0xff)}%c")
         }
       }
 

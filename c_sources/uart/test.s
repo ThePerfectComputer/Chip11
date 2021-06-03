@@ -21,15 +21,25 @@ start:
 	li %r1, 7
 	stw %r1, UART_FRAME(%r8)
 
-	# transmit 0x55
-	li %r1, 0x55
+	lis %r4, (string-1)@h
+	ori %r4, %r4, (string-1)@l
+	li %r3, end-string
+	mtctr %r3
+
+tx_loop:	
+	lbzu %r1, 1(%r4)
+wait_for_space:
+	lwz %r2, UART_TX(%r8)
+	andi. %r2, %r2, 0x2  # Test for space in the tx fifo
+	beq wait_for_space
+
 	stw %r1, UART_TX(%r8)
-	nop
-	nop
-	nop
+	bdnz tx_loop
 
 hang:	b hang
 	
 	
 
-	
+string:
+	.ascii "HELLO!"
+end:	
