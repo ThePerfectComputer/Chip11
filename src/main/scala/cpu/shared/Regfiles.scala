@@ -97,14 +97,14 @@ class BRAMMultiRegfile(numRegs: Int, regWidth: Int, readPorts:Int=1, writePorts:
     for((mem, idx) <- memArr.zipWithIndex) read_data(idx) := mem.readSync(port.idx)
 
     val data = UInt(regWidth bits).setName(s"read_data_$i")
-    data := 0
+    //data := 0
     // So for some reason, vec doesn't seem to support a dynamic index?
-    //data := read_data(mem_idx)
-    for(idx <- 0 until writePorts){
-      when(mem_idx === idx){
-        data := read_data(idx)
-      }
-    }
+    data := read_data(mem_idx)
+    // for(idx <- 0 until writePorts){
+    //   when(mem_idx === idx){
+    //     data := read_data(idx)
+    //   }
+    // }
 
     port.data.allowOverride
     port.data := data
@@ -113,7 +113,7 @@ class BRAMMultiRegfile(numRegs: Int, regWidth: Int, readPorts:Int=1, writePorts:
   for((port, i) <- io.wp.zipWithIndex) {
     val idx = UInt(memIdxBits bits).setName(s"writeIdx_$i")
     idx := i
-    lvt.write(port.idx, idx)
+    lvt.write(port.idx, idx, enable=port.en)
     memArr(i).write(port.idx, port.data, enable=port.en)
   }
 }

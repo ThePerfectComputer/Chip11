@@ -1,0 +1,28 @@
+[tasks]
+task_bmc
+task_cover
+[options]
+task_cover:
+mode cover
+depth 6
+--
+task_bmc:
+mode bmc
+depth 6
+--
+
+[engines]
+smtbmc
+
+[script]
+read -formal BRAMMultiProof.sv BRAMMultiRegfile.sv Regfile.sv
+prep -top BRAMMultiProof
+
+[files]
+BRAMMultiProof.sv
+BRAMMultiRegfile.sv
+Regfile.sv
+BRAMMultiRegfile.sv_toplevel_memArr_0.bin
+BRAMMultiRegfile.sv_toplevel_memArr_1.bin
+BRAMMultiRegfile.sv_toplevel_mem.bin
+Regfile.sv_toplevel_mem.bin
