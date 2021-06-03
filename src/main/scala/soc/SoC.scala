@@ -133,7 +133,13 @@ class SoCWithUART(mem_file: String = null) extends SoCGen(mem_file) {
   val io = new Bundle{
     val rx = in Bool
     val tx = out Bool
+    // val clk = in Bool
+    // val rst = in Bool
   }
+  io.rx.setName("ftdi_txd")
+  io.tx.setName("ftdi_rxd")
+  noIoPrefix()
+
 
   val uartGenerics = UartCtrlGenerics(dataWidthMax=8)
   val uartBase = 0x20000000
