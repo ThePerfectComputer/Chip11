@@ -157,7 +157,7 @@ class Stage2(implicit config: CPUConfig)
 
           branchS2.io.dec_data := i.dec_data
 
-          when(pipeOutput.valid) {
+          when(pipeOutput.valid & pipeOutput.ready) {
             io.bc := branchS2.io.bc
             when(branchS2.io.bc.branch_taken) {
               pipeInput.flush := True
