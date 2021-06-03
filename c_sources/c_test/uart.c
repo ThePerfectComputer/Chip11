@@ -23,3 +23,10 @@ void uart_flush(void){
 	__asm__ __volatile__("nop");
     }
 }
+
+void uart_puts(const char *str){
+    char c;
+    while((c = *str++) != 0){
+	uart_putc(c);
+    }
+}

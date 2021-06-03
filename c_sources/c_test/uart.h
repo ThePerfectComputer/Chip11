@@ -10,5 +10,6 @@
 void uart_setup(void);
 void uart_putc(char);
 void uart_flush(void);
+void uart_puts(const char*);
 
 #endif
