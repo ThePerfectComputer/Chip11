@@ -21,3 +21,4 @@ tmp/*
 *.log
 /test_csv_output/
 /size_output/
+*.o

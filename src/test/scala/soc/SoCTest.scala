@@ -20,6 +20,7 @@ import matchers._
 import java.io._
 import scala.io.Source
 import scala.Console
+import scala.collection.mutable._
 import Console.{RED, RESET, YELLOW}
 
 class CSVLogger(dut: SoC, filePath: String) {
@@ -232,23 +233,61 @@ class SoCUARTWrapper extends Component {
 }
 
 class SoCWithUARTTest extends AnyFlatSpec with should.Matchers {
-  val binary = "c_sources/uart/test_le.bin"
+  val dir = "c_sources/uart"
   val compiled = SimConfig.withWave.compile(new SoCUARTWrapper)
 
-  it should "do something with uart" in {
+  it should "print a string" in {
     compiled.doSim("uart") { dut =>
+      val binary = s"$dir/hello.bin"
       dut.io.read.ready #= true
       dut.io.write.valid #= false
       dut.soc.loadFromFile(binary)
       dut.clockDomain.forkStimulus(10)
+      var received = new StringBuilder()
       dut.clockDomain.onSamplings {
         if (dut.io.read.valid.toBoolean) {
           val char = dut.io.read.payload.toInt
           println(f"resp: 0x${char & 0xff}%x ${(char & 0xff)}%c")
+          received += (char & 0xff).toChar
         }
       }
 
       dut.clockDomain.waitSampling(10000)
+      assert(received.toString() == "HELLO!")
+    }
+  }
+
+  it should "echo data" in {
+    compiled.doSim("uart") { dut =>
+      val binary = s"$dir/echo.bin"
+      val testdata = "TEST"
+      dut.io.read.ready #= true
+      dut.io.write.valid #= false
+      dut.soc.loadFromFile(binary)
+      dut.clockDomain.forkStimulus(10)
+      var received = new StringBuilder()
+      dut.clockDomain.onSamplings {
+        if (dut.io.read.valid.toBoolean) {
+          val char = dut.io.read.payload.toInt
+          println(f"resp: 0x${char & 0xff}%x ${(char & 0xff)}%c")
+          received += char.toChar
+        }
+      }
+      fork {
+        dut.clockDomain.waitSampling(100)
+        for(c <- testdata){
+          dut.io.write.valid #= true
+          dut.io.write.payload #= c
+          while(!dut.io.write.ready.toBoolean){
+            dut.clockDomain.waitSampling(1)
+          }
+          dut.io.write.valid #= false
+          dut.clockDomain.waitSampling(1)
+        }
+      }
+
+      dut.clockDomain.waitSampling(10000)
+      assert(received.toString() == testdata)
     }
   }
 

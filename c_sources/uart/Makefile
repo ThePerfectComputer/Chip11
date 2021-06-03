@@ -12,25 +12,16 @@ AS_BE += $(ASFLAGS) -mbig
 LD_BE += $(LDFLAGS) -EB
 OB_BE += $(OBFLAGS) -I elf64-big
 
-all: test_le.bin
+all: hello.bin echo.bin
 
-%.ol: %.s
+%.o: %.s
 	$(TOOL)-as $(AS_LE) -o $@ $<
-%.ob: %.s
-	$(TOOL)-as $(AS_BE) -o $@ $<
 
-%_le.elf: %.ol linker.lds
+%.elf: %.o linker.lds
 	$(TOOL)-ld $(LD_LE) -o $@ $<
 
-%_be.elf: %.ob linker.lds
-	$(TOOL)-ld $(LD_BE) -o $@ $<
-
-%_le.bin: %_le.elf
+%.bin: %.elf
 	$(TOOL)-objcopy $(OB_LE) -O binary $< $@
-
-%_be.bin: %_be.elf
-	$(TOOL)-objcopy $(OB_BE) -O binary $< $@
-
 
 clean:
 	-rm -f *.ol *.ob

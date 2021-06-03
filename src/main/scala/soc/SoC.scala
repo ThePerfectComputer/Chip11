@@ -135,7 +135,7 @@ class SoCWithUART(mem_file: String = null) extends SoCGen(mem_file) {
     val tx = out Bool
   }
 
-  val uartGenerics = UartCtrlGenerics(dataWidthMax=8, samplingSize=3)
+  val uartGenerics = UartCtrlGenerics(dataWidthMax=8)
   val uartBase = 0x20000000
   val uart = new BusUART(uartGenerics, 8, baseAddress=uartBase)
   io.tx := uart.io.uart.txd
