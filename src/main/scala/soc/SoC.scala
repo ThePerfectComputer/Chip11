@@ -45,7 +45,7 @@ object InitData {
 
 class SoCGen(val mem_file: String = null) extends Component {
   implicit val axiConfig = Axi4Config(
-    addressWidth = 64,
+    addressWidth = 32,
     dataWidth = 128,
     idWidth = 4,
     useId = true,
@@ -151,8 +151,8 @@ class SoCWithUART(mem_file: String = null) extends SoCGen(mem_file) {
   val axiCrossbar = Axi4CrossbarFactory()
 
   axiCrossbar.addSlaves(
-    ram.io.axi -> (0x0, ramSize),
-    uart.io.bus -> (uartBase, 64)
+    ram.io.axi -> (0x0, uartBase),
+    uart.io.bus -> (uartBase, uartBase)
   )
 
   // I think this is defining what masters can access which slaves

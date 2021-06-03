@@ -42,7 +42,7 @@ class MemBusToAXIShared(id: Int)(implicit axiConfig: Axi4Config)
   //io.axi.w.valid.noCombLoopCheck
 
   io.axi.arw.size := accessSize
-  io.axi.arw.payload.addr := io.membus.byte_address
+  io.axi.arw.payload.addr := io.membus.byte_address.resized
   io.axi.arw.write := False
   io.axi.arw.burst := 0
   io.axi.arw.len := 0
