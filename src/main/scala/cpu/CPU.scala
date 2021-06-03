@@ -150,7 +150,7 @@ class CPU(implicit val config: CPUConfig) extends Component {
   // val cr  = if(doDebug) new DebugRegfileMasked(2, 16, 2, 2, 4) else
   //     new RegfileMasked(2, 16, 2, 2, 4)
   //val gpr =  new BRAMMultiRegfile(32, 64, 2, 2).setDefinitionName("gprRegfile")
-  val gpr = new Regfile(32, 64, 2, 2).setDefinitionName("gprRegfile")
+  val gpr = new BRAMMultiRegfile(32, 64, 2, 2).setDefinitionName("gprRegfile")
   val spr =  new BRAMMultiRegfile(1024, 64, 2, 1).setDefinitionName("sprRegfile")
   val cr  =  new RegfileMasked(2, 16, 2, 2, 4).setDefinitionName("crRegfile")
   val xer  =  new RegfileMasked(1, 64, 1, 1, 6, () => new XERMaskMapping)
