@@ -23,7 +23,7 @@ import scala.Console
 import scala.collection.mutable._
 import Console.{RED, RESET, YELLOW}
 
-class CSVLogger(dut: SoC, filePath: String) {
+class CSVLogger(dut: SoCGen, filePath: String) {
   val writer = new PrintWriter(new File(filePath))
   val maxIter = 2000
   writer.write(
@@ -237,7 +237,7 @@ class SoCWithUARTTest extends AnyFlatSpec with should.Matchers {
   val compiled = SimConfig.withWave.compile(new SoCUARTWrapper)
 
   it should "print a string" in {
-    compiled.doSim("uart") { dut =>
+    compiled.doSim("print") { dut =>
       val binary = s"$dir/hello.bin"
       dut.io.read.ready #= true
       dut.io.write.valid #= false
@@ -256,9 +256,28 @@ class SoCWithUARTTest extends AnyFlatSpec with should.Matchers {
       assert(received.toString() == "HELLO!")
     }
   }
+  it should "run c_test" in {
+    compiled.doSim("c_test") { dut =>
+      val binary = s"c_sources/c_test/test.bin"
+      val csv = "test_csv_output/c_test.csv"
+      dut.io.read.ready #= true
+      dut.io.write.valid #= false
+      dut.soc.loadFromFile(binary)
+      val logger = new CSVLogger(dut.soc, csv)
+      dut.clockDomain.forkStimulus(10)
+      dut.clockDomain.onSamplings {
+        if (dut.io.read.valid.toBoolean) {
+          val char = dut.io.read.payload.toInt
+          println(f"resp: 0x${char & 0xff}%x ${(char & 0xff)}%c")
+        }
+      }
+
+      dut.clockDomain.waitSampling(10000)
+    }
+  }
 
   it should "echo data" in {
-    compiled.doSim("uart") { dut =>
+    compiled.doSim("echo") { dut =>
       val binary = s"$dir/echo.bin"
       val testdata = "TEST"
       dut.io.read.ready #= true
