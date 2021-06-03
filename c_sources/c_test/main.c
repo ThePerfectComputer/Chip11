@@ -3,7 +3,10 @@
 int main(void){
 
     uart_setup();
-    uart_puts("Hello, this is a very long string");
+    while(1){
+	char c = uart_getc();
+	uart_putc(c);
+    }
     uart_flush();
     return 5;
 }

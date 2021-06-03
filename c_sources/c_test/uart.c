@@ -19,7 +19,7 @@ void uart_flush(void){
     // wait until the uart queue empties
     while((GET_32(UART_BASE + UART_TX) & 0x1) == 0){}
     // wait some extra cycles so it shows up on the console
-    for(int i=0; i<1000; i++){
+    for(int i=0; i<200; i++){
 	__asm__ __volatile__("nop");
     }
 }
@@ -29,4 +29,13 @@ void uart_puts(const char *str){
     while((c = *str++) != 0){
 	uart_putc(c);
     }
+}
+
+char uart_getc(void){
+    while((GET_32(UART_BASE + UART_TX) & 0x4) == 0){}
+    char c;
+    
+    c = GET_32(UART_BASE + UART_RX) & 0xff;
+
+    return c;
 }

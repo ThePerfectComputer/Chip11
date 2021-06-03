@@ -260,6 +260,7 @@ class SoCWithUARTTest extends AnyFlatSpec with should.Matchers {
     compiled.doSim("c_test") { dut =>
       val binary = s"c_sources/c_test/test.bin"
       val csv = "test_csv_output/c_test.csv"
+      val testdata = "test1234"
       dut.io.read.ready #= true
       dut.io.write.valid #= false
       dut.soc.loadFromFile(binary)
@@ -269,6 +270,18 @@ class SoCWithUARTTest extends AnyFlatSpec with should.Matchers {
         if (dut.io.read.valid.toBoolean) {
           val char = dut.io.read.payload.toInt
           println(f"resp: 0x${char & 0xff}%x ${(char & 0xff)}%c")
+        }
+      }
+      fork {
+        dut.clockDomain.waitSampling(1000)
+        for(c <- testdata){
+          dut.io.write.valid #= true
+          dut.io.write.payload #= c
+          while(!dut.io.write.ready.toBoolean){
+            dut.clockDomain.waitSampling(1)
+          }
+          dut.io.write.valid #= false
+          dut.clockDomain.waitSampling(1)
         }
       }
 
