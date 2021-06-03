@@ -1,6 +1,9 @@
-
+#include "uart.h"
 
 int main(void){
 
-    return 0;
+    uart_setup();
+    uart_putc('a');
+    uart_flush();
+    return 5;
 }

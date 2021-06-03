@@ -22,7 +22,7 @@ all: test.bin
 %.o: %.c
 	$(TOOL)-gcc $(CC_LE) -o $@ $<
 
-test.elf: start.o main.o
+test.elf: start.o main.o uart.o
 	$(TOOL)-ld $(LD_LE) -o $@ $^
 
 %.bin: %.elf

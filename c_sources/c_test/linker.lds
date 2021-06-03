@@ -12,7 +12,8 @@ _toc_start = .;
 .toc : { *(.toc) } > ram
 _toc_end = .;
 
-. = . + 0x100;
+. = ALIGN(16);
+. = . + 0x1000;
 _stack_start = .;
 
 }

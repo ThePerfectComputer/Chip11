@@ -15,4 +15,5 @@ _start:
 	mtctr 3
 	bctrl
 
+	li 31, 1
 hang:	b hang
