@@ -1,0 +1,22 @@
+[tasks]
+task_bmc
+task_cover
+[options]
+task_cover:
+mode cover
+depth 10
+--
+task_bmc:
+mode bmc
+depth 10
+--
+
+[engines]
+smtbmc
+
+[script]
+read -formal PipeStageDUT.sv
+prep -top PipeStageDUT
+
+[files]
+PipeStageDUT.sv
