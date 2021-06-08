@@ -11,18 +11,18 @@ import flatspec._
 import matchers._
 import scala.util.Random
 
-class PipeStageDUT extends Component {
+class PipeStageDUT[T <: BaseType](dataType: HardType[T]) extends Component {
   val io = new Bundle {
-    val pi = slave(Flushable(UInt(8 bits)))
-    val po = master(Flushable(UInt(8 bits)))
+    val pi = slave(Flushable(dataType()))
+    val po = master(Flushable(dataType()))
 
-    val in1 = in UInt(8 bits)
-    val in2 = in UInt(8 bits)
+    val in1 = in(dataType())
+    val in2 = in(dataType())
   }
 
-  val d1 = new Delay(UInt(8 bits))
-  val d2 = new Delay(UInt(8 bits))
-  val d3 = new Delay(UInt(8 bits))
+  val d1 = new Delay(dataType())
+  val d2 = new Delay(dataType())
+  val d3 = new Delay(dataType())
 
   d1 << io.pi
   d1 >-> d2 >/-> d3 >> io.po
@@ -88,6 +88,6 @@ class PipeStageProofVerilogFormal extends AnyFlatSpec with should.Matchers {
         ClockDomainConfig(resetKind = SYNC, resetActiveLevel = HIGH),
       targetDirectory = "formal"
     ).withoutEnumString()
-    config.includeFormal.generateSystemVerilog(new PipeStageDUT)
+    config.includeFormal.generateSystemVerilog(new PipeStageDUT(UInt(8 bits)))
   }
 }
