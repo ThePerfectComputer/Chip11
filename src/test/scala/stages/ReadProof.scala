@@ -129,6 +129,88 @@ class ReadProofDUT extends Component {
   }
 }
 
+class ReadPipeDUT extends Component {
+  val io = new Bundle {
+    val pi = slave(Flushable(new ReadInterface))
+    val po = master(Flushable(new ReadInterface))
+
+    val in1 = in(new ReadInterface)
+    val in2 = in(new ReadInterface)
+  }
+
+  val d1 = new Delay(new ReadInterface)
+  val read = new ReadStage
+
+  read << io.pi
+  read >-> io.po
+  // d1 << io.pi
+  // d1 >-> io.po
+
+
+  // Formal Stuff
+  val sent1 = RegInit(False)
+  val sent2 = RegInit(False)
+
+  val received1 = RegInit(False)
+  val received2 = RegInit(False)
+
+  val init = initstate()
+  when(init){
+    assume(sent1 === False)
+    assume(sent2 === False)
+    assume(received1 === False)
+    assume(received2 === False)
+    assume(clockDomain.isResetActive)
+  }.otherwise{
+    assume(!clockDomain.isResetActive)
+  }
+
+  when(!init){
+    when(!sent1 && io.pi.valid && io.pi.ready){
+      assume(io.pi.payload === io.in1)
+      sent1 := True
+    }
+
+    when(sent1 && !sent2 && io.pi.valid && io.pi.ready){
+      assume(io.pi.payload === io.in2)
+      sent2 := True
+    }
+  }
+  assume(stable(io.in1.asBits))
+  assume(stable(io.in2.asBits))
+  assume(io.in1 =/= io.in2)
+  assume(io.po.flush === False)
+
+  when(!init){
+    when(sent1 && !received1){
+      when(io.po.valid && io.po.ready){
+        assert(io.po.payload.dec_data.cia === io.in1.dec_data.cia)
+        received1 := True
+      }
+    }
+    when(sent2 && received1 && !received2){
+      when(io.po.valid && io.po.ready){
+        assert(io.po.payload.dec_data.cia === io.in2.dec_data.cia)
+        received2 := True
+      }
+    }
+    cover(received2)
+  }
+  read.io.bhrb_rp(0).data := 0
+  read.io.xer_rp(0).data := 0
+  for (idx <- 0 until 2) {
+    read.io.comb_rp(idx).data := 0
+    read.io.spr_rp(idx).data := 0
+    read.io.cr_rp(idx).data := 0
+    read.io.fpscr_rp(idx).data := 0
+    read.io.vr_rp(idx).data := 0
+    read.io.vsr_rp(idx).data := 0
+    read.io.fpr_rp(idx).data := 0
+    read.io.gpr_rp(idx).data := 0
+  }
+
+}
+
 class ReadProofVerilogFormal extends AnyFlatSpec with should.Matchers {
   behavior of "ReadProofDUT"
 
@@ -139,5 +221,6 @@ class ReadProofVerilogFormal extends AnyFlatSpec with should.Matchers {
       targetDirectory = "formal"
     ).withoutEnumString()
     config.includeFormal.generateSystemVerilog(new ReadProofDUT)
+    config.includeFormal.generateSystemVerilog(new ReadPipeDUT)
   }
 }
