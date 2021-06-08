@@ -322,6 +322,25 @@ class SoCWithUARTTest extends AnyFlatSpec with should.Matchers {
       assert(received.toString() == testdata)
     }
   }
+  it should "run micropython" in {
+    compiled.doSim("upython") { dut =>
+      val binary = s"c_sources/upython/firmware.bin"
+      val csv = "test_csv_output/upython.csv"
+      dut.io.read.ready #= true
+      dut.io.write.valid #= false
+      dut.soc.loadFromFile(binary)
+      val logger = new CSVLogger(dut.soc, csv)
+      dut.clockDomain.forkStimulus(10)
+      dut.clockDomain.onSamplings {
+        if (dut.io.read.valid.toBoolean) {
+          val char = dut.io.read.payload.toInt
+          println(f"resp: 0x${char & 0xff}%x ${(char & 0xff)}%c")
+        }
+      }
+
+      dut.clockDomain.waitSampling(1000000)
+    }
+  }
 
 }
 
