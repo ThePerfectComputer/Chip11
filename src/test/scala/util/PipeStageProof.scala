@@ -1,5 +1,6 @@
 package util
 
+import cpu.interfaces.{ReadInterface}
 import spinal.core._
 import spinal.core.Formal._
 import spinal.lib.{master, slave}
@@ -11,7 +12,7 @@ import flatspec._
 import matchers._
 import scala.util.Random
 
-class PipeStageDUT[T <: BaseType](dataType: HardType[T]) extends Component {
+class PipeStageDUT[T <: Data](dataType: HardType[T]) extends Component {
   val io = new Bundle {
     val pi = slave(Flushable(dataType()))
     val po = master(Flushable(dataType()))
@@ -57,8 +58,8 @@ class PipeStageDUT[T <: BaseType](dataType: HardType[T]) extends Component {
       sent2 := True
     }
   }
-  assume(stable(io.in1))
-  assume(stable(io.in2))
+  assume(stable(io.in1.asBits))
+  assume(stable(io.in2.asBits))
   assume(io.po.flush === False)
 
   when(!init){
@@ -79,6 +80,11 @@ class PipeStageDUT[T <: BaseType](dataType: HardType[T]) extends Component {
 
 }
 
+class TestBundle extends Bundle{
+  val a = UInt(10 bits)
+  val b = UInt(5 bits)
+}
+
 class PipeStageProofVerilogFormal extends AnyFlatSpec with should.Matchers {
   behavior of "PipeStageDUT"
 
@@ -88,6 +94,6 @@ class PipeStageProofVerilogFormal extends AnyFlatSpec with should.Matchers {
         ClockDomainConfig(resetKind = SYNC, resetActiveLevel = HIGH),
       targetDirectory = "formal"
     ).withoutEnumString()
-    config.includeFormal.generateSystemVerilog(new PipeStageDUT(UInt(8 bits)))
+    config.includeFormal.generateSystemVerilog(new PipeStageDUT(new TestBundle))
   }
 }
