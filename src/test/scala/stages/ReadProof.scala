@@ -178,7 +178,9 @@ class ReadPipeDUT extends Component {
   }
   assume(stable(io.in1.asBits))
   assume(stable(io.in2.asBits))
-  assume(io.in1 =/= io.in2)
+  //assume(io.in1 =/= io.in2)
+  assume(io.in1.dec_data.cia < 256)
+  assume(io.in2.dec_data.cia < 256)
   assume(io.po.flush === False)
 
   when(!init){
@@ -196,6 +198,7 @@ class ReadPipeDUT extends Component {
     }
     cover(received2)
   }
+  cover(io.po.ready === False)
   read.io.bhrb_rp(0).data := 0
   read.io.xer_rp(0).data := 0
   for (idx <- 0 until 2) {

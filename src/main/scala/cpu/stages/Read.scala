@@ -95,22 +95,30 @@ class ReadStage extends PipeStage(new ReadInterface, new ReadInterface) {
   }
   io.xer_rp(0).idx := 0
 
+  // Registers for emulating the behavior of RegisteredPipeStage manually
+  val main_valid_reg = Reg(Bool()) init(False)
+  main_valid_reg := False
+
+
   val incomingData = new ReadInterface
   val inputReg = Reg(new ReadInterface) init(incomingData.getZero)
   val incomingValid = Bool
   val incomingValidReg = RegInit(False)
-  when(pipeOutput.ready & pipeInput.valid){
-    inputReg := i
+  when(!incomingValidReg){
+    incomingValid := False
+    incomingValidReg := False
+    when(pipeInput.ready & pipeInput.valid){
+      incomingValidReg := True
+    }
     incomingData := i
-    incomingValid := pipeInput.valid
-    incomingValidReg := pipeInput.valid
-  }.otherwise{
+    inputReg := i
+
+  }.otherwise {
+    ready := False
     incomingData := inputReg
     incomingValid := incomingValidReg
-    when(pipeOutput.ready & !pipeInput.valid){
-      incomingValid := False
-    }
   }
+
 
   // We need to latch some of the incoming slot data
   val incoming_sel = Reg(Vec(cloneOf(incomingData.slots(0).sel), 5))
@@ -163,9 +171,6 @@ class ReadStage extends PipeStage(new ReadInterface, new ReadInterface) {
     elem := False
   }
 
-  // Registers for emulating the behavior of RegisteredPipeStage manually
-  val main_valid_reg = Reg(Bool()) init(False)
-  main_valid_reg := False
 
   for ((slot, i) <- incomingData.slots.zipWithIndex) {
 
@@ -236,10 +241,16 @@ class ReadStage extends PipeStage(new ReadInterface, new ReadInterface) {
       // Otherwise, delay valid/spec by one cycle
     }.otherwise {
       main_valid_reg := incomingValid
+      when(incomingValidReg){
+        incomingValidReg := False
+      }
     }
   }.otherwise {
     cycle := 1
     main_valid_reg := incomingValid
+    when(incomingValidReg){
+      incomingValidReg := False
+    }
   }
 
   // State for extra data in read interface
