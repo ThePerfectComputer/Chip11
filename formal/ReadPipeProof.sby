@@ -4,11 +4,11 @@ task_cover
 [options]
 task_cover:
 mode cover
-depth 10
+depth 16
 --
 task_bmc:
 mode bmc
-depth 10
+depth 16
 --
 
 [engines]
