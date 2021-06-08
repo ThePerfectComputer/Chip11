@@ -33,11 +33,11 @@ class DelayProofDUT extends Component {
     }
   }
   val init = initstate()
-  // when(init){
-  //   assume(clockDomain.isResetActive)
-  // }.otherwise{
-  //   assume(!clockDomain.isResetActive)
-  // }
+  when(init){
+    assume(clockDomain.isResetActive)
+  }.otherwise{
+    assume(!clockDomain.isResetActive)
+  }
   for ((slot, i) <- io.ro.slots.zipWithIndex) {
     when(!init) {
       when(io.ro.valid) {
@@ -92,7 +92,7 @@ class ReadProofDUT extends Component {
       assume(slot.sel === SourceSelect.NONE)
       assume(slot.idx === 0)
     }.otherwise {
-      if (i < 2) {
+      if (i < 4) {
         assume(slot.sel === SourceSelect.GPR || slot.sel === SourceSelect.NONE)
         assume((slot.idx & ~U(31, slot.idx.getWidth bits)) === 0)
       } else {
@@ -111,7 +111,7 @@ class ReadProofDUT extends Component {
     assume(stable(io.ri.valid))
   }
 
-  assume(io.ro.ready)
+  //assume(io.ro.ready)
 
   when(init) {
     assume(clockDomain.isResetActive)
