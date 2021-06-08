@@ -73,8 +73,8 @@ class ReadStage extends PipeStage(new ReadInterface, new ReadInterface) {
     val fpscr_rp = Vec(master(new ReadPort(RegfileInfo.FPSCR)), 2)
     val xer_rp = Vec(master(new ReadPort(RegfileInfo.XER)), 1)
   }
-  io.cr_rp(0).idx.allowOverride 
-  io.cr_rp(1).idx.allowOverride 
+  io.cr_rp(0).idx.allowOverride
+  io.cr_rp(1).idx.allowOverride
 
   val internal_ready = Bool()
   internal_ready := True
@@ -95,30 +95,17 @@ class ReadStage extends PipeStage(new ReadInterface, new ReadInterface) {
   }
   io.xer_rp(0).idx := 0
 
-  // Registers for emulating the behavior of RegisteredPipeStage manually
-  val main_valid_reg = Reg(Bool()) init(False)
-  main_valid_reg := False
-
-
   val incomingData = new ReadInterface
-  val inputReg = Reg(new ReadInterface) init(incomingData.getZero)
+  val inputReg = Reg(new ReadInterface) init (incomingData.getZero)
   val incomingValid = Bool
   val incomingValidReg = RegInit(False)
-  when(!incomingValidReg){
-    incomingValid := False
-    incomingValidReg := False
-    when(pipeInput.ready & pipeInput.valid){
-      incomingValidReg := True
-    }
-    incomingData := i
+  incomingData := inputReg
+  incomingValid := incomingValidReg
+  when(pipeOutput.ready & ready) {
     inputReg := i
+    incomingValidReg := pipeInput.valid
 
-  }.otherwise {
-    ready := False
-    incomingData := inputReg
-    incomingValid := incomingValidReg
   }
-
 
   // We need to latch some of the incoming slot data
   val incoming_sel = Reg(Vec(cloneOf(incomingData.slots(0).sel), 5))
@@ -171,7 +158,6 @@ class ReadStage extends PipeStage(new ReadInterface, new ReadInterface) {
     elem := False
   }
 
-
   for ((slot, i) <- incomingData.slots.zipWithIndex) {
 
     def readFromRegfile[T <: Vec[ReadPort]](
@@ -182,7 +168,7 @@ class ReadStage extends PipeStage(new ReadInterface, new ReadInterface) {
       regInfo match {
         // If we get good data back
         case Some((rpidx, readcycle)) => {
-          val resultAvailable = Reg(Bool) init(False)
+          val resultAvailable = Reg(Bool) init (False)
           resultAvailable := False
           when(slot.sel === enumVal) {
             // Look up the port index and cycle map
@@ -221,6 +207,19 @@ class ReadStage extends PipeStage(new ReadInterface, new ReadInterface) {
   io.cr_rp(0).idx := 0
   io.cr_rp(1).idx := 1
 
+  // Registers for emulating the behavior of RegisteredPipeStage manually
+  val main_valid_reg = Reg(Bool()) init (False)
+  when(pipeOutput.ready){
+    main_valid_reg := False
+  }
+
+  // State for extra data in read interface
+  val imm_reg = Reg(cloneOf(i.imm))
+  val dec_data_reg = Reg(new DecoderData)
+  val write_interface_reg = Reg(new WriteInterface)
+  val ldst_request_reg = Reg(new LoadStoreRequest)
+  val compare_reg = Reg(cloneOf(i.compare))
+
   // Send the data to the pipeline output
   for ((slot, i) <- o.slots.zipWithIndex) {
     // If a given piece of data is in data_out
@@ -240,31 +239,26 @@ class ReadStage extends PipeStage(new ReadInterface, new ReadInterface) {
       cycle := 2
       // Otherwise, delay valid/spec by one cycle
     }.otherwise {
-      main_valid_reg := incomingValid
-      when(incomingValidReg){
-        incomingValidReg := False
+      when(pipeOutput.ready) {
+        main_valid_reg := incomingValid
+        imm_reg := incomingData.imm
+        dec_data_reg := incomingData.dec_data
+        write_interface_reg := incomingData.write_interface
+        ldst_request_reg := incomingData.ldst_request
+        compare_reg := incomingData.compare
       }
     }
   }.otherwise {
-    cycle := 1
-    main_valid_reg := incomingValid
-    when(incomingValidReg){
-      incomingValidReg := False
+    when(pipeOutput.ready) {
+      cycle := 1
+      main_valid_reg := incomingValid
+      imm_reg := incomingData.imm
+      dec_data_reg := incomingData.dec_data
+      write_interface_reg := incomingData.write_interface
+      ldst_request_reg := incomingData.ldst_request
+      compare_reg := incomingData.compare
     }
   }
-
-  // State for extra data in read interface
-  val imm_reg = Reg(cloneOf(i.imm))
-  val dec_data_reg = Reg(new DecoderData)
-  val write_interface_reg = Reg(new WriteInterface)
-  val ldst_request_reg = Reg(new LoadStoreRequest)
-  val compare_reg = Reg(cloneOf(i.compare))
-
-  imm_reg := incomingData.imm
-  dec_data_reg := incomingData.dec_data
-  write_interface_reg := incomingData.write_interface
-  ldst_request_reg := incomingData.ldst_request
-  compare_reg := incomingData.compare
 
   o.imm := imm_reg
   o.dec_data := dec_data_reg
