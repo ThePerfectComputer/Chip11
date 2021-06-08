@@ -216,7 +216,7 @@ class SoCUARTWrapper extends Component {
     val read = master(Stream(Bits(8 bits)))
   }
 
-  val soc = new SoCWithUART
+  val soc = new SoCWithUART(memorySize=(16 * 1024 * 1024))
 
   val uartCtrl = new UartCtrl(soc.uartGenerics)
   soc.io.tx <> uartCtrl.io.uart.rxd

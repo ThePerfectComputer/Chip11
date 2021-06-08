@@ -43,7 +43,7 @@ object InitData {
   }
 }
 
-class SoCGen(val mem_file: String = null) extends Component {
+class SoCGen(val mem_file: String = null, memorySize:Int=16384) extends Component {
   implicit val axiConfig = Axi4Config(
     addressWidth = 32,
     dataWidth = 128,
@@ -81,11 +81,10 @@ class SoCGen(val mem_file: String = null) extends Component {
   fetchMbToAxi.io.membus <> fetch_adaptor.io.membus
   ldstMbToAxi.io.membus <> ldst_adaptor.io.membus
 
-  val ramSize = 16384
-  val ramDepth = ramSize/axiConfig.dataWidth
+  val ramDepth = memorySize/axiConfig.dataWidth
   val ram = Axi4SharedOnChipRam (
     dataWidth = axiConfig.dataWidth,
-    byteCount = ramSize,
+    byteCount = memorySize,
     idWidth = 5
   )
   ram.ram.simPublic()
@@ -111,12 +110,12 @@ class SoCGen(val mem_file: String = null) extends Component {
   }
 }
 
-class SoC(mem_file: String = null) extends SoCGen(mem_file) {
+class SoC(mem_file: String = null, memorySize:Int=16384) extends SoCGen(mem_file, memorySize) {
 
   val axiCrossbar = Axi4CrossbarFactory()
 
   axiCrossbar.addSlaves(
-    ram.io.axi -> (0x0, ramSize)
+    ram.io.axi -> (0x0, memorySize)
   )
 
   // I think this is defining what masters can access which slaves
@@ -129,7 +128,7 @@ class SoC(mem_file: String = null) extends SoCGen(mem_file) {
 
 }
 
-class SoCWithUART(mem_file: String = null) extends SoCGen(mem_file) {
+class SoCWithUART(mem_file: String = null, memorySize:Int=16384) extends SoCGen(mem_file, memorySize) {
   val io = new Bundle{
     val rx = in Bool
     val tx = out Bool
