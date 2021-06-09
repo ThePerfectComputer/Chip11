@@ -179,7 +179,21 @@ class ReadStage extends PipeStage(new ReadInterface, new ReadInterface) {
   val ldst_request_reg = Reg(new LoadStoreRequest)
   val compare_reg = Reg(cloneOf(i.compare))
 
-  for ((slot, i) <- inputReg.slots.zipWithIndex) {
+  val slotData = cloneOf(inputReg.slots)
+  val slotDataReg = Reg(cloneOf(slotData))
+
+  when(main_valid_reg & pipeOutput.ready){
+    slotData := inputReg.slots
+  }.otherwise {
+    slotData := slotDataReg
+  }
+  when(main_valid_reg & pipeOutput.ready) {
+    slotDataReg := inputReg.slots
+  }
+
+
+
+  for ((slot, i) <- slotData.zipWithIndex) {
 
     def readFromRegfile[T <: Vec[ReadPort]](
         enumVal: SourceSelect.E,
