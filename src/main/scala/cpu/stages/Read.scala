@@ -182,12 +182,12 @@ class ReadStage extends PipeStage(new ReadInterface, new ReadInterface) {
   val slotData = cloneOf(inputReg.slots)
   val slotDataReg = Reg(cloneOf(slotData))
 
-  when(main_valid_reg & pipeOutput.ready){
+  when(incomingValidReg & pipeOutput.ready){
     slotData := inputReg.slots
   }.otherwise {
     slotData := slotDataReg
   }
-  when(main_valid_reg & pipeOutput.ready) {
+  when(incomingValidReg & pipeOutput.ready) {
     slotDataReg := inputReg.slots
   }
 
