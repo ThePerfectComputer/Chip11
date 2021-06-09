@@ -1,0 +1,88 @@
+[*]
+[*] GTKWave Analyzer v3.3.105 (w)1999-2020 BSI
+[*] Fri May 28 18:34:43 2021
+[*]
+[dumpfile] "/home/mnolan/git/chipeleven/Chp11/simWorkspace/SoC/test_branch_unconditional.vcd"
+[dumpfile_mtime] "Fri May 28 18:33:36 2021"
+[dumpfile_size] 1706898
+[savefile] "/home/mnolan/git/chipeleven/Chp11/branch.gtkw"
+[timestart] 704
+[size] 2404 1397
+[pos] -1 -1
+*-5.537302 916 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] TOP.
+[treeopen] TOP.SoC.
+[treeopen] TOP.SoC.cpu_1.
+[sst_width] 408
+[signals_width] 453
+[sst_expanded] 1
+[sst_vpaned_height] 414
+@22
+TOP.SoC.cpu_1.s1.pipeInput_payload_dec_data_cia[63:0]
+@28
+TOP.SoC.cpu_1.s1.flush
+@820
+TOP.SoC.cpu_1.s1.pipeInput_payload_dec_data_opcode_string[111:0]
+@22
+TOP.SoC.cpu_1.s1.io_bc_branch_addr[63:0]
+@28
+TOP.SoC.cpu_1.s1.io_bc_branch_taken
+TOP.SoC.cpu_1.s1.io_bc_is_branch
+TOP.SoC.cpu_1.s1.pipeInput_valid
+TOP.SoC.cpu_1.s1.pipeInput_valid
+TOP.SoC.cpu_1.s1.pipeInput_flush
+@200
+-
+-Fetch Request
+@22
+TOP.SoC.cpu_1.fetch_req.pipeOutput_payload[63:0]
+@28
+TOP.SoC.cpu_1.fetch_req.pipeOutput_ready
+TOP.SoC.cpu_1.fetch_req.pipeOutput_valid
+@820
+TOP.SoC.cpu_1.fetch_req.state_string[103:0]
+@22
+TOP.SoC.cpu_1.fetch_req.io_line_request_byte_address[63:0]
+TOP.SoC.cpu_1.fetch_req.io_line_request_data[127:0]
+@28
+TOP.SoC.cpu_1.fetch_req.io_line_request_ldst_req[1:0]
+@820
+TOP.SoC.cpu_1.fetch_req.io_line_request_ldst_req_string[39:0]
+@22
+TOP.SoC.cpu_1.fetch_req.io_line_request_size[4:0]
+@820
+TOP.SoC.cpu_1.fetch_req.io_line_request_size_string[79:0]
+@200
+-Fetch Response
+@22
+TOP.SoC.cpu_1.fetch_resp.io_line_response_byte_address[63:0]
+TOP.SoC.cpu_1.fetch_resp.io_line_response_data[127:0]
+@28
+TOP.SoC.cpu_1.fetch_resp.io_line_response_status[2:0]
+@820
+TOP.SoC.cpu_1.fetch_resp.io_line_response_status_string[71:0]
+@28
+TOP.SoC.cpu_1.fetch_resp.pipeInput_ready
+TOP.SoC.cpu_1.fetch_resp.pipeOutput_ready
+TOP.SoC.cpu_1.fetch_resp.fifo_written
+TOP.SoC.cpu_1.fetch_resp.address_match
+TOP.SoC.cpu_1.fetch_resp.address_match_reg
+TOP.SoC.cpu_1.fetch_resp.response_present
+@22
+TOP.SoC.cpu_1.fetch_resp.pipeInput_payload[63:0]
+@28
+TOP.SoC.cpu_1.fetch_resp.address_match
+TOP.SoC.cpu_1.fetch_resp.address_match_reg
+@22
+TOP.SoC.cpu_1.fetch_resp.line_response_reg_byte_address[63:0]
+@28
+TOP.SoC.cpu_1.fetch_resp.pipeOutput_ready
+@22
+TOP.SoC.cpu_1.fetch_resp.pipeOutput_payload_cia[63:0]
+TOP.SoC.cpu_1.fetch_resp.pipeOutput_payload_insn[31:0]
+@28
+TOP.SoC.cpu_1.fetch_resp.ready
+TOP.SoC.cpu_1.fetch_resp.pipeInput_ready
+TOP.SoC.cpu_1.fetch_resp.pipeOutput_ready
+[pattern_trace] 1
+[pattern_trace] 0

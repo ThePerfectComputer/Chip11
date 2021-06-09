@@ -23,7 +23,7 @@ import scala.Console
 import scala.collection.mutable._
 import Console.{RED, RESET, YELLOW}
 
-class CSVLogger(dut: SoCGen, filePath: String) {
+class CSVLogger(dut: SoCGen, filePath: String, doFinish:Boolean=true) {
   val writer = new PrintWriter(new File(filePath))
   val maxIter = 2000
   writer.write(
@@ -66,8 +66,10 @@ class CSVLogger(dut: SoCGen, filePath: String) {
     }
   }
   def finish() {
-    writer.close()
-    simSuccess()
+    if(doFinish){
+      writer.close()
+      simSuccess()
+    }
   }
 
 }
@@ -329,12 +331,12 @@ class SoCWithUARTTest extends AnyFlatSpec with should.Matchers {
       dut.io.read.ready #= true
       dut.io.write.valid #= false
       dut.soc.loadFromFile(binary)
-      val logger = new CSVLogger(dut.soc, csv)
+      val logger = new CSVLogger(dut.soc, csv, doFinish=false)
       dut.clockDomain.forkStimulus(10)
       dut.clockDomain.onSamplings {
         if (dut.io.read.valid.toBoolean) {
           val char = dut.io.read.payload.toInt
-          println(f"resp: 0x${char & 0xff}%x ${(char & 0xff)}%c")
+          print(f"${(char & 0xff)}%c")
         }
       }
 
