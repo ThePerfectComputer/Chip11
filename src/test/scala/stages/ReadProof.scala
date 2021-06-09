@@ -187,8 +187,15 @@ class ReadPipeDUT extends Component {
     when(sent1 && !received1){
       when(io.po.valid && io.po.ready){
         assert(io.po.payload.dec_data.cia === io.in1.dec_data.cia)
-        assert(io.po.payload.slots(0).idx === io.in1.slots(0).idx)
-        assert(io.po.payload.slots(0).sel === io.in1.slots(0).sel)
+        for(i <- 0 until 4){
+          assert(io.po.payload.slots(i).idx === io.in1.slots(i).idx)
+          assert(io.po.payload.slots(i).sel === io.in1.slots(i).sel)
+          if(i < 4){
+            when(io.po.payload.slots(i).sel === SourceSelect.GPR){
+              assert(io.po.payload.slots(i).data(4 downto 0) === io.in1.slots(i).idx(4 downto 0))
+            }
+          }
+        }
         received1 := True
       }
     }
@@ -211,7 +218,10 @@ class ReadPipeDUT extends Component {
     read.io.vr_rp(idx).data := 0
     read.io.vsr_rp(idx).data := 0
     read.io.fpr_rp(idx).data := 0
-    read.io.gpr_rp(idx).data := 0
+
+    val delayed = RegInit(U(0, 5 bits))
+    delayed := read.io.gpr_rp(idx).idx
+    read.io.gpr_rp(idx).data := delayed.resized
   }
 
 }

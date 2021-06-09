@@ -117,7 +117,7 @@ class ReadStage extends PipeStage(new ReadInterface, new ReadInterface) {
 
   // We need to latch some of the incoming slot data
   val incoming_sel = Reg(Vec(cloneOf(incomingData.slots(0).sel), 5))
-  val incoming_idx = Reg(Vec(cloneOf(incomingData.slots(0).idx), 5))
+  val incoming_idx = Reg(Vec(UInt(10 bits), 5))
   for (slot_index <- 0 until 5) {
     // set initial values
     // incoming_sel(slot_index) := incoming_sel(slot_index).getZero
