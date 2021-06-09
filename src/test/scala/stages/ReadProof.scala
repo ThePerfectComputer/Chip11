@@ -92,7 +92,7 @@ class ReadProofDUT extends Component {
       assume(slot.sel === SourceSelect.NONE)
       assume(slot.idx === 0)
     }.otherwise {
-      if (i < 4) {
+      if (i < 3) {
         assume(slot.sel === SourceSelect.GPR || slot.sel === SourceSelect.NONE)
         assume((slot.idx & ~U(31, slot.idx.getWidth bits)) === 0)
       } else {
@@ -187,6 +187,8 @@ class ReadPipeDUT extends Component {
     when(sent1 && !received1){
       when(io.po.valid && io.po.ready){
         assert(io.po.payload.dec_data.cia === io.in1.dec_data.cia)
+        assert(io.po.payload.slots(0).idx === io.in1.slots(0).idx)
+        assert(io.po.payload.slots(0).sel === io.in1.slots(0).sel)
         received1 := True
       }
     }

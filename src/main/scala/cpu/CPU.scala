@@ -80,6 +80,7 @@ class CPU(implicit val config: CPUConfig) extends Component {
     // Needed because read registers its data internally, but needs a
     // registered connection to the next stage to prevent a
     // combinatorial loop
+    s"read hidden",
     s"${read.getClass.getName()}output",
     s1.getClass.getName(),
     s2.getClass.getName(),
@@ -99,22 +100,24 @@ class CPU(implicit val config: CPUConfig) extends Component {
 
   // connect hazard detector inputs
   hazard.io.write_interface_vec(0) := read.pipeInput.payload.write_interface
-  hazard.io.write_interface_vec(1) := read.pipeOutput.payload.write_interface
-  hazard.io.write_interface_vec(2) := s1.pipeInput.payload.write_interface
-  hazard.io.write_interface_vec(3) := s2.pipeInput.payload.write_interface
-  hazard.io.write_interface_vec(4) := s3.pipeInput.payload.write_interface
-  hazard.io.write_interface_vec(5) := ldst_request.pipeInput.payload.write_interface
-  hazard.io.write_interface_vec(6) := ldst_response.pipeInput.payload.write_interface
-  hazard.io.write_interface_vec(7) := write.pipeInput.payload.write_interface
+  hazard.io.write_interface_vec(1) := read.io.hidden_wi
+  hazard.io.write_interface_vec(2) := read.pipeOutput.payload.write_interface
+  hazard.io.write_interface_vec(3) := s1.pipeInput.payload.write_interface
+  hazard.io.write_interface_vec(4) := s2.pipeInput.payload.write_interface
+  hazard.io.write_interface_vec(5) := s3.pipeInput.payload.write_interface
+  hazard.io.write_interface_vec(6) := ldst_request.pipeInput.payload.write_interface
+  hazard.io.write_interface_vec(7) := ldst_response.pipeInput.payload.write_interface
+  hazard.io.write_interface_vec(8) := write.pipeInput.payload.write_interface
 
   hazard.io.stage_valid_vec(0) := read.pipeInput.valid
-  hazard.io.stage_valid_vec(1) := read.pipeOutput.valid
-  hazard.io.stage_valid_vec(2) := s1.pipeInput.valid
-  hazard.io.stage_valid_vec(3) := s2.pipeInput.valid
-  hazard.io.stage_valid_vec(4) := s3.pipeInput.valid
-  hazard.io.stage_valid_vec(5) := ldst_request.pipeInput.valid
-  hazard.io.stage_valid_vec(6) := ldst_response.pipeInput.valid
-  hazard.io.stage_valid_vec(7) := write.pipeInput.valid
+  hazard.io.stage_valid_vec(1) := read.io.hidden_wi_valid
+  hazard.io.stage_valid_vec(2) := read.pipeOutput.valid
+  hazard.io.stage_valid_vec(3) := s1.pipeInput.valid
+  hazard.io.stage_valid_vec(4) := s2.pipeInput.valid
+  hazard.io.stage_valid_vec(5) := s3.pipeInput.valid
+  hazard.io.stage_valid_vec(6) := ldst_request.pipeInput.valid
+  hazard.io.stage_valid_vec(7) := ldst_response.pipeInput.valid
+  hazard.io.stage_valid_vec(8) := write.pipeInput.valid
 
   // connect up pipeline stages
   decode <-< fetch.pipeOutput

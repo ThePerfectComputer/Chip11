@@ -72,6 +72,9 @@ class ReadStage extends PipeStage(new ReadInterface, new ReadInterface) {
     val cr_rp = Vec(master(new ReadPort(1, 16)), 2)
     val fpscr_rp = Vec(master(new ReadPort(RegfileInfo.FPSCR)), 2)
     val xer_rp = Vec(master(new ReadPort(RegfileInfo.XER)), 1)
+
+    val hidden_wi = out(new WriteInterface)
+    val hidden_wi_valid = out Bool
   }
   io.cr_rp(0).idx.allowOverride
   io.cr_rp(1).idx.allowOverride
@@ -104,18 +107,23 @@ class ReadStage extends PipeStage(new ReadInterface, new ReadInterface) {
   when(pipeOutput.ready & ready) {
     inputReg := i
     incomingValidReg := pipeInput.valid
-
   }
+  when(pipeOutput.flush){
+    incomingValidReg := False
+  }
+
+  io.hidden_wi := inputReg.write_interface
+  io.hidden_wi_valid := incomingValidReg
 
   // We need to latch some of the incoming slot data
   val incoming_sel = Reg(Vec(cloneOf(incomingData.slots(0).sel), 5))
   val incoming_idx = Reg(Vec(cloneOf(incomingData.slots(0).idx), 5))
   for (slot_index <- 0 until 5) {
     // set initial values
-    incoming_sel(slot_index) := incoming_sel(slot_index).getZero
-    incoming_idx(slot_index) := 0
+    // incoming_sel(slot_index) := incoming_sel(slot_index).getZero
+    // incoming_idx(slot_index) := 0
     // when valid, latch incoming data
-    when(pipeInput.valid) {
+    when(incomingValid & pipeOutput.ready) {
       incoming_sel(slot_index) := incomingData.slots(slot_index).sel
       incoming_idx(slot_index) := incomingData.slots(slot_index).idx.resized
     }
@@ -148,7 +156,7 @@ class ReadStage extends PipeStage(new ReadInterface, new ReadInterface) {
     )
   )
   val data_out_reg = Reg(cloneOf(data_out))
-  data_out_reg := data_out
+  //data_out_reg := data_out
   for (elem <- data_out) {
     elem := 0
   }
@@ -158,7 +166,20 @@ class ReadStage extends PipeStage(new ReadInterface, new ReadInterface) {
     elem := False
   }
 
-  for ((slot, i) <- incomingData.slots.zipWithIndex) {
+  // Registers for emulating the behavior of RegisteredPipeStage manually
+  val main_valid_reg = Reg(Bool()) init (False)
+  when(pipeOutput.ready){
+    main_valid_reg := False
+  }
+
+  // State for extra data in read interface
+  val imm_reg = Reg(cloneOf(i.imm))
+  val dec_data_reg = Reg(new DecoderData)
+  val write_interface_reg = Reg(new WriteInterface)
+  val ldst_request_reg = Reg(new LoadStoreRequest)
+  val compare_reg = Reg(cloneOf(i.compare))
+
+  for ((slot, i) <- inputReg.slots.zipWithIndex) {
 
     def readFromRegfile[T <: Vec[ReadPort]](
         enumVal: SourceSelect.E,
@@ -184,7 +205,10 @@ class ReadStage extends PipeStage(new ReadInterface, new ReadInterface) {
           // If the register file has produced a result, place the data in data_out
           when(resultAvailable === True) {
             data_out(i) := io_rp(rpidx).data.resized
-            forward_data(i) := True
+            data_out_reg(i) := io_rp(rpidx).data.resized
+            when(main_valid_reg & pipeOutput.ready){
+              forward_data(i) := True
+            }
           }
         }
         case None =>
@@ -206,19 +230,6 @@ class ReadStage extends PipeStage(new ReadInterface, new ReadInterface) {
 
   io.cr_rp(0).idx := 0
   io.cr_rp(1).idx := 1
-
-  // Registers for emulating the behavior of RegisteredPipeStage manually
-  val main_valid_reg = Reg(Bool()) init (False)
-  when(pipeOutput.ready){
-    main_valid_reg := False
-  }
-
-  // State for extra data in read interface
-  val imm_reg = Reg(cloneOf(i.imm))
-  val dec_data_reg = Reg(new DecoderData)
-  val write_interface_reg = Reg(new WriteInterface)
-  val ldst_request_reg = Reg(new LoadStoreRequest)
-  val compare_reg = Reg(cloneOf(i.compare))
 
   // Send the data to the pipeline output
   for ((slot, i) <- o.slots.zipWithIndex) {
