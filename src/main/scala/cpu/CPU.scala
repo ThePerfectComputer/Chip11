@@ -120,9 +120,10 @@ class CPU(implicit val config: CPUConfig) extends Component {
   hazard.io.stage_valid_vec(8) := write.pipeInput.valid
 
   // connect up pipeline stages
+  // For now, do not use any >/-> after the hazard detector, it doesn't work right
   decode <-< fetch.pipeOutput
   decode >-> form_pop >/-> hazard >-> read >->
-  s1 >/-> s2 >-> s3 >-> ldst_request >/-> ldst_response >/-> write
+  s1 >-> s2 >-> s3 >-> ldst_request >-> ldst_response >-> write
 
   val flushLatency = LatencyAnalysis(s2.pipeInput.flush, fetch.pipeOutput.flush)
   println(s"flush latency: $flushLatency")

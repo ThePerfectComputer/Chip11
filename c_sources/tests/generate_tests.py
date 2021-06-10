@@ -161,12 +161,14 @@ mtcr 1
 
     def test_rldicr(self):
         insns = []
-        for i in range(5):
+        for i in range(10):
             dest = 18
             src = self.rand.randrange(1,8+1)
-            sh = self.rand.randrange(0, 32)
-            me = self.rand.randrange(0, 32)
+            sh = self.rand.randrange(0, 63)
+            me = self.rand.randrange(0, 63)
             insns.append(f"rldicr. {dest}, {src}, {sh}, {me}")
+        insns.extend(["li 5, 0xfd",
+                      "rldicr 10, 5, 7, 56"])
         self.add_code(self.id(), insns)
 
     def test_rldcr(self):
