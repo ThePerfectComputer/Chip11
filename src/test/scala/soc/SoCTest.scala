@@ -236,7 +236,7 @@ class SoCUARTWrapper extends Component {
 
 class SoCWithUARTTest extends AnyFlatSpec with should.Matchers {
   val dir = "c_sources/uart"
-  val compiled = SimConfig.withWave.compile(new SoCUARTWrapper)
+  val compiled = SimConfig.compile(new SoCUARTWrapper)
 
   it should "print a string" in {
     compiled.doSim("print") { dut =>
@@ -335,12 +335,28 @@ class SoCWithUARTTest extends AnyFlatSpec with should.Matchers {
       dut.clockDomain.forkStimulus(10)
       dut.clockDomain.onSamplings {
         if (dut.io.read.valid.toBoolean) {
-          val char = dut.io.read.payload.toInt
-          print(f"${(char & 0xff)}%c")
+          val char = dut.io.read.payload.toInt & 0xff
+          if(char != '\r'){
+            print(f"${(char)}%c")
+          }
+          //println(f"resp: 0x${char & 0xff}%x ${(char & 0xff)}%c")
+        }
+      }
+      val testdata = "a = [1, 2]\r\na.append(3)\r\na\r\n"
+      fork {
+        dut.clockDomain.waitSampling(100000)
+        for(c <- testdata){
+          dut.io.write.valid #= true
+          dut.io.write.payload #= c
+          while(!dut.io.write.ready.toBoolean){
+            dut.clockDomain.waitSampling(1)
+          }
+          dut.io.write.valid #= false
+          dut.clockDomain.waitSampling(1)
         }
       }
 
-      dut.clockDomain.waitSampling(1000000)
+      dut.clockDomain.waitSampling(4000000)
     }
   }
 
