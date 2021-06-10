@@ -840,6 +840,43 @@ mtcr 1
 
         self.add_code(self.id(), insns)
 
+    def test_divd(self):
+        insns = []
+        val = self.rand.randint(-(1<<63), (1<<63)-1)
+        insns.extend([f"lis 17, {val}@highest",
+                      f"ori 17, 17, {val}@higher",
+                      f"sldi 17, 17, 32",
+                      f"oris 17, 17, {val}@h",
+                      f"ori 17, 17, {val}@l"])
+        for i in range(64):
+            source = self.rand.randint(1, 8)
+            insns.extend([
+                f"clrldi 18, 17, {i}",
+                f"divd 19, {source}, 18",
+                f"divdu 19, {source}, 18",])
+                # f"divde 19, {source}, 18",
+                # f"divdeu 19, {source}, 18"])
+
+        self.add_code(self.id(), insns)
+
+    def test_divw(self):
+        insns = []
+        for j in range(4):
+            val = self.rand.randint(-(1<<31), (1<<31)-1)
+            insns.extend([f"oris 17, 17, {val}@h",
+                        f"ori 17, 17, {val}@l"])
+            for i in range(32):
+                source = self.rand.randint(1, 8)
+                insns.extend([
+                    f"clrldi 18, 17, {i}",
+                    f"divw 19, {source}, 18",
+                    f"divwu 19, {source}, 18",])
+                    # f"divde 19, {source}, 18",
+                    # f"divdeu 19, {source}, 18"])
+
+        self.add_code(self.id(), insns)
+        
+
             
 
 

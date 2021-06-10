@@ -89,9 +89,12 @@ class UOpsMapping(implicit config: CPUConfig) extends Component {
   )
   val multiplier = Map(
     //is_div, word_operands, is_unsigned, output_high, output_word, shift_a
-    // divd_o__dot_ -> out(uOps(INTEGER, IntegerFUSub.Multiplier, MultiplierArgs(MultiplierSelectB.Slot2, true, false, false, false, false, false))),
-    // divde_o__dot_ -> out(uOps(INTEGER, IntegerFUSub.Multiplier, MultiplierArgs(MultiplierSelectB.Slot2, true, false, false, false, false, true))),
-    // divde_o__dot_ -> out(uOps(INTEGER, IntegerFUSub.Multiplier, MultiplierArgs(MultiplierSelectB.Slot2, true, true, true, false, true, false))),
+    divd_o__dot_ -> out(uOps(INTEGER, IntegerFUSub.Multiplier, MultiplierArgs(MultiplierSelectB.Slot2, true, false, false, false, false, false))),
+    divdu_o__dot_ -> out(uOps(INTEGER, IntegerFUSub.Multiplier, MultiplierArgs(MultiplierSelectB.Slot2, true, false, true, false, false, false))),
+    divw_o__dot_ -> out(uOps(INTEGER, IntegerFUSub.Multiplier, MultiplierArgs(MultiplierSelectB.Slot2, true, true, false, false, true, false))),
+    divwu_o__dot_ -> out(uOps(INTEGER, IntegerFUSub.Multiplier, MultiplierArgs(MultiplierSelectB.Slot2, true, true, true, false, true, false))),
+    divde_o__dot_ -> out(uOps(INTEGER, IntegerFUSub.Multiplier, MultiplierArgs(MultiplierSelectB.Slot2, true, false, false, false, false, true))),
+    divdeu_o__dot_ -> out(uOps(INTEGER, IntegerFUSub.Multiplier, MultiplierArgs(MultiplierSelectB.Slot2, true, false, true, false, false, true))),
 
     mulhd_dot_ -> out(uOps(INTEGER, IntegerFUSub.Multiplier, MultiplierArgs(MultiplierSelectB.Slot2, false, false, false, true, false, false))),
     mulhdu_dot_ -> out(uOps(INTEGER, IntegerFUSub.Multiplier, MultiplierArgs(MultiplierSelectB.Slot2, false, false, true, true, false, false))),
