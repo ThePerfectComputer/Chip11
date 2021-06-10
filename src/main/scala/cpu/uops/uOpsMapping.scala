@@ -108,6 +108,7 @@ class UOpsMapping(implicit config: CPUConfig) extends Component {
     //slotB, ME, MB, keep_source, word_op, left, is_arithmetic, is_shift, byte_op
     rldcr_dot_ -> out(uOps(INTEGER, IntegerFUSub.Shifter, ShifterArgs(ShifterSelectB.Slot2, ShifterME.ME, ShifterMB.MSB, false, false, true, false, false, false))),
     rldicl_dot_ -> out(uOps(INTEGER, IntegerFUSub.Shifter, ShifterArgs(ShifterSelectB.Imm, ShifterME.LSB, ShifterMB.MB, false, false, true, false, false, false))),
+    rldic_dot_ -> out(uOps(INTEGER, IntegerFUSub.Shifter, ShifterArgs(ShifterSelectB.Imm, ShifterME.IMM_REV, ShifterMB.MB, false, false, true, false, false, false))),
 
     rldicr_dot_ -> out(uOps(INTEGER, IntegerFUSub.Shifter, ShifterArgs(ShifterSelectB.Imm, ShifterME.ME, ShifterMB.MSB, false, false, true, false, false, false))),
 

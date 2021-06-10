@@ -159,6 +159,16 @@ mtcr 1
             insns.append(f"rldicl. {dest}, {src}, {sh}, {me}")
         self.add_code(self.id(), insns)
 
+    def test_rldic(self):
+        insns = []
+        for i in range(5):
+            dest = 18
+            src = self.rand.randrange(1,8+1)
+            sh = self.rand.randrange(0, 32)
+            me = self.rand.randrange(0, 32)
+            insns.append(f"rldic. {dest}, {src}, {sh}, {me}")
+        self.add_code(self.id(), insns)
+
     def test_rldicr(self):
         insns = []
         for i in range(10):
@@ -427,6 +437,11 @@ mtcr 1
                 f'sradi. 12, 10, {s & 63}',
                 'mfxer 21',
             ])
+        # insns.extend([
+        #     "lis 10, 0x2000",
+        #     "li 11, 6",
+        #     "addi 13, 11, 1",
+        #     "sraw 12, 10, 11"])
         for s in range(128):
             insns.extend([
                 'lis 10, 0b10101010',
