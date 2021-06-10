@@ -94,9 +94,12 @@ class UOpsMapping(implicit config: CPUConfig) extends Component {
     // divde_o__dot_ -> out(uOps(INTEGER, IntegerFUSub.Multiplier, MultiplierArgs(MultiplierSelectB.Slot2, true, true, true, false, true, false))),
 
     mulhd_dot_ -> out(uOps(INTEGER, IntegerFUSub.Multiplier, MultiplierArgs(MultiplierSelectB.Slot2, false, false, false, true, false, false))),
+    mulhdu_dot_ -> out(uOps(INTEGER, IntegerFUSub.Multiplier, MultiplierArgs(MultiplierSelectB.Slot2, false, false, true, true, false, false))),
     mulld_o__dot_ -> out(uOps(INTEGER, IntegerFUSub.Multiplier, MultiplierArgs(MultiplierSelectB.Slot2, false, false, false, false, false, false))),
     mulli -> out(uOps(INTEGER, IntegerFUSub.Multiplier, MultiplierArgs(MultiplierSelectB.Imm, false, false, false, false, false, false))),
-    mullw_o__dot_ -> out(uOps(INTEGER, IntegerFUSub.Multiplier, MultiplierArgs(MultiplierSelectB.Slot2, false, true, false, false, false, false)))
+    mullw_o__dot_ -> out(uOps(INTEGER, IntegerFUSub.Multiplier, MultiplierArgs(MultiplierSelectB.Slot2, false, true, false, false, false, false))),
+    mulhw_dot_ -> out(uOps(INTEGER, IntegerFUSub.Multiplier, MultiplierArgs(MultiplierSelectB.Slot2, false, true, false, true, true, false))),
+    mulhwu_dot_ -> out(uOps(INTEGER, IntegerFUSub.Multiplier, MultiplierArgs(MultiplierSelectB.Slot2, false, true, true, true, true, false)))
   )
   val shifter = Map(
     //slotB, ME, MB, keep_source, word_op, left, is_arithmetic, is_shift, byte_op

@@ -31,20 +31,25 @@ class Multiplier(val wid: Int) extends Component {
   }
   val mul_a = SInt((wid+1) bits)
   val mul_b = SInt((wid+1) bits)
-  val mul_o = UInt((2*wid) bits)
-  val mul_result = SInt((2*wid) bits)
+  val mul_o = UInt((2*wid+2) bits)
+  val mul_result = SInt((2*wid + 2) bits)
 
   when (io.word_operands){
     when(io.is_unsigned){
-      mul_a := Cat(U(0, 1 bits), io.a(wid-1 downto wid/2)).asSInt
-      mul_b := Cat(U(0, 1 bits), io.b(wid-1 downto wid/2)).asSInt
+      mul_a := Cat(U(0, 1 bits), io.a(wid/2-1 downto 0)).asSInt.resized
+      mul_b := Cat(U(0, 1 bits), io.b(wid/2-1 downto 0)).asSInt.resized
     }.otherwise{
-      mul_a := io.a(wid-1 downto wid/2).asSInt
-      mul_b := io.b(wid-1 downto wid/2).asSInt
+      mul_a := io.a(wid/2-1 downto 0).asSInt.resized
+      mul_b := io.b(wid/2-1 downto 0).asSInt.resized
     }
   }.otherwise{
-    mul_a := io.a.asSInt
-    mul_b := io.b.asSInt
+    when(io.is_unsigned){
+      mul_a := io.a.intoSInt
+      mul_b := io.b.intoSInt
+    }.otherwise {
+      mul_a := io.a.asSInt.resized
+      mul_b := io.b.asSInt.resized
+    }
   }
   io.overflow := False
   //cast data out to UInt
@@ -54,9 +59,9 @@ class Multiplier(val wid: Int) extends Component {
       io.overflow := True
     }.otherwise{
       when (io.shift_a){
-        mul_result := ((mul_a << 64) / mul_b)
+        mul_result := ((mul_a << 64) / mul_b).resized
       }.otherwise{
-        mul_result := (mul_a / mul_b)
+        mul_result := (mul_a / mul_b).resized
       }
     }
     //check overflow
@@ -71,12 +76,16 @@ class Multiplier(val wid: Int) extends Component {
 
   mul_o := mul_result.asUInt
   when(io.output_word){
-    io.o := Cat(U(0, 32 bits), mul_o(wid-1 downto wid/2)).asUInt
+    when(io.output_high){
+      io.o := Cat(U(0, 32 bits), mul_o(wid-1 downto wid/2)).asUInt
+    }.otherwise{
+      io.o := Cat(U(0, 32 bits), mul_o(wid/2-1 downto 0)).asUInt
+    }
   }.otherwise{
     when(io.output_high){
-      io.o := mul_o(wid-1 downto 0)
-    }.otherwise{
       io.o := mul_o(2*wid-1 downto wid)
+    }.otherwise{
+      io.o := mul_o(wid-1 downto 0)
     }
   }
   

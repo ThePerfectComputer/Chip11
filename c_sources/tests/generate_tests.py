@@ -777,6 +777,43 @@ mtcr 1
             "blr",
             "2: li 18, 5"])
 
+    def test_mulli(self):
+        insns = []
+        for i in range(16):
+            source = self.rand.randint(1, 8)
+            imm = self.rand.randint(-0x8000, 0x7fff)
+            insns.append(f"mulli 17, {source}, {imm}")
+        self.add_code(self.id(), insns)
+            
+    def test_mulw(self):
+        insns = []
+        for i in range(16):
+            source = self.rand.randint(1, 8)
+            val = self.rand.randint(-0x800000000, 0x7fffffff)
+            insns.extend([f"lis 17, {val}@h",
+                          f"ori 17, 17, {val}@l",
+                          f"mullw 18, {source}, 17",
+                          f"mulhw 18, {source}, 17",
+                          f"mulhwu 18, {source}, 17"])
+
+        self.add_code(self.id(), insns)
+
+    def test_muld(self):
+        insns = []
+        for i in range(16):
+            source = self.rand.randint(1, 8)
+            val = self.rand.randint(-(1<<63), (1<<63)-1)
+            insns.extend([f"lis 17, {val}@highest",
+                          f"ori 17, 17, {val}@higher",
+                          f"sldi 17, 17, 32",
+                          f"oris 17, 17, {val}@h",
+                          f"ori 17, 17, {val}@l",
+                          f"mulld 18, {source}, 17",
+                          f"mulhd 18, {source}, 17",
+                          f"mulhdu 18, {source}, 17"])
+
+        self.add_code(self.id(), insns)
+
             
 
 

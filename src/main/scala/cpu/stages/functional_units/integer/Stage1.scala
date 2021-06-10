@@ -246,14 +246,6 @@ class Stage1(implicit config: CPUConfig)
       is(IntegerFUSub.Multiplier){
         if (config.multiplier) {
           val multiplierMod = new Multiplier(64)
-          multiplierMod.io.a := 0
-          multiplierMod.io.b := 0
-          multiplierMod.io.is_div := False
-          multiplierMod.io.is_unsigned := False
-          multiplierMod.io.word_operands := False
-          multiplierMod.io.output_high := False
-          multiplierMod.io.output_word := False
-          multiplierMod.io.shift_a := False
 
           // def debug_multiplier(){
           //   when (pipeOutput.fire()) {
@@ -265,12 +257,12 @@ class Stage1(implicit config: CPUConfig)
           val multiplierArgs = new MultiplierArgs
           multiplierArgs.assignFromBits(i.dec_data.uOps.args)
 
-          multiplierMod.io.a := i.slots(ReadSlotPacking.GPRPort1).data
+          multiplierMod.io.a := i.slots(ReadSlotPacking.GPRPort1).data.resized
           switch(multiplierArgs.slotB){
-            is(MultiplierSelectB.Slot1) { multiplierMod.io.b := i.slots(ReadSlotPacking.GPRPort1).data}
-            is(MultiplierSelectB.Slot2) { multiplierMod.io.b := i.slots(ReadSlotPacking.GPRPort2).data}
-            is(MultiplierSelectB.Slot3) { multiplierMod.io.b := i.slots(ReadSlotPacking.GPRPort3).data}
-            is(MultiplierSelectB.Imm) { multiplierMod.io.b := i.imm.payload}
+            is(MultiplierSelectB.Slot1) { multiplierMod.io.b := i.slots(ReadSlotPacking.GPRPort1).data.resized}
+            is(MultiplierSelectB.Slot2) { multiplierMod.io.b := i.slots(ReadSlotPacking.GPRPort2).data.resized}
+            is(MultiplierSelectB.Slot3) { multiplierMod.io.b := i.slots(ReadSlotPacking.GPRPort3).data.resized}
+            is(MultiplierSelectB.Imm) { multiplierMod.io.b := i.imm.payload.resized}
           }
 
           multiplierMod.io.is_div := multiplierArgs.is_div
@@ -280,7 +272,7 @@ class Stage1(implicit config: CPUConfig)
           multiplierMod.io.output_word := multiplierArgs.output_word
           multiplierMod.io.shift_a := multiplierArgs.shift_a
 
-          o.write_interface.slots(WriteSlotPacking.GPRPort1).data := multiplierMod.io.o
+          o.write_interface.slots(WriteSlotPacking.GPRPort1).data := multiplierMod.io.o.resized
         }
       }
 
