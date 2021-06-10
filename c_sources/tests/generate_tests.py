@@ -206,13 +206,12 @@ mtcr 1
 
     def test_rlwinm(self):
         insns = []
-        for i in range(5):
-            dest = 18
-            src = self.rand.randrange(1,8+1)
-            sh = self.rand.randrange(0, 32)
-            mb = self.rand.randrange(0, 32)
-            me = self.rand.randrange(0, 32)
-            insns.append(f"rlwinm. {dest}, {src}, {sh}, {mb}, {me}")
+        dest = 18
+        for sh in range(0, 32, 5):
+            for mb in range(0, 32, 5):
+                for me in range(0, 32, 5):
+                    src = self.rand.randrange(1,8+1)
+                    insns.append(f"rlwinm. {dest}, {src}, {sh}, {mb}, {me}")
         self.add_code(self.id(), insns)
 
     def test_xer(self):
