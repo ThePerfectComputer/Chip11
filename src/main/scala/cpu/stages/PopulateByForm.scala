@@ -809,6 +809,21 @@ class PopulateByForm extends PipeStage(new DecoderData, new ReadInterface) {
         o.slots(ReadSlotPacking.SPRPort1).idx := SPREnums.TAR.asBits.asUInt
         o.slots(ReadSlotPacking.SPRPort1).sel := SourceSelect.SPR
       }
+
+      val bi = Forms.XL4.BI(i.insn)
+      // printf(p"FORM: B1: Using bi value ${bi} (0b${Binary(bi)})\n")
+
+      // TODO FIGURE THIS OUT!!!
+      // bi's MSB selects between fields [0, 1, 2, 3] and [4, 5, 6, 7]
+      // bi's 2nd MSB selects between fields [(0, 1), (2, 3)] or [(4, 5), (6, 7)]
+      // bi's 3rd MSB selects between fields [0, 1 or 2, 3]
+      when(bi(2) === False) {
+        o.slots(ReadSlotPacking.CRAPort1).idx := 0xf
+        o.slots(ReadSlotPacking.CRAPort1).sel := SourceSelect.CRA
+      }.otherwise {
+        o.slots(ReadSlotPacking.CRBPort1).idx := 0xf
+        o.slots(ReadSlotPacking.CRBPort1).sel := SourceSelect.CRB
+      }
     }
 
     is(FormEnums.XO1) {

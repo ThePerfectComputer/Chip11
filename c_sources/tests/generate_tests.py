@@ -735,6 +735,18 @@ mtcr 1
             "addi 17, 17, -1",
             "cmpwi cr2, 17, 0",
             "bne cr2, loop"])
+    def test_branch_conditional2(self):
+
+        self.add_code(self.id(), [
+            "li 17, 0x15",
+            "li 18, 0",
+            "loop:",
+            "add 18, 18, 17",
+            "addi 17, 17, -1",
+            "cmpwi cr2, 17, 0",
+            "beq cr2, 3f",
+            "b loop",
+            "3: li 17, 5"])
 
     def test_branch_ctr(self):
         self.add_code(self.id(), [
@@ -754,6 +766,18 @@ mtcr 1
             "mflr 18",
             "blr",
             "2: li 17, 3"])
+
+    def test_branch_link_conditional(self):
+        self.add_code(self.id(), [
+            "li 17, 10",
+            "lis 18, 3f@h",
+            "ori 18, 18, 3f@l",
+            "mtlr 18",
+            "1: cmpwi 17, 5",
+            "beqlr",
+            "addi 17, 17, -1",
+            "b 1b",
+            "3: li 19, 5"])
     def test_branch_to_ctr(self):
         self.add_code(self.id(), [
             "lis 17, 1f@h",
