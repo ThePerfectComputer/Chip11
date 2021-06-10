@@ -243,46 +243,46 @@ class Stage1(implicit config: CPUConfig)
         }
       }
 
-      // is(IntegerFUSub.Multiplier){
-      //   if (config.multiplier) {
-      //     val multiplierMod = Module(new Multiplier(64))
-      //     multiplierMod.io.a := 0.U
-      //     multiplierMod.io.b := 0.U
-      //     multiplierMod.io.is_div := false.B
-      //     multiplierMod.io.is_unsigned := false.B
-      //     multiplierMod.io.word_operands := false.B
-      //     multiplierMod.io.output_high := false.B
-      //     multiplierMod.io.output_word := false.B
-      //     multiplierMod.io.shift_a := false.B
+      is(IntegerFUSub.Multiplier){
+        if (config.multiplier) {
+          val multiplierMod = new Multiplier(64)
+          multiplierMod.io.a := 0
+          multiplierMod.io.b := 0
+          multiplierMod.io.is_div := False
+          multiplierMod.io.is_unsigned := False
+          multiplierMod.io.word_operands := False
+          multiplierMod.io.output_high := False
+          multiplierMod.io.output_word := False
+          multiplierMod.io.shift_a := False
 
-      //     def debug_multiplier(){
-      //       when (pipeOutput.fire()) {
-      //         printf(p"\tMULT. IO: ${multiplierMod.io}\n")
-      //       }
-      //     }
-      //     if (cpu.debug.debug_stage1) {debug_multiplier()}
+          // def debug_multiplier(){
+          //   when (pipeOutput.fire()) {
+          //     printf(p"\tMULT. IO: ${multiplierMod.io}\n")
+          //   }
+          // }
+          // if (cpu.debug.debug_stage1) {debug_multiplier()}
 
-      //     val multiplierArgs = Wire(new MultiplierArgs)
-      //     multiplierArgs := i.dec_data.uOps.args.asTypeOf(new MultiplierArgs)
+          val multiplierArgs = new MultiplierArgs
+          multiplierArgs.assignFromBits(i.dec_data.uOps.args)
 
-      //     multiplierMod.io.a := i.slots(ReadSlotPacking.GPRPort1).data
-      //     switch(multiplierArgs.slotB){
-      //       is(MultiplierSelectB.Slot1) { multiplierMod.io.b := i.slots(ReadSlotPacking.GPRPort1).data}
-      //       is(MultiplierSelectB.Slot2) { multiplierMod.io.b := i.slots(ReadSlotPacking.GPRPort2).data}
-      //       is(MultiplierSelectB.Slot3) { multiplierMod.io.b := i.slots(ReadSlotPacking.GPRPort3).data}
-      //       is(MultiplierSelectB.Imm) { multiplierMod.io.b := i.imm.bits}
-      //     }
+          multiplierMod.io.a := i.slots(ReadSlotPacking.GPRPort1).data
+          switch(multiplierArgs.slotB){
+            is(MultiplierSelectB.Slot1) { multiplierMod.io.b := i.slots(ReadSlotPacking.GPRPort1).data}
+            is(MultiplierSelectB.Slot2) { multiplierMod.io.b := i.slots(ReadSlotPacking.GPRPort2).data}
+            is(MultiplierSelectB.Slot3) { multiplierMod.io.b := i.slots(ReadSlotPacking.GPRPort3).data}
+            is(MultiplierSelectB.Imm) { multiplierMod.io.b := i.imm.payload}
+          }
 
-      //     multiplierMod.io.is_div := multiplierArgs.is_div
-      //     multiplierMod.io.is_unsigned := multiplierArgs.is_unsigned
-      //     multiplierMod.io.word_operands := multiplierArgs.word_operands
-      //     multiplierMod.io.output_high := multiplierArgs.output_high
-      //     multiplierMod.io.output_word := multiplierArgs.output_word
-      //     multiplierMod.io.shift_a := multiplierArgs.shift_a
+          multiplierMod.io.is_div := multiplierArgs.is_div
+          multiplierMod.io.is_unsigned := multiplierArgs.is_unsigned
+          multiplierMod.io.word_operands := multiplierArgs.word_operands
+          multiplierMod.io.output_high := multiplierArgs.output_high
+          multiplierMod.io.output_word := multiplierArgs.output_word
+          multiplierMod.io.shift_a := multiplierArgs.shift_a
 
-      //     o.write_interface.slots(WriteSlotPacking.GPRPort1).data := multiplierMod.io.o
-      //   }
-      // }
+          o.write_interface.slots(WriteSlotPacking.GPRPort1).data := multiplierMod.io.o
+        }
+      }
 
       is(IntegerFUSub.Shifter) {
         if (config.shifter) {
