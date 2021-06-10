@@ -29,6 +29,7 @@ class FetchUnit extends Component {
     val bp_response = master(new BPFetchResponseInterface())
     val bp_request = slave(new BPFetchRequestInterface())
   }
+  val ciaInitValue = 0x10
 
   pipeOutput.valid := False
   pipeOutput.payload := pipeOutput.payload.getZero
@@ -44,7 +45,7 @@ class FetchUnit extends Component {
   io.line_request.data := 0
 
   val busArea = new Area {
-    val cia = RegInit(U(0x10, 64 bits))
+    val cia = RegInit(U(ciaInitValue, 64 bits))
 
     val fsm = new StateMachine {
       val requestState: State = new State with EntryPoint {
@@ -94,7 +95,7 @@ class FetchUnit extends Component {
   }
 
   val deserializeArea = new Area {
-    val cia = RegInit(U(0x10, 64 bits))
+    val cia = RegInit(U(ciaInitValue, 64 bits))
     val word_addr = cia(3 downto 2)
     val dataOut = dataFifo.io.pop.payload.subdivideIn(32 bits)
 
