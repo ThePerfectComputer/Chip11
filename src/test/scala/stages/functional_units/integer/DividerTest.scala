@@ -16,6 +16,7 @@ class DividerTest extends AnyFlatSpec with should.Matchers {
   it should "divide shit" in {
     SimConfig.withWave.doSim(new Divider(64)) { dut =>
       dut.io.input_valid #= false
+      dut.io.output_ack #= false
       dut.clockDomain.forkStimulus(10)
 
       dut.clockDomain.waitSampling(5)

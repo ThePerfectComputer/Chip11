@@ -19,20 +19,26 @@ class Divider(wid: Int) extends Component {
 
     val o = out UInt(wid bits)
     val output_valid = out Bool
+    val output_ack = in Bool
   }
 
   val output = Reg(UInt(wid bits))
   val output_valid = RegInit(False)
 
-  io.o := output
+  when(io.is_word){
+    io.o := output(wid/2-1 downto 0).resized
+  }.otherwise {
+    io.o := output
+  }
   io.output_valid := output_valid
+
+  io.input_ready := False
 
 
   val dividend = Reg(SInt(wid*2+1 bits))
   val divisor = Reg(SInt(wid+1 bits))
   val quotient = Reg(SInt(wid bits))
   val temp = Reg(SInt(wid*2+1 bits))
-  io.input_ready := True
 
   val a = SInt((wid+1) bits)
   val b = SInt((wid+1) bits)
@@ -62,7 +68,11 @@ class Divider(wid: Int) extends Component {
 
     val idle : State = new State with EntryPoint{
       whenIsActive {
+
         io.input_ready := True
+        when(io.output_ack){
+          output_valid := False
+        }
         when(io.input_valid){
           output_valid := False
           divisor := b
@@ -109,5 +119,6 @@ class Divider(wid: Int) extends Component {
         }
       }
     }
+
   }
 }

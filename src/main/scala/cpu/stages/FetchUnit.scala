@@ -29,7 +29,7 @@ class FetchUnit extends Component {
     val bp_response = master(new BPFetchResponseInterface())
     val bp_request = slave(new BPFetchRequestInterface())
   }
-  val ciaInitValue = 0x00
+  val ciaInitValue = 0x10
 
   pipeOutput.valid := False
   pipeOutput.payload := pipeOutput.payload.getZero

@@ -9,6 +9,7 @@ object IntegerFUSub extends SpinalEnum {
   val Adder = newElement()
   val LogicUnit = newElement()
   val Multiplier = newElement()
+  val Divider = newElement()
   val Shifter = newElement()
   val Branch = newElement()
   val Comparator = newElement()
@@ -104,6 +105,23 @@ object MultiplierArgs {
     data.is_unsigned := Bool(is_unsigned)
     data.output_high := Bool(output_high)
     data.output_word := Bool(output_word)
+    data.shift_a := Bool(shift_a)
+    data
+  }
+}
+
+class DividerArgs extends Bundle {
+  val slotB = MultiplierSelectB()
+  val is_word = Bool()
+  val is_unsigned = Bool()
+  val shift_a = Bool()
+}
+
+object DividerArgs {
+  def apply(is_word: Boolean, is_unsigned: Boolean,  shift_a: Boolean) = {
+    val data = new DividerArgs
+    data.is_word := Bool(is_word)
+    data.is_unsigned := Bool(is_unsigned)
     data.shift_a := Bool(shift_a)
     data
   }

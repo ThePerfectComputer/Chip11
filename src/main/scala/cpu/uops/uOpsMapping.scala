@@ -1,6 +1,6 @@
 package cpu.uOps
 
-import cpu.uOps.functional_units.Integer.{IntegerFUSub, AdderSelectB, AdderCarryIn, AdderArgs, LogicSelectB, LogicArgs, MultiplierSelectB, MultiplierArgs, BranchArgs, ShifterSelectB, ShifterME, ShifterMB, ShifterArgs, ComparatorArgs, ComparatorSelectB}
+import cpu.uOps.functional_units.Integer.{IntegerFUSub, AdderSelectB, AdderCarryIn, AdderArgs, LogicSelectB, LogicArgs, MultiplierSelectB, MultiplierArgs, BranchArgs, ShifterSelectB, ShifterME, ShifterMB, ShifterArgs, ComparatorArgs, ComparatorSelectB, DividerArgs}
 
 import cpu.uOps.functional_units.Integer.{ZCntArgs, ZCntDirection, ZCntSize, PopcntSize, PopcntArgs}
 import spinal.core._
@@ -88,14 +88,15 @@ class UOpsMapping(implicit config: CPUConfig) extends Component {
     xoris -> out(uOps(INTEGER, IntegerFUSub.LogicUnit, LogicArgs(LogicSelectB.ImmShift, false, false, false, true)))
   )
   val multiplier = Map(
-    //is_div, word_operands, is_unsigned, output_high, output_word, shift_a
-    divd_o__dot_ -> out(uOps(INTEGER, IntegerFUSub.Multiplier, MultiplierArgs(MultiplierSelectB.Slot2, true, false, false, false, false, false))),
-    divdu_o__dot_ -> out(uOps(INTEGER, IntegerFUSub.Multiplier, MultiplierArgs(MultiplierSelectB.Slot2, true, false, true, false, false, false))),
-    divw_o__dot_ -> out(uOps(INTEGER, IntegerFUSub.Multiplier, MultiplierArgs(MultiplierSelectB.Slot2, true, true, false, false, true, false))),
-    divwu_o__dot_ -> out(uOps(INTEGER, IntegerFUSub.Multiplier, MultiplierArgs(MultiplierSelectB.Slot2, true, true, true, false, true, false))),
-    divde_o__dot_ -> out(uOps(INTEGER, IntegerFUSub.Multiplier, MultiplierArgs(MultiplierSelectB.Slot2, true, false, false, false, false, true))),
-    divdeu_o__dot_ -> out(uOps(INTEGER, IntegerFUSub.Multiplier, MultiplierArgs(MultiplierSelectB.Slot2, true, false, true, false, false, true))),
+    // is_word, is_unsigned, shift_a
+    divd_o__dot_ -> out(uOps(INTEGER, IntegerFUSub.Divider, DividerArgs(false, false, false))),
+    divdu_o__dot_ -> out(uOps(INTEGER, IntegerFUSub.Divider, DividerArgs(false, true, false))),
+    divw_o__dot_ -> out(uOps(INTEGER, IntegerFUSub.Divider, DividerArgs(true, false, false))),
+    divwu_o__dot_ -> out(uOps(INTEGER, IntegerFUSub.Divider, DividerArgs(true, true, false))),
+    divde_o__dot_ -> out(uOps(INTEGER, IntegerFUSub.Divider, DividerArgs(false, false, true))),
+    divdeu_o__dot_ -> out(uOps(INTEGER, IntegerFUSub.Divider, DividerArgs(false, true, true))),
 
+    //is_div, word_operands, is_unsigned, output_high, output_word, shift_a
     mulhd_dot_ -> out(uOps(INTEGER, IntegerFUSub.Multiplier, MultiplierArgs(MultiplierSelectB.Slot2, false, false, false, true, false, false))),
     mulhdu_dot_ -> out(uOps(INTEGER, IntegerFUSub.Multiplier, MultiplierArgs(MultiplierSelectB.Slot2, false, false, true, true, false, false))),
     mulld_o__dot_ -> out(uOps(INTEGER, IntegerFUSub.Multiplier, MultiplierArgs(MultiplierSelectB.Slot2, false, false, false, false, false, false))),

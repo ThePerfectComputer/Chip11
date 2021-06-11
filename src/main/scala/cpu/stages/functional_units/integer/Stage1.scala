@@ -19,6 +19,7 @@ import cpu.uOps.functional_units.Integer.{
   LogicArgs,
   MultiplierSelectB,
   MultiplierArgs,
+  DividerArgs,
   ShifterSelectB,
   ShifterME,
   ShifterMB,
@@ -63,6 +64,7 @@ class Stage1(implicit config: CPUConfig)
   }
 
 
+  val request_submitted = RegInit(False)
   val sub_function = i.dec_data.uOps.sub_function
 
   val sub_unit = IntegerFUSub().keep()
@@ -240,6 +242,45 @@ class Stage1(implicit config: CPUConfig)
           o.write_interface
             .slots(WriteSlotPacking.GPRPort1)
             .data := logicMod.io.o.resized
+        }
+      }
+      is(IntegerFUSub.Divider){
+        if(config.multiplier){
+          val div = new Divider(64)
+          val dividerArgs = new DividerArgs
+
+          dividerArgs.assignFromBits(i.dec_data.uOps.args)
+
+
+          div.io.a := i.slots(ReadSlotPacking.GPRPort1).data.resized
+          // All divisions take from slot 2
+          div.io.b := i.slots(ReadSlotPacking.GPRPort2).data.resized
+
+          div.io.is_unsigned := dividerArgs.is_unsigned
+          div.io.is_word := dividerArgs.is_word
+          div.io.shift_a := dividerArgs.shift_a
+          div.io.input_valid := False
+
+          o.write_interface.slots(WriteSlotPacking.GPRPort1).data := div.io.o.resized
+
+
+          div.io.output_ack := False
+          when(pipeInput.valid){
+            when(request_submitted){
+              ready := div.io.output_valid
+              div.io.output_ack := pipeOutput.ready
+            }.otherwise{
+              ready := False
+              div.io.input_valid := pipeInput.valid & (sub_unit === IntegerFUSub.Divider)
+            }
+
+            when(div.io.input_valid & div.io.input_ready){
+              request_submitted := True
+            }
+            when(div.io.output_valid & div.io.output_ack){
+              request_submitted := False
+            }
+          }
         }
       }
 
