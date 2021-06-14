@@ -71,6 +71,8 @@ class SoCGen(val mem_file: String = null, memorySize:Int=16384) extends Componen
   cpu.io.fetch_request <> fetch_adaptor.io.request
   cpu.io.fetch_response <> fetch_adaptor.io.response
 
+
+
   // use another adaptor to connect the CPU's loadstore unit to the RAM's read/write port
   val ldst_adaptor = new MemoryAdaptor
   cpu.io.ldst_request <> ldst_adaptor.io.request
@@ -80,6 +82,9 @@ class SoCGen(val mem_file: String = null, memorySize:Int=16384) extends Componen
   val ldstMbToAxi = new MemBusToAXIShared(1)
   fetchMbToAxi.io.membus <> fetch_adaptor.io.membus
   ldstMbToAxi.io.membus <> ldst_adaptor.io.membus
+
+  val fetch_axi = fetchMbToAxi.io.axi
+  val ldst_axi = ldstMbToAxi.io.axi
 
   val ramDepth = memorySize/axiConfig.dataWidth
   val ram = Axi4SharedOnChipRam (
@@ -120,8 +125,8 @@ class SoC(mem_file: String = null, memorySize:Int=16384) extends SoCGen(mem_file
 
   // I think this is defining what masters can access which slaves
   axiCrossbar.addConnections(
-    fetchMbToAxi.io.axi -> List(ram.io.axi),
-    ldstMbToAxi.io.axi -> List(ram.io.axi)
+    fetch_axi -> List(ram.io.axi),
+    ldst_axi -> List(ram.io.axi)
   )
 
   axiCrossbar.build()
@@ -156,8 +161,8 @@ class SoCWithUART(mem_file: String = null, memorySize:Int=16384) extends SoCGen(
 
   // I think this is defining what masters can access which slaves
   axiCrossbar.addConnections(
-    fetchMbToAxi.io.axi -> List(ram.io.axi),
-    ldstMbToAxi.io.axi -> List(ram.io.axi, uart.io.bus)
+    fetch_axi -> List(ram.io.axi),
+    ldst_axi -> List(ram.io.axi, uart.io.bus)
   )
 
   axiCrossbar.addPipelining(uart.io.bus)((crossbar, u) => {
