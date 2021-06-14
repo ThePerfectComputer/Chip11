@@ -51,9 +51,6 @@ class LineAXIAdaptor(id: Int)(implicit axiConfig: Axi4Config)
 
   io.request.ack := False
 
-  io.response.byte_address := 0
-  io.response.data := 0
-  io.response.status := TransactionStatus.IDLE
 
   val req_start_byte = requestReg.byte_address(3 downto 0)
   val req_size = requestReg.size.as(UInt)
@@ -93,6 +90,17 @@ class LineAXIAdaptor(id: Int)(implicit axiConfig: Axi4Config)
   }
 
   val dataOut = RegInit(B(0, 128 bits))
+  val statusOut = RegInit(TransactionStatus.IDLE)
+  val byteAddrOut = RegInit(U(0, 64 bits))
+
+  io.response.data := dataOut.asUInt
+  io.response.status := statusOut
+  io.response.byte_address := byteAddrOut
+
+  when(statusOut === TransactionStatus.DONE && io.response.ready){
+    statusOut := TransactionStatus.IDLE
+  }
+
 
   // The size field presented to the axi bus
   val axi_size = UInt(3 bits)
@@ -122,6 +130,7 @@ class LineAXIAdaptor(id: Int)(implicit axiConfig: Axi4Config)
         requestReg := io.request
         io.request.ack := True
         goto(address2)
+        statusOut := TransactionStatus.WAITING
       }
     }
     address2.whenIsActive {
@@ -132,6 +141,7 @@ class LineAXIAdaptor(id: Int)(implicit axiConfig: Axi4Config)
       io.axi.arw.burst := 1 // INCR
       io.axi.arw.len := U(~bus_aligned).resized
       io.axi.arw.valid := True
+      byteAddrOut := requestReg.byte_address
       when(requestReg.ldst_req === TransactionType.STORE) {
         io.axi.w.data := (requestReg.data |<< (trans1_shift*8)).asBits
         io.axi.w.strb := write1_strb
@@ -152,10 +162,11 @@ class LineAXIAdaptor(id: Int)(implicit axiConfig: Axi4Config)
       }
     }
     read1.whenIsActive {
-      io.axi.r.ready := True
-      when(io.axi.r.valid) {
+      io.axi.r.ready := io.response.ready
+      when(io.axi.r.valid & io.axi.r.ready) {
         when(bus_aligned) {
           goto(address1)
+          statusOut := TransactionStatus.DONE
         }.otherwise {
           goto(read2)
         }
@@ -165,9 +176,10 @@ class LineAXIAdaptor(id: Int)(implicit axiConfig: Axi4Config)
     }
 
     read2.whenIsActive {
-      io.axi.r.ready := True
-      when(io.axi.r.valid) {
+      io.axi.r.ready := io.response.ready
+      when(io.axi.r.valid & io.axi.r.ready) {
         goto(address1)
+        statusOut := TransactionStatus.DONE
       }
       dataOut := dataOut | ((io.axi.r.data |<< (8 * trans2_shift)) & trans2_mask)
     }
@@ -186,6 +198,7 @@ class LineAXIAdaptor(id: Int)(implicit axiConfig: Axi4Config)
       io.axi.b.ready := True
       when(io.axi.b.valid){
         goto(address1)
+        statusOut := TransactionStatus.DONE
       }
     }
   }

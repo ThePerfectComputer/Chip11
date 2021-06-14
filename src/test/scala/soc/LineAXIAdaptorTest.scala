@@ -88,6 +88,7 @@ class LineAXIAdaptorTest extends AnyFlatSpec with should.Matchers {
         dut.io.request.ldst_req #= TransactionType.LOAD
         dut.io.request.size #= TransactionSize.WORD
         dut.io.request.data #= 0
+        dut.io.response.ready #= true
         dut.io.request.byte_address #= 0x100 + i
         while (!dut.io.request.ack.toBoolean) {
           dut.clockDomain.waitSampling(1)
