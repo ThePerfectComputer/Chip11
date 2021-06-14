@@ -74,6 +74,8 @@ class CPU(implicit val config: CPUConfig) extends Component {
   val ldst_response = new LDSTResponse       // interact with memory to read/write register slots
   val write         = new WriteStage                                  // write slot data into selected registers
 
+  val ldst_req_s2m = s3.pipeOutput.s2mPipe
+
   // unfortunately, Chisel's limitations make it difficult to do something
   // more elegant than the following. I tried for almost two days.
   val stagesCommittable = Seq(
@@ -86,6 +88,7 @@ class CPU(implicit val config: CPUConfig) extends Component {
     s1.getClass.getName(),
     s2.getClass.getName(),
     s3.getClass.getName(),
+    "ldst_s2mpipe",
     ldst_request.getClass.getName(),
     ldst_response.getClass.getName(),
     write.getClass.getName()
@@ -106,9 +109,10 @@ class CPU(implicit val config: CPUConfig) extends Component {
   hazard.io.write_interface_vec(3) := s1.pipeInput.payload.write_interface
   hazard.io.write_interface_vec(4) := s2.pipeInput.payload.write_interface
   hazard.io.write_interface_vec(5) := s3.pipeInput.payload.write_interface
-  hazard.io.write_interface_vec(6) := ldst_request.pipeInput.payload.write_interface
-  hazard.io.write_interface_vec(7) := ldst_response.pipeInput.payload.write_interface
-  hazard.io.write_interface_vec(8) := write.pipeInput.payload.write_interface
+  hazard.io.write_interface_vec(6) := ldst_req_s2m.payload.write_interface
+  hazard.io.write_interface_vec(7) := ldst_request.pipeInput.payload.write_interface
+  hazard.io.write_interface_vec(8) := ldst_response.pipeInput.payload.write_interface
+  hazard.io.write_interface_vec(9) := write.pipeInput.payload.write_interface
 
   hazard.io.stage_valid_vec(0) := read.pipeInput.valid
   hazard.io.stage_valid_vec(1) := read.io.hidden_wi_valid
@@ -116,15 +120,19 @@ class CPU(implicit val config: CPUConfig) extends Component {
   hazard.io.stage_valid_vec(3) := s1.pipeInput.valid
   hazard.io.stage_valid_vec(4) := s2.pipeInput.valid
   hazard.io.stage_valid_vec(5) := s3.pipeInput.valid
-  hazard.io.stage_valid_vec(6) := ldst_request.pipeInput.valid
-  hazard.io.stage_valid_vec(7) := ldst_response.pipeInput.valid
-  hazard.io.stage_valid_vec(8) := write.pipeInput.valid
+
+  hazard.io.stage_valid_vec(6) := ldst_req_s2m.valid
+  hazard.io.stage_valid_vec(7) := ldst_request.pipeInput.valid
+  hazard.io.stage_valid_vec(8) := ldst_response.pipeInput.valid
+  hazard.io.stage_valid_vec(9) := write.pipeInput.valid
 
   // connect up pipeline stages
   // For now, do not use any >/-> after the hazard detector, it doesn't work right
   decode <-< fetch.pipeOutput
   decode >-> form_pop >/-> hazard >-> read >->
-  s1 >-> s2 >-> s3 >-> ldst_request >-> ldst_response >-> write
+  s1 >-> s2 >-> s3
+  ldst_request <-< ldst_req_s2m
+  ldst_request >-> ldst_response >-> write
 
   val flushLatency = LatencyAnalysis(s2.pipeInput.flush, fetch.pipeOutput.flush)
   println(s"flush latency: $flushLatency")
