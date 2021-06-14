@@ -64,10 +64,13 @@ class LineAXIAdaptor(id: Int)(implicit axiConfig: Axi4Config)
   val byte_aligned = Bool
   byte_aligned := False
 
-  val read1_mask = B(0, 128 bits)
-  val read2_mask = B(0, 128 bits)
-  val read1_shift = U(0, 4 bits)
-  val read2_shift = U(0, 4 bits)
+  val trans1_mask = B(0, 128 bits)
+  val trans2_mask = B(0, 128 bits)
+  val trans1_shift = U(0, 4 bits)
+  val trans2_shift = U(0, 4 bits)
+
+  val write1_strb = B(0, 16 bits)
+  val write2_strb = B(0, 16 bits)
 
   for (permutation <- LineRequestTruthTable.TableEntries) {
     when(
@@ -75,18 +78,21 @@ class LineAXIAdaptor(id: Int)(implicit axiConfig: Axi4Config)
     ) {
       bus_aligned := Bool(permutation.bytes_in_transaction2 == 0)
       byte_aligned := Bool(permutation.byte_addr_aligned)
-      read1_mask := (BigInt(1)<<8*permutation.bytes_in_transaction1)-1
-      read2_mask := ((BigInt(1)<<8*permutation.bytes_in_transaction2)-1) << (8*permutation.bytes_in_transaction1)
-      read1_shift := req_start_byte
-      if(permutation.bytes_in_transaction2 != 0){
-        read2_shift := permutation.bytes_in_transaction1
+      trans1_mask := (BigInt(1) << 8 * permutation.bytes_in_transaction1) - 1
+      trans2_mask := ((BigInt(
+        1
+      ) << 8 * permutation.bytes_in_transaction2) - 1) << (8 * permutation.bytes_in_transaction1)
+
+      write1_strb := ((1 << permutation.bytes_in_transaction1) - 1) << permutation.start_byte
+      write2_strb := (1 << permutation.bytes_in_transaction2) - 1
+      trans1_shift := req_start_byte
+      if (permutation.bytes_in_transaction2 != 0) {
+        trans2_shift := permutation.bytes_in_transaction1
       }
     }
   }
 
-
   val dataOut = RegInit(B(0, 128 bits))
-
 
   // The size field presented to the axi bus
   val axi_size = UInt(3 bits)
@@ -126,11 +132,18 @@ class LineAXIAdaptor(id: Int)(implicit axiConfig: Axi4Config)
       io.axi.arw.burst := 1 // INCR
       io.axi.arw.len := U(~bus_aligned).resized
       io.axi.arw.valid := True
-      when(io.axi.arw.ready){
-        when(requestReg.ldst_req === TransactionType.LOAD){
+      when(requestReg.ldst_req === TransactionType.STORE) {
+        io.axi.w.data := (requestReg.data |<< (trans1_shift*8)).asBits
+        io.axi.w.strb := write1_strb
+        io.axi.w.valid := True
+        io.axi.w.last := bus_aligned
+
+      }
+      when(io.axi.arw.ready) {
+        when(requestReg.ldst_req === TransactionType.LOAD) {
           goto(read1)
         }.otherwise {
-          when(bus_aligned){
+          when(bus_aligned) {
             goto(write2)
           }.otherwise {
             goto(write1)
@@ -140,25 +153,41 @@ class LineAXIAdaptor(id: Int)(implicit axiConfig: Axi4Config)
     }
     read1.whenIsActive {
       io.axi.r.ready := True
-      when(io.axi.r.valid){
-        when(bus_aligned){
+      when(io.axi.r.valid) {
+        when(bus_aligned) {
           goto(address1)
         }.otherwise {
           goto(read2)
         }
         // TODO register this
-        dataOut := (io.axi.r.data |>> (8*read1_shift)) & read1_mask
+        dataOut := (io.axi.r.data |>> (8 * trans1_shift)) & trans1_mask
       }
     }
 
     read2.whenIsActive {
       io.axi.r.ready := True
-      when(io.axi.r.valid){
+      when(io.axi.r.valid) {
         goto(address1)
       }
-      dataOut := dataOut | ((io.axi.r.data |<< (8*read2_shift)) & read2_mask)
+      dataOut := dataOut | ((io.axi.r.data |<< (8 * trans2_shift)) & trans2_mask)
     }
 
+    write1.whenIsActive {
+      io.axi.w.data := (requestReg.data |>> (trans2_shift*8)).asBits
+      io.axi.w.strb := write2_strb
+      io.axi.w.valid := True
+      io.axi.w.last := True
+
+      when(io.axi.w.ready) {
+        goto(write2)
+      }
+    }
+    write2.whenIsActive {
+      io.axi.b.ready := True
+      when(io.axi.b.valid){
+        goto(address1)
+      }
+    }
   }
 
 }

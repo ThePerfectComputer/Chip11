@@ -95,6 +95,17 @@ class LineAXIAdaptorTest extends AnyFlatSpec with should.Matchers {
         dut.io.request.ldst_req #= TransactionType.NONE
         dut.clockDomain.waitSampling(5)
       }
+      for (i <- 0 until 16) {
+        dut.io.request.ldst_req #= TransactionType.STORE
+        dut.io.request.size #= TransactionSize.WORD
+        dut.io.request.data #= 0xdeadbeefL
+        dut.io.request.byte_address #= 0x100 + i
+        while (!dut.io.request.ack.toBoolean) {
+          dut.clockDomain.waitSampling(1)
+        }
+        dut.io.request.ldst_req #= TransactionType.NONE
+        dut.clockDomain.waitSampling(5)
+      }
     }
   }
 }
