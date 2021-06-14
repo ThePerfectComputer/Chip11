@@ -28,9 +28,12 @@ class LineResponse extends Bundle with IMasterSlave{
   val status            = TransactionStatus()
   val byte_address      = UInt(64 bits)
 
+  val ready = Bool
+
   override def asMaster() : Unit = {
     out(data)
     out(status)
     out(byte_address)
+    in(ready)
   }
 }
