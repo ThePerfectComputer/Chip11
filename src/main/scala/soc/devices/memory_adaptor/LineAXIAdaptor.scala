@@ -64,14 +64,29 @@ class LineAXIAdaptor(id: Int)(implicit axiConfig: Axi4Config)
   val byte_aligned = Bool
   byte_aligned := False
 
+  val read1_mask = B(0, 128 bits)
+  val read2_mask = B(0, 128 bits)
+  val read1_shift = U(0, 4 bits)
+  val read2_shift = U(0, 4 bits)
+
   for (permutation <- LineRequestTruthTable.TableEntries) {
     when(
       (req_start_byte === permutation.start_byte) & (req_size === permutation.request_size)
     ) {
       bus_aligned := Bool(permutation.bytes_in_transaction2 == 0)
       byte_aligned := Bool(permutation.byte_addr_aligned)
+      read1_mask := (BigInt(1)<<8*permutation.bytes_in_transaction1)-1
+      read2_mask := ((BigInt(1)<<8*permutation.bytes_in_transaction2)-1) << (8*permutation.bytes_in_transaction1)
+      read1_shift := req_start_byte
+      if(permutation.bytes_in_transaction2 != 0){
+        read2_shift := permutation.bytes_in_transaction1
+      }
     }
   }
+
+
+  val dataOut = RegInit(B(0, 128 bits))
+
 
   // The size field presented to the axi bus
   val axi_size = UInt(3 bits)
@@ -113,11 +128,7 @@ class LineAXIAdaptor(id: Int)(implicit axiConfig: Axi4Config)
       io.axi.arw.valid := True
       when(io.axi.arw.ready){
         when(requestReg.ldst_req === TransactionType.LOAD){
-          when(bus_aligned){
-            goto(read2)
-          }.otherwise {
-            goto(read1)
-          }
+          goto(read1)
         }.otherwise {
           when(bus_aligned){
             goto(write2)
@@ -126,6 +137,26 @@ class LineAXIAdaptor(id: Int)(implicit axiConfig: Axi4Config)
           }
         }
       }
+    }
+    read1.whenIsActive {
+      io.axi.r.ready := True
+      when(io.axi.r.valid){
+        when(bus_aligned){
+          goto(address1)
+        }.otherwise {
+          goto(read2)
+        }
+        // TODO register this
+        dataOut := (io.axi.r.data |>> (8*read1_shift)) & read1_mask
+      }
+    }
+
+    read2.whenIsActive {
+      io.axi.r.ready := True
+      when(io.axi.r.valid){
+        goto(address1)
+      }
+      dataOut := dataOut | ((io.axi.r.data |<< (8*read2_shift)) & read2_mask)
     }
 
   }
