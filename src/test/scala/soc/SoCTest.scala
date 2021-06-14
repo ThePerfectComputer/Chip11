@@ -129,14 +129,14 @@ class SoCTestVerilog extends AnyFlatSpec with should.Matchers {
 
   it should "create verilog" in {
     implicit val config = new CPUConfig(
-      adder = false,
+      adder = true,
       branch = true,
-      logical = false,
-      shifter = false,
-      comparator = false,
-      multiplier = false,
-      zcnt = false,
-      popcnt = false
+      logical = true,
+      shifter = true,
+      comparator = true,
+      multiplier = true,
+      zcnt = true,
+      popcnt = true
     )
     SpinalVerilog(new CPU)
     SpinalVerilog(new CPUShiftRegDUT)

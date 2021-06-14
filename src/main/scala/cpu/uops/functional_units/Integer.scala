@@ -111,7 +111,6 @@ object MultiplierArgs {
 }
 
 class DividerArgs extends Bundle {
-  val slotB = MultiplierSelectB()
   val is_word = Bool()
   val is_unsigned = Bool()
   val shift_a = Bool()
