@@ -44,6 +44,8 @@ class FetchUnit extends Component {
   io.line_request.byte_address := 0
   io.line_request.data := 0
 
+  io.line_response.ready := True
+
   val busArea = new Area {
     val cia = RegInit(U(ciaInitValue, 64 bits))
 
