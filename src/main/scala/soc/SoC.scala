@@ -1,7 +1,7 @@
 package soc
 
 import cpu.{CPU, CPUConfig}
-import soc.devices.memory_adaptor.{MemoryAdaptor, MemBusToAXIShared}
+import soc.devices.memory_adaptor.{MemoryAdaptor, MemBusToAXIShared, LineAXIAdaptor}
 import spinal.lib.bus.amba4.axi.{Axi4Config, Axi4CrossbarFactory, Axi4SharedOnChipRam}
 //import soc.devices.{DualPortSram128, UART, Arbiter, AdaptorPeripheral}
 import spinal.core.sim._
@@ -67,24 +67,26 @@ class SoCGen(val mem_file: String = null, memorySize:Int=16384) extends Componen
   val cpu = new CPU
 
   // use an adaptor to connect the CPU's fetch unit to the RAM's read-only port
-  val fetch_adaptor = new MemoryAdaptor
+  //val fetch_adaptor = new MemoryAdaptor
+  val fetch_adaptor = new LineAXIAdaptor(0)
   cpu.io.fetch_request <> fetch_adaptor.io.request
   cpu.io.fetch_response <> fetch_adaptor.io.response
 
 
 
   // use another adaptor to connect the CPU's loadstore unit to the RAM's read/write port
-  val ldst_adaptor = new MemoryAdaptor
+  // val ldst_adaptor = new MemoryAdaptor
+  val ldst_adaptor = new LineAXIAdaptor(1)
   cpu.io.ldst_request <> ldst_adaptor.io.request
   cpu.io.ldst_response <> ldst_adaptor.io.response
 
-  val fetchMbToAxi = new MemBusToAXIShared(0)
+  // val fetchMbToAxi = new MemBusToAXIShared(0)
   val ldstMbToAxi = new MemBusToAXIShared(1)
-  fetchMbToAxi.io.membus <> fetch_adaptor.io.membus
-  ldstMbToAxi.io.membus <> ldst_adaptor.io.membus
+  // fetchMbToAxi.io.membus <> fetch_adaptor.io.membus
+  // ldstMbToAxi.io.membus <> ldst_adaptor.io.membus
 
-  val fetch_axi = fetchMbToAxi.io.axi
-  val ldst_axi = ldstMbToAxi.io.axi
+  val fetch_axi = fetch_adaptor.io.axi
+  val ldst_axi = ldst_adaptor.io.axi
 
   val ramDepth = memorySize/axiConfig.dataWidth
   val ram = Axi4SharedOnChipRam (

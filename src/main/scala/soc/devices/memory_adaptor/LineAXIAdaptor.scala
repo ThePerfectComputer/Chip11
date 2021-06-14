@@ -134,7 +134,7 @@ class LineAXIAdaptor(id: Int)(implicit axiConfig: Axi4Config)
       }
     }
     address2.whenIsActive {
-      io.axi.arw.addr := requestReg.byte_address
+      io.axi.arw.addr := requestReg.byte_address.resized
       io.axi.arw.id := id
       io.axi.arw.write := requestReg.ldst_req === TransactionType.STORE
       io.axi.arw.size := axi_size
