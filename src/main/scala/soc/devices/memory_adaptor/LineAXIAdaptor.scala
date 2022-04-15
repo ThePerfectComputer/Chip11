@@ -160,6 +160,13 @@ class LineAXIAdaptor(id: Int)(implicit axiConfig: Axi4Config)
           }
         }
       }
+      // If a misaligned access crosses a 4k boundary, issue a bus
+      // error so it can be emulated by the page fault handler
+      when(!bus_aligned && requestReg.byte_address(10 downto 4) === 0x7f){
+        statusOut := TransactionStatus.PAGE_FAULT
+        io.axi.arw.valid := False
+        goto(address1)
+      }
     }
     read1.whenIsActive {
       io.axi.r.ready := io.response.ready

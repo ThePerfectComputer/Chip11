@@ -105,8 +105,8 @@ class CPUShiftRegDUT(implicit val config: CPUConfig) extends Component {
   val input_reg = Reg(Bits(inputs.getBitsWidth bits))
   val output_reg = Reg(Bits(outputs.getWidth bits))
   inputs.assignFromBits(input_reg)
-  cpu.io.fetch_response := inputs.fetch_response
-  cpu.io.ldst_response := inputs.ldst_response
+  cpu.io.fetch_response <> inputs.fetch_response
+  cpu.io.ldst_response <> inputs.ldst_response
   cpu.io.ldst_request.ack := inputs.ldst_ack
   cpu.io.fetch_request.ack := inputs.fetch_ack
 
@@ -134,12 +134,13 @@ class SoCTestVerilog extends AnyFlatSpec with should.Matchers {
       logical = true,
       shifter = true,
       comparator = true,
-      multiplier = false,
+      multiplier = true,
+      divider = true,
       zcnt = true,
       popcnt = true
     )
     SpinalVerilog(new CPU)
-    SpinalVerilog(new CPUShiftRegDUT)
+    //SpinalVerilog(new CPUShiftRegDUT)
   }
 
 }

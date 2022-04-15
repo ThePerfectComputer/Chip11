@@ -245,7 +245,7 @@ class Stage1(implicit config: CPUConfig)
         }
       }
       is(IntegerFUSub.Divider){
-        if(config.multiplier){
+        if(config.divider){
           val div = new Divider(64)
           val dividerArgs = new DividerArgs
 

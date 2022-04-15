@@ -28,5 +28,5 @@ object TransactionStatus extends SpinalEnum{
   val DONE       = newElement()
   val WAITING    = newElement()
   val SPEC_MISS  = newElement()
-  val SEG_FAULT  = newElement()
+  val PAGE_FAULT  = newElement()
 }

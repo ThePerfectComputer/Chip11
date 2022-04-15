@@ -1,0 +1,14 @@
+[options]
+mode prove
+depth 2
+
+[engines]
+smtbmc
+abc pdr
+
+[script]
+read -formal MultDUT.sv
+prep -top MultDUT
+
+[files]
+MultDUT.sv

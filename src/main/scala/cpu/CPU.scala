@@ -19,6 +19,7 @@ class CPUConfig(
   val shifter: Boolean=true,
   val comparator: Boolean=true,
   val multiplier: Boolean=true,
+  val divider: Boolean=true,
   val zcnt: Boolean=true,
   val popcnt: Boolean=true
 ){}

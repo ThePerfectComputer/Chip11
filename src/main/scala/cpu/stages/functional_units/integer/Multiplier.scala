@@ -12,6 +12,65 @@ import spinal.lib._
 // M/D class should also contain ChiselEnum objects that help interprest
 // args1,2, and 3 that it recieves.
 
+
+class Mult(wid: Int) extends Component {
+  val io = new Bundle {
+    val a = in UInt(wid bits)
+    val b = in UInt(wid bits)
+
+    val o = out UInt(2*wid bits)
+  }
+
+  io.o := io.a * io.b
+}
+
+class MultData(wid: Int) extends Bundle {
+  val products = Seq.fill(4)(UInt(wid bits))
+}
+
+class MultB(wid: Int) extends Component {
+  val io = new Bundle {
+    val a = in UInt(wid bits)
+    val b = in UInt(wid bits)
+
+    val o = out(new MultData(wid))
+  }
+
+  val half_wid = wid/2
+
+  val products = Seq.fill(4)(UInt(wid bits))
+
+  val a_operands = io.a.subdivideIn(2 slices)
+  val b_operands = io.b.subdivideIn(2 slices)
+
+  val operands = for { a <- a_operands
+    b <- b_operands} yield (a, b)
+
+  for((operand, dest) <- operands.zip(products)){
+    operand match {
+      case (a, b) => dest := a * b
+    }
+  }
+  println(operands)
+
+  io.o(half_wid-1 downto 0) := products(0)(half_wid-1 downto 0)
+
+  val sum1 = UInt(half_wid+2 bits)
+  sum1 := (products(0)(wid-1 downto half_wid) +^ products(1)(half_wid-1 downto 0)) +^ products(2)(half_wid-1 downto 0)
+
+  io.o(wid-1 downto half_wid) := sum1(half_wid-1 downto 0)
+
+  val sum2 = UInt(half_wid + 2 bits)
+  sum2 := (products(1)(wid-1 downto half_wid) +^ products(2)(wid-1 downto half_wid)) +^ (
+    products(3)(half_wid-1 downto 0) +^ sum1(half_wid+1 downto half_wid))
+  io.o(half_wid*3-1 downto wid) := sum2(half_wid-1 downto 0)
+
+  val sum3 = UInt(half_wid+1 bits)
+  sum3 := products(3)(wid-1 downto half_wid) +^ sum2(half_wid+1 downto half_wid)
+  io.o(wid*2-1 downto half_wid*3) := sum3(half_wid-1 downto 0)
+}
+
+
 class Multiplier(val wid: Int) extends Component {
   val io = new Bundle {
     val a = in UInt (wid bits)
