@@ -7,6 +7,7 @@
 cd ../
 git clone git@gitlab.com:chipeleven/spinalhdl.git SpinalHDL
 cd SpinalHDL
+git checkout onehot-switch
 sbt clean publishLocal
 ```
 
